@@ -1,0 +1,12 @@
+<div class="overlay" [class.active]="isOpen" (click)="onClose()"></div>
+<div class="drawer" [class.open]="isOpen" [style.width]="width">
+  <div class="drawer-header">
+    <h3>{{ title }}</h3>
+    <button class="btn-icon" (click)="onClose()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="drawer-content">
+    <ng-content></ng-content>
+  </div>
+</div>

@@ -1,0 +1,249 @@
+import { Component, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { DataService } from '../../core/services/data.service';
+
+@Component({
+  selector: 'app-user-home',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="home-container">
+      <div class="hero-section">
+        <h2>Find Your Perfect Match</h2>
+        <p>Premium printing products for your special occasions.</p>
+        
+        <div class="search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" placeholder="Search products...">
+        </div>
+      </div>
+      
+      <div class="categories-section">
+        <h3>Categories</h3>
+        <div class="category-scroll">
+          <div class="category-pill" 
+               *ngFor="let cat of categories()"
+               [class.active]="selectedCategory() === cat.id"
+               (click)="selectCategory(cat.id)">
+            {{ cat.name }}
+          </div>
+        </div>
+      </div>
+      
+      <div class="products-section">
+        <h3 *ngIf="selectedCategory()">
+          {{ getCategoryName(selectedCategory()!) }}
+        </h3>
+        <h3 *ngIf="!selectedCategory()">All Products</h3>
+        
+        <div class="products-grid">
+          <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
+            <div class="img-wrapper">
+              <img [src]="prod.images[0]" [alt]="prod.name">
+            </div>
+            <div class="product-info">
+              <span class="category-label">{{ getCategoryName(prod.categoryId) }}</span>
+              <h4>{{ prod.name }}</h4>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="filteredProducts().length === 0">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <p>No products found in this category.</p>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .home-container {
+      padding-bottom: 2rem;
+    }
+    
+    .hero-section {
+      padding: 2rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border-radius: 0 0 1.5rem 1.5rem;
+      
+      h2 {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        color: white;
+      }
+      
+      p {
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+      }
+    }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius-lg);
+      padding: 0.75rem 1rem;
+      
+      span {
+        color: white;
+        margin-right: 0.5rem;
+      }
+      
+      input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        width: 100%;
+        font-size: 1rem;
+        
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+    
+    .categories-section {
+      padding: 1.5rem 0 0;
+      
+      h3 {
+        padding: 0 1.5rem;
+        margin-bottom: 1rem;
+      }
+    }
+    
+    .category-scroll {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      padding: 0 1.5rem 0.5rem;
+      
+      /* Hide scrollbar for cleaner look on mobile */
+      &::-webkit-scrollbar { display: none; }
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    .category-pill {
+      padding: 0.5rem 1rem;
+      background: var(--surface);
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 20px;
+      white-space: nowrap;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      
+      &.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+    }
+    
+    .products-section {
+      padding: 1.5rem;
+      
+      h3 { margin-bottom: 1rem; }
+    }
+    
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    .product-card {
+      background: var(--surface);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      
+      .img-wrapper {
+        width: 100%;
+        aspect-ratio: 1;
+        background: var(--background);
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+      
+      .product-info {
+        padding: 0.75rem;
+        
+        .category-label {
+          font-size: 0.7rem;
+          color: var(--primary);
+          font-weight: 600;
+          text-transform: uppercase;
+          margin-bottom: 0.25rem;
+          display: block;
+        }
+        
+        h4 {
+          margin: 0;
+          font-size: 0.9rem;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      }
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      
+      span {
+        font-size: 3rem;
+        opacity: 0.5;
+        margin-bottom: 1rem;
+      }
+    }
+  `]
+})
+export class UserHomeComponent {
+  dataService = inject(DataService);
+  
+  categories = this.dataService.categories;
+  products = this.dataService.products;
+  
+  selectedCategory = signal<string | null>(null);
+  
+  filteredProducts = computed(() => {
+    const cat = this.selectedCategory();
+    const activeProducts = this.products().filter(p => p.status === 'active');
+    
+    if (cat) {
+      return activeProducts.filter(p => p.categoryId === cat);
+    }
+    return activeProducts;
+  });
+
+  selectCategory(id: string) {
+    if (this.selectedCategory() === id) {
+      this.selectedCategory.set(null); // toggle off
+    } else {
+      this.selectedCategory.set(id);
+    }
+  }
+
+  getCategoryName(id: string): string {
+    const cat = this.categories().find(c => c.id === id);
+    return cat ? cat.name : '';
+  }
+}
