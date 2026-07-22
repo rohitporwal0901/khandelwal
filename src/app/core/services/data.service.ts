@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc } from '@angular/fire/firestore';
 
 export interface Category {
   id: string;
@@ -40,65 +41,38 @@ export interface Order {
   providedIn: 'root'
 })
 export class DataService {
-  // Signals for state management
-  categories = signal<Category[]>([
-    { id: 'c1', name: 'Wedding Cards', image: 'assets/images/card1.png', description: 'Premium Indian Wedding Cards', status: 'active' },
-    { id: 'c2', name: 'Greeting Cards', image: 'assets/images/card2.png', description: 'Elegant Greeting Cards', status: 'active' },
-    { id: 'c3', name: 'Religious Cards', image: 'assets/images/card3.png', description: 'Traditional Religious Invites', status: 'active' }
-  ]);
+  firestore = inject(Firestore);
 
-  products = signal<Product[]>([
-    {
-      id: 'p1',
-      name: 'Royal Maroon Floral Invite',
-      sku: 'W-001',
-      categoryId: 'c1',
-      description: 'A luxurious maroon wedding card with gold floral motifs and an elegant envelope.',
-      stock: 5000,
-      status: 'active',
-      images: ['assets/images/card1.png', 'assets/images/card2.png', 'assets/images/card3.png']
-    },
-    {
-      id: 'p2',
-      name: 'Modern Geometric Gold Cream',
-      sku: 'G-001',
-      categoryId: 'c2',
-      description: 'A contemporary cream greeting card featuring gold geometric patterns and a premium seal.',
-      stock: 2500,
-      status: 'active',
-      images: ['assets/images/card2.png', 'assets/images/card1.png']
-    },
-    {
-      id: 'p3',
-      name: 'Traditional Ganesha Red Card',
-      sku: 'R-001',
-      categoryId: 'c3',
-      description: 'Traditional Hindu wedding invitation with a prominent gold Ganesha design on a red background.',
-      stock: 1200,
-      status: 'active',
-      images: ['assets/images/card3.png', 'assets/images/card1.png']
-    }
-  ]);
-
-  orders = signal<Order[]>([
-    {
-      id: 'ORD-1001',
-      customerName: 'Rahul Sharma',
-      phone: '+91 9876543210',
-      email: 'rahul.s@example.com',
-      address: '123, MG Road, New Delhi, India',
-      notes: 'Please ensure high quality packaging.',
-      items: [{ productId: 'p1', quantity: 500 }],
-      status: 'pending',
-      date: new Date().toISOString()
-    }
-  ]);
-
+  // Signals for state management (initialized empty, hydrated from Firestore)
+  categories = signal<Category[]>([]);
+  products = signal<Product[]>([]);
+  orders = signal<Order[]>([]);
   cart = signal<OrderItem[]>([]);
 
-  constructor() { }
+  constructor() {
+    this.initFirestoreListeners();
+  }
 
-  // Actions
+  private initFirestoreListeners() {
+    const categoriesRef = collection(this.firestore, 'categories');
+    collectionData(categoriesRef, { idField: 'id' }).subscribe((data: any[]) => {
+      this.categories.set(data as Category[]);
+    });
+
+    const productsRef = collection(this.firestore, 'products');
+    collectionData(productsRef, { idField: 'id' }).subscribe((data: any[]) => {
+      this.products.set(data as Product[]);
+    });
+
+    const ordersRef = collection(this.firestore, 'orders');
+    collectionData(ordersRef, { idField: 'id' }).subscribe((data: any[]) => {
+      // Sort orders by date descending
+      const sortedOrders = (data as Order[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      this.orders.set(sortedOrders);
+    });
+  }
+
+  // Cart Actions (Local State)
   addToCart(productId: string, quantity: number) {
     const currentCart = this.cart();
     const existing = currentCart.find(item => item.productId === productId);
@@ -118,48 +92,62 @@ export class DataService {
     this.cart.set([]);
   }
 
-  placeOrder(customerDetails: Omit<Order, 'id' | 'items' | 'status' | 'date'>) {
-    const newOrder: Order = {
+  async placeOrder(customerDetails: Omit<Order, 'id' | 'items' | 'status' | 'date'>) {
+    const newOrder = {
       ...customerDetails,
-      id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
       items: [...this.cart()],
       status: 'pending',
       date: new Date().toISOString()
     };
-    this.orders.update(orders => [newOrder, ...orders]);
+    
+    const ordersRef = collection(this.firestore, 'orders');
+    const docRef = await addDoc(ordersRef, newOrder);
+    
+    // We add the id property onto the object for immediate return since addDoc doesn't include it in the returned object, 
+    // although collectionData listener will update the list with the correct ID.
+    const completeOrder: Order = { ...newOrder, id: docRef.id } as Order;
+    
     this.clearCart();
-    return newOrder;
+    return completeOrder;
   }
 
-  generateBill(orderId: string) {
-    // Update order status and reduce stock
-    const currentOrders = this.orders();
-    const orderIndex = currentOrders.findIndex(o => o.id === orderId);
-    if (orderIndex > -1) {
-      const order = currentOrders[orderIndex];
-      order.status = 'completed';
+  async generateBill(orderId: string) {
+    try {
+      // 1. Update order status
+      const orderRef = doc(this.firestore, `orders/${orderId}`);
+      await updateDoc(orderRef, { status: 'completed' });
       
-      const currentProducts = [...this.products()];
-      order.items.forEach(item => {
-        const productIndex = currentProducts.findIndex(p => p.id === item.productId);
-        if (productIndex > -1) {
-          currentProducts[productIndex].stock = Math.max(0, currentProducts[productIndex].stock - item.quantity);
+      // 2. Reduce stock for each product in the order
+      // Note: In a production app, this should be done via a Firestore transaction or Cloud Function
+      // to avoid race conditions. We're using standard updates here for simplicity.
+      const orderDoc = await getDoc(orderRef);
+      if (orderDoc.exists()) {
+        const orderData = orderDoc.data() as Order;
+        
+        for (const item of orderData.items) {
+          const productRef = doc(this.firestore, `products/${item.productId}`);
+          const productDoc = await getDoc(productRef);
+          
+          if (productDoc.exists()) {
+            const currentStock = productDoc.data()['stock'] || 0;
+            const newStock = Math.max(0, currentStock - item.quantity);
+            await updateDoc(productRef, { stock: newStock });
+          }
         }
-      });
-      
-      this.orders.set([...currentOrders]);
-      this.products.set(currentProducts);
+      }
+    } catch (error) {
+      console.error("Error generating bill and updating stock:", error);
     }
   }
 
   // Generic CRUD for Admin
-  addCategory(category: Omit<Category, 'id'>) {
-    const newCat = { ...category, id: 'c' + Date.now() };
-    this.categories.update(cats => [newCat, ...cats]);
+  async addCategory(category: Omit<Category, 'id'>) {
+    const categoriesRef = collection(this.firestore, 'categories');
+    await addDoc(categoriesRef, category);
   }
   
-  addProduct(product: Omit<Product, 'id'>) {
-    const newProd = { ...product, id: 'p' + Date.now() };
-    this.products.update(prods => [newProd, ...prods]);
+  async addProduct(product: Omit<Product, 'id'>) {
+    const productsRef = collection(this.firestore, 'products');
+    await addDoc(productsRef, product);
   }
 }

@@ -198,8 +198,8 @@ export class AdminCategoriesComponent {
     this.isDrawerOpen.set(false);
   }
   
-  saveCategory() {
-    this.dataService.addCategory(this.newCategory);
+  async saveCategory() {
+    await this.dataService.addCategory(this.newCategory);
     this.closeDrawer();
   }
 }

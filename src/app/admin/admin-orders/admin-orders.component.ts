@@ -333,12 +333,12 @@ export class AdminOrdersComponent {
     }, 300);
   }
   
-  generateBill(orderId: string) {
+  async generateBill(orderId: string) {
     this.isGenerating.set(true);
     
-    // Simulate API call and animation
-    setTimeout(() => {
-      this.dataService.generateBill(orderId);
+    try {
+      await this.dataService.generateBill(orderId);
+      
       this.isGenerating.set(false);
       this.showSuccessAnim.set(true);
       
@@ -349,7 +349,9 @@ export class AdminOrdersComponent {
         // Generate PDF Invoice
         this.invoiceService.generateInvoice(updatedOrder, this.products());
       }
-      
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      this.isGenerating.set(false);
+    }
   }
 }

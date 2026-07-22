@@ -322,16 +322,18 @@ export class UserCartComponent {
     this.isCheckoutOpen.set(false);
   }
   
-  submitOrder() {
+  async submitOrder() {
     this.isSubmitting.set(true);
     
-    // Simulate API delay
-    setTimeout(() => {
-      const newOrder = this.dataService.placeOrder(this.customerDetails);
+    try {
+      const newOrder = await this.dataService.placeOrder(this.customerDetails);
       this.lastOrderId = newOrder.id;
       this.isSubmitting.set(false);
       this.closeCheckout();
       this.orderSuccess.set(true);
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      this.isSubmitting.set(false);
+    }
   }
 }

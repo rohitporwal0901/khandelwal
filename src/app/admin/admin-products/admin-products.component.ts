@@ -459,8 +459,8 @@ export class AdminProductsComponent {
     this.newProduct.images.splice(index, 1);
   }
   
-  saveProduct() {
-    this.dataService.addProduct(this.newProduct);
+  async saveProduct() {
+    await this.dataService.addProduct(this.newProduct);
     this.closeAddDrawer();
   }
 

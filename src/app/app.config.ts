@@ -4,6 +4,8 @@ import { routes } from './app.routes';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+
 const firebaseConfig = {
   apiKey: "AIzaSyDLW_hLCmk15slBBKLU_bCC5YIYjihz8k0",
   authDomain: "shoppingapp-28320.firebaseapp.com",
@@ -18,6 +20,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
-    provideStorage(() => getStorage())
+    provideStorage(() => getStorage()),
+    provideFirestore(() => getFirestore())
   ]
 };
