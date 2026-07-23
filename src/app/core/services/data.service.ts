@@ -1,4 +1,4 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, inject, signal, effect } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc } from '@angular/fire/firestore';
 
 export interface Category {
@@ -69,6 +69,21 @@ export class DataService {
       // Sort orders by date descending
       const sortedOrders = (data as Order[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       this.orders.set(sortedOrders);
+    });
+
+    // Initialize cart from localStorage if exists
+    const savedCart = localStorage.getItem('khandelwal_cart');
+    if (savedCart) {
+      try {
+        this.cart.set(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Failed to parse cart from local storage', e);
+      }
+    }
+
+    // Save cart to localStorage whenever it changes
+    effect(() => {
+      localStorage.setItem('khandelwal_cart', JSON.stringify(this.cart()));
     });
   }
 

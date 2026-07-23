@@ -89,14 +89,24 @@ import { FormsModule } from '@angular/forms';
           </button>
         </div>
         
-        <div class="custom-qty mt-4">
+        <div class="custom-qty mt-4" *ngIf="product() as prod">
           <label class="form-label">Custom Quantity</label>
-          <input type="number" class="form-control" [ngModel]="selectedQty()" (ngModelChange)="selectedQty.set($event)" min="1">
+          <input type="number" class="form-control" [ngModel]="selectedQty()" (ngModelChange)="selectedQty.set($event)" min="1" [max]="prod.stock">
+          
+          <!-- Stock Info -->
+          <div class="stock-info mt-2">
+            <small [class.text-error]="selectedQty() > prod.stock" [class.text-muted]="selectedQty() <= prod.stock">
+              Available Stock: {{ prod.stock }}
+            </small>
+            <small class="text-error d-block" *ngIf="selectedQty() > prod.stock">
+              Quantity exceeds available stock.
+            </small>
+          </div>
         </div>
         
-        <div class="sheet-actions mt-4">
+        <div class="sheet-actions mt-4" *ngIf="product() as prod">
           <button class="btn btn-outline" (click)="closeQtySheet()">Cancel</button>
-          <button class="btn btn-primary" [disabled]="selectedQty() < 1" (click)="addToCart()">
+          <button class="btn btn-primary" [disabled]="selectedQty() < 1 || selectedQty() > prod.stock" (click)="addToCart()">
             Apply & Add to Cart
           </button>
         </div>
@@ -317,6 +327,9 @@ import { FormsModule } from '@angular/forms';
       padding: 3rem 1.5rem;
       text-align: center;
     }
+    
+    .text-error { color: var(--error, #dc3545); }
+    .d-block { display: block; }
   `]
 })
 export class UserProductDetailsComponent implements OnInit {
@@ -362,7 +375,7 @@ export class UserProductDetailsComponent implements OnInit {
   
   addToCart() {
     const prod = this.product();
-    if (prod && this.selectedQty() > 0) {
+    if (prod && this.selectedQty() > 0 && this.selectedQty() <= prod.stock) {
       this.dataService.addToCart(prod.id, this.selectedQty());
       this.closeQtySheet();
       

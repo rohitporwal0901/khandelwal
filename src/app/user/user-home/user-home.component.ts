@@ -1,12 +1,13 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { DataService } from '../../core/services/data.service';
 
 @Component({
   selector: 'app-user-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <div class="home-container">
       <div class="hero-section">
@@ -15,7 +16,7 @@ import { DataService } from '../../core/services/data.service';
         
         <div class="search-box">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search products...">
+          <input type="text" placeholder="Search by name or SKU..." [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
         </div>
       </div>
       
@@ -162,22 +163,34 @@ import { DataService } from '../../core/services/data.service';
       background: var(--surface);
       border-radius: var(--border-radius-md);
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      }
       
       .img-wrapper {
         width: 100%;
-        aspect-ratio: 1;
-        background: var(--background);
+        height: 200px;
+        background: #f8f9fa;
+        padding: 0.5rem;
         
         img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
+          transition: transform 0.3s ease;
         }
+      }
+      
+      &:hover .img-wrapper img {
+        transform: scale(1.05);
       }
       
       .product-info {
@@ -223,15 +236,27 @@ export class UserHomeComponent {
   products = this.dataService.products;
   
   selectedCategory = signal<string | null>(null);
+  searchQuery = signal<string>('');
+  visibleCount = signal<number>(10);
   
   filteredProducts = computed(() => {
     const cat = this.selectedCategory();
-    const activeProducts = this.products().filter(p => p.status === 'active');
+    const query = this.searchQuery().toLowerCase().trim();
+    
+    let activeProducts = this.products().filter(p => p.status === 'active');
     
     if (cat) {
-      return activeProducts.filter(p => p.categoryId === cat);
+      activeProducts = activeProducts.filter(p => p.categoryId === cat);
     }
-    return activeProducts;
+    
+    if (query) {
+      activeProducts = activeProducts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.sku && p.sku.toLowerCase().includes(query))
+      );
+    }
+    
+    return activeProducts.slice(0, this.visibleCount());
   });
 
   selectCategory(id: string) {
@@ -240,10 +265,28 @@ export class UserHomeComponent {
     } else {
       this.selectedCategory.set(id);
     }
+    this.visibleCount.set(10); // reset visible count on filter change
+  }
+
+  onSearch(val: string) {
+    this.searchQuery.set(val);
+    this.visibleCount.set(10); // reset visible count on search change
   }
 
   getCategoryName(id: string): string {
     const cat = this.categories().find(c => c.id === id);
     return cat ? cat.name : '';
+  }
+  
+  @HostListener('window:scroll', [])
+  onScroll(): void {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+      // User has scrolled to near the bottom, load more items
+      const current = this.visibleCount();
+      const total = this.products().length; // theoretically active, but total is a safe upper bound
+      if (current < total) {
+        this.visibleCount.set(current + 10);
+      }
+    }
   }
 }
