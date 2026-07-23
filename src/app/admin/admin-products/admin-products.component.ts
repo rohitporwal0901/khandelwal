@@ -30,8 +30,15 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       </div>
     </div>
     
-    <div class="products-grid">
-      <div class="product-card glass-panel" *ngFor="let prod of paginatedProducts()">
+    <div class="products-grid-container">
+      <!-- Loading Overlay for Pagination -->
+      <div class="pagination-overlay" *ngIf="isPaginating()">
+        <span class="spinner-large"></span>
+        <p>Loading products...</p>
+      </div>
+      
+      <div class="products-grid" [class.blur-content]="isPaginating()">
+        <div class="product-card glass-panel" *ngFor="let prod of paginatedProducts()">
         <div class="card-img-wrapper" (click)="openDetailsDrawer(prod)">
           <div class="skeleton-loader" *ngIf="!loadedImages()[prod.id]"></div>
           <img [src]="prod.images[0]" [alt]="prod.name" class="thumbnail-img" 
@@ -61,6 +68,7 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         <span class="material-symbols-outlined">inventory_2</span>
         <p>No products found. Start adding some!</p>
       </div>
+    </div>
     </div>
     
     <div class="pagination-bar" *ngIf="products().length > 0">
@@ -605,6 +613,43 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       animation: spin 1s ease-in-out infinite;
     }
     
+    .products-grid-container {
+      position: relative;
+    }
+    
+    .pagination-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--border-radius-lg);
+      
+      p {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: var(--primary);
+      }
+    }
+    
+    .spinner-large {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(128, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    .blur-content {
+      filter: blur(2px);
+      pointer-events: none;
+    }
+    
     .drawer-actions {
       display: flex;
       gap: 1rem;
@@ -622,7 +667,8 @@ export class AdminProductsComponent {
   categories = this.dataService.categories;
 
   currentPage = signal(1);
-  pageSize = signal(6);
+  pageSize = signal(10);
+  isPaginating = signal(false);
 
   paginatedProducts = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
@@ -671,13 +717,21 @@ export class AdminProductsComponent {
 
   nextPage() {
     if (this.currentPage() < this.totalPages()) {
-      this.currentPage.update(p => p + 1);
+      this.isPaginating.set(true);
+      setTimeout(() => {
+        this.currentPage.update(p => p + 1);
+        this.isPaginating.set(false);
+      }, 400); // simulate network delay
     }
   }
 
   prevPage() {
     if (this.currentPage() > 1) {
-      this.currentPage.update(p => p - 1);
+      this.isPaginating.set(true);
+      setTimeout(() => {
+        this.currentPage.update(p => p - 1);
+        this.isPaginating.set(false);
+      }, 400); // simulate network delay
     }
   }
 
