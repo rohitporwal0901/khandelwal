@@ -77,37 +77,49 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
       title="Contact Details" 
       (close)="closeCheckout()">
       
-      <form (ngSubmit)="submitOrder()" #checkoutForm="ngForm" class="checkout-form">
+      <form (ngSubmit)="checkoutForm.valid && submitOrder()" #checkoutForm="ngForm" class="checkout-form">
         <p class="text-muted mb-4">Please provide your details so we can process your order request.</p>
         
-        <div class="form-group">
-          <label class="form-label">Full Name</label>
-          <input type="text" class="form-control" [(ngModel)]="customerDetails.customerName" name="customerName" required>
+        <div class="form-group" [class.has-error]="nameField.invalid && (nameField.touched || checkoutForm.submitted)">
+          <label class="form-label">Full Name <span class="text-error">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="customerDetails.customerName" name="customerName" required #nameField="ngModel" placeholder="e.g. John Doe">
+          <div class="error-msg" *ngIf="nameField.invalid && (nameField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Please enter your full name
+          </div>
+        </div>
+        
+        <div class="form-group" [class.has-error]="phoneField.invalid && (phoneField.touched || checkoutForm.submitted)">
+          <label class="form-label">Phone Number <span class="text-error">*</span></label>
+          <input type="tel" class="form-control" [(ngModel)]="customerDetails.phone" name="phone" required #phoneField="ngModel" placeholder="e.g. +91 9876543210">
+          <div class="error-msg" *ngIf="phoneField.invalid && (phoneField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Please enter your phone number
+          </div>
+        </div>
+        
+        <div class="form-group" [class.has-error]="emailField.invalid && (emailField.touched || checkoutForm.submitted)">
+          <label class="form-label">Email Address <span class="text-error">*</span></label>
+          <input type="email" class="form-control" [(ngModel)]="customerDetails.email" name="email" required #emailField="ngModel" placeholder="e.g. john@example.com">
+          <div class="error-msg" *ngIf="emailField.invalid && (emailField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Please enter a valid email address
+          </div>
+        </div>
+        
+        <div class="form-group" [class.has-error]="addressField.invalid && (addressField.touched || checkoutForm.submitted)">
+          <label class="form-label">Delivery Address <span class="text-error">*</span></label>
+          <textarea class="form-control" rows="3" [(ngModel)]="customerDetails.address" name="address" required #addressField="ngModel" placeholder="Enter complete delivery address..."></textarea>
+          <div class="error-msg" *ngIf="addressField.invalid && (addressField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Delivery address is required
+          </div>
         </div>
         
         <div class="form-group">
-          <label class="form-label">Phone Number</label>
-          <input type="tel" class="form-control" [(ngModel)]="customerDetails.phone" name="phone" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <input type="email" class="form-control" [(ngModel)]="customerDetails.email" name="email" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Delivery Address</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="customerDetails.address" name="address" required></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Additional Notes (Optional)</label>
-          <textarea class="form-control" rows="2" [(ngModel)]="customerDetails.notes" name="notes"></textarea>
+          <label class="form-label">Additional Notes <span class="text-muted text-sm">(Optional)</span></label>
+          <textarea class="form-control" rows="2" [(ngModel)]="customerDetails.notes" name="notes" placeholder="Any special instructions..."></textarea>
         </div>
         
         <div class="sheet-actions mt-4">
           <button type="button" class="btn btn-outline" (click)="closeCheckout()">Cancel</button>
-          <button type="submit" class="btn btn-primary premium-submit-btn" [disabled]="!checkoutForm.valid || isSubmitting()">
+          <button type="submit" class="btn btn-primary premium-submit-btn" [disabled]="isSubmitting()">
             <span *ngIf="!isSubmitting()">Confirm Order</span>
             <div *ngIf="isSubmitting()" class="premium-loader">
               <div class="dot"></div>
@@ -416,6 +428,41 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
     .mb-4 { margin-bottom: 1.5rem; }
     .w-100 { width: 100%; }
     .text-center { text-align: center; }
+    
+    .form-group.has-error input, .form-group.has-error textarea {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    
+    .error-msg {
+      color: #dc3545;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-top: 0.3rem;
+      animation: slideDownFade 0.3s ease-out forwards;
+      
+      span {
+        font-size: 0.9rem;
+      }
+    }
+    
+    .text-error { color: #dc3545; }
+    .text-sm { font-size: 0.85rem; }
+    
+    @keyframes slideDownFade {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
   `]
 })
 export class UserCartComponent {
