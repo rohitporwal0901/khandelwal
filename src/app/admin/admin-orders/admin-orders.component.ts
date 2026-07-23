@@ -90,27 +90,41 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
           </div>
         </div>
         
-        <div class="details-section mt-4">
-          <h4>Customer Details</h4>
-          <div class="detail-row">
-            <span class="material-symbols-outlined text-muted">person</span>
-            <span>{{ order.customerName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="material-symbols-outlined text-muted">call</span>
-            <span>{{ order.phone }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="material-symbols-outlined text-muted">mail</span>
-            <span>{{ order.email }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="material-symbols-outlined text-muted">location_on</span>
-            <span>{{ order.address }}</span>
-          </div>
-          <div class="detail-row" *ngIf="order.notes">
-            <span class="material-symbols-outlined text-muted">notes</span>
-            <span>{{ order.notes }}</span>
+        <div class="id-card-wrapper mt-4">
+          <div class="id-card">
+            <div class="id-card-header">
+              <span class="material-symbols-outlined">badge</span>
+              <h5>Customer Identity</h5>
+            </div>
+            <div class="id-card-body">
+              <div class="id-card-photo">
+                <div class="avatar">{{ order.customerName.charAt(0) | uppercase }}</div>
+              </div>
+              <div class="id-card-details">
+                <div class="id-field">
+                  <small>FULL NAME</small>
+                  <strong>{{ order.customerName }}</strong>
+                </div>
+                <div class="id-field-group">
+                  <div class="id-field">
+                    <small>PHONE NUMBER</small>
+                    <strong>{{ order.phone }}</strong>
+                  </div>
+                  <div class="id-field" *ngIf="order.email">
+                    <small>EMAIL ADDRESS</small>
+                    <strong>{{ order.email }}</strong>
+                  </div>
+                </div>
+                <div class="id-field">
+                  <small>DELIVERY ADDRESS</small>
+                  <strong>{{ order.address }}</strong>
+                </div>
+                <div class="id-field" *ngIf="order.notes">
+                  <small>ADDITIONAL NOTES</small>
+                  <strong>{{ order.notes }}</strong>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -121,7 +135,10 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
               <img [src]="getProductImage(item.productId)" alt="Product">
               <div class="item-info">
                 <strong>{{ getProductName(item.productId) }}</strong>
-                <span class="text-muted text-sm">Qty: {{ item.quantity }}</span>
+                <span class="text-muted text-sm d-block mt-1">Code: <strong>{{ getProductSku(item.productId) }}</strong></span>
+              </div>
+              <div class="item-qty">
+                <span class="badge badge-warning">Qty: {{ item.quantity }}</span>
               </div>
             </div>
           </div>
@@ -248,30 +265,126 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      
+      .order-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: var(--surface);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-radius: var(--border-radius-md);
+        
+        img {
+          width: 50px;
+          height: 50px;
+          object-fit: cover;
+          border-radius: var(--border-radius-sm);
+        }
+        
+        .item-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .item-qty {
+          margin-left: auto;
+        }
+      }
     }
     
-    .order-item {
+    .id-card-wrapper {
+      margin-top: 1.5rem;
+    }
+    
+    .id-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .id-card-header {
+      background: #0f172a; /* Premium Dark Slate */
+      color: white;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 0.75rem;
-      background: var(--surface);
-      border: 1px solid rgba(0,0,0,0.05);
-      border-radius: var(--border-radius-sm);
+      gap: 12px;
       
-      img {
-        width: 48px;
-        height: 48px;
-        border-radius: var(--border-radius-sm);
-        object-fit: cover;
+      h5 {
+        margin: 0;
+        font-weight: 500;
+        font-size: 1.05rem;
+        letter-spacing: 0.5px;
+        color: white;
       }
       
-      .item-info {
-        display: flex;
-        flex-direction: column;
+      span {
+        font-size: 1.3rem;
+        color: white;
       }
     }
     
+    .id-card-body {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+    
+    .id-card-photo {
+      flex-shrink: 0;
+      
+      .avatar {
+        width: 70px;
+        height: 70px;
+        background: #f1f5f9;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 600;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+      }
+    }
+    
+    .id-card-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    
+    .id-field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .id-field {
+      display: flex;
+      flex-direction: column;
+      
+      small {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      
+      strong {
+        font-size: 1rem;
+        color: #1e293b;
+        line-height: 1.4;
+      }
+    }
     .w-100 { width: 100%; }
     .generate-btn {
       padding: 1rem;
@@ -389,6 +502,11 @@ export class AdminOrdersComponent implements OnInit {
   getProductName(productId: string): string {
     const prod = this.products().find(p => p.id === productId);
     return prod ? prod.name : 'Unknown Product';
+  }
+  
+  getProductSku(productId: string): string {
+    const prod = this.products().find(p => p.id === productId);
+    return prod ? prod.sku : 'N/A';
   }
   
   getProductImage(productId: string): string {

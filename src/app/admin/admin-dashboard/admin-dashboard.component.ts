@@ -73,10 +73,10 @@ import { DataService } from '../../core/services/data.service';
     <div class="dashboard-widgets">
       <div class="widget card">
         <div class="widget-header">
-          <h3>Recent Orders</h3>
+          <h3>Pending Orders</h3>
           <a href="/admin/orders" class="text-primary">View All</a>
         </div>
-        <div class="table-responsive">
+        <div class="table-responsive custom-scrollbar">
           <table class="table">
             <thead>
               <tr>
@@ -100,13 +100,18 @@ import { DataService } from '../../core/services/data.service';
                 <td>{{ order.customerName }}</td>
                 <td>{{ order.date | date:'shortDate' }}</td>
                 <td>
-                  <span class="badge" [ngClass]="order.status === 'pending' ? 'badge-warning' : 'badge-success'">
+                  <span class="badge badge-warning">
                     {{ order.status | titlecase }}
                   </span>
                 </td>
               </tr>
               <tr *ngIf="recentOrders().length === 0">
-                <td colspan="4" class="text-center text-muted py-4">No recent orders</td>
+                <td colspan="4">
+                  <div class="empty-state-message text-center text-muted py-5">
+                    <span class="material-symbols-outlined mb-2" style="font-size: 2.5rem; opacity: 0.5;">inventory_2</span>
+                    <p style="margin: 0; font-weight: 500;">No pending orders</p>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -252,28 +257,24 @@ import { DataService } from '../../core/services/data.service';
       }
     }
     
-    .low-stock-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      max-height: 450px;
+    .low-stock-list, .table-responsive.custom-scrollbar {
+      max-height: 400px;
       overflow-y: auto;
       padding-right: 0.5rem;
     }
     
-    /* Scrollbar styling for low stock list */
-    .low-stock-list::-webkit-scrollbar {
+    .low-stock-list::-webkit-scrollbar, .table-responsive.custom-scrollbar::-webkit-scrollbar {
       width: 6px;
     }
-    .low-stock-list::-webkit-scrollbar-track {
+    .low-stock-list::-webkit-scrollbar-track, .table-responsive.custom-scrollbar::-webkit-scrollbar-track {
       background: rgba(0,0,0,0.02);
       border-radius: 4px;
     }
-    .low-stock-list::-webkit-scrollbar-thumb {
+    .low-stock-list::-webkit-scrollbar-thumb, .table-responsive.custom-scrollbar::-webkit-scrollbar-thumb {
       background: rgba(0,0,0,0.1);
       border-radius: 4px;
     }
-    .low-stock-list::-webkit-scrollbar-thumb:hover {
+    .low-stock-list::-webkit-scrollbar-thumb:hover, .table-responsive.custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: rgba(0,0,0,0.2);
     }
     
@@ -368,9 +369,9 @@ export class AdminDashboardComponent implements OnInit {
   );
   
   recentOrders = computed(() => {
-    return [...this.dataService.orders()].sort((a,b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    ).slice(0, 5);
+    return [...this.dataService.orders()]
+      .filter(o => o.status === 'pending')
+      .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
   
   lowStockProducts = computed(() => 

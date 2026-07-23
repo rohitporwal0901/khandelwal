@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
+import { DataService } from '../../core/services/data.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -49,9 +50,9 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
         <header class="topbar">
           <div class="topbar-actions">
             <span class="date">{{ currentDate | date:'mediumDate' }}</span>
-            <button class="btn-icon">
+            <button class="btn-icon" routerLink="/admin/orders">
               <span class="material-symbols-outlined">notifications</span>
-              <span class="notification-dot"></span>
+              <span class="notification-badge" *ngIf="pendingOrdersCount() > 0">{{ pendingOrdersCount() }}</span>
             </button>
             <div class="admin-profile">
               <img src="https://ui-avatars.com/api/?name=Admin&background=800000&color=fff" alt="Admin">
@@ -199,14 +200,21 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
       background: var(--background);
       border-radius: 50%;
       
-      .notification-dot {
+      .notification-badge {
         position: absolute;
-        top: 2px;
-        right: 2px;
-        width: 10px;
-        height: 10px;
+        top: -4px;
+        right: -4px;
+        min-width: 18px;
+        height: 18px;
         background: var(--error);
-        border-radius: 50%;
+        color: white;
+        border-radius: 9px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
         border: 2px solid var(--surface);
       }
     }
@@ -247,9 +255,14 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
 export class AdminLayoutComponent {
   authService = inject(AuthService);
   router = inject(Router);
+  dataService = inject(DataService);
+  
   currentDate = new Date();
-
   isLogoutModalOpen = false;
+
+  pendingOrdersCount = computed(() => 
+    this.dataService.orders().filter(o => o.status === 'pending').length
+  );
 
   promptLogout() {
     this.isLogoutModalOpen = true;
