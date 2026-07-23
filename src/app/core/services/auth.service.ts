@@ -7,7 +7,14 @@ export class AuthService {
   isAuthenticated = signal<boolean>(false);
   isAdmin = signal<boolean>(false);
   
-  constructor() {}
+  constructor() {
+    // Check local storage for dummy login state
+    const savedState = localStorage.getItem('isAdminLoggedIn');
+    if (savedState === 'true') {
+      this.isAuthenticated.set(true);
+      this.isAdmin.set(true);
+    }
+  }
 
   login(email: string, pass: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -15,6 +22,7 @@ export class AuthService {
         if (email === 'admin@khandelwalcards.com' && pass === '123456') {
           this.isAuthenticated.set(true);
           this.isAdmin.set(true);
+          localStorage.setItem('isAdminLoggedIn', 'true');
           resolve(true);
         } else {
           reject('Invalid credentials');
@@ -26,5 +34,6 @@ export class AuthService {
   logout() {
     this.isAuthenticated.set(false);
     this.isAdmin.set(false);
+    localStorage.removeItem('isAdminLoggedIn');
   }
 }

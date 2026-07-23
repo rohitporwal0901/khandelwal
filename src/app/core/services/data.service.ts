@@ -54,17 +54,17 @@ export class DataService {
   }
 
   private initFirestoreListeners() {
-    const categoriesRef = collection(this.firestore, 'categories');
+    const categoriesRef = collection(this.firestore, 'categories-kh');
     collectionData(categoriesRef, { idField: 'id' }).subscribe((data: any[]) => {
       this.categories.set(data as Category[]);
     });
 
-    const productsRef = collection(this.firestore, 'products');
+    const productsRef = collection(this.firestore, 'products-kh');
     collectionData(productsRef, { idField: 'id' }).subscribe((data: any[]) => {
       this.products.set(data as Product[]);
     });
 
-    const ordersRef = collection(this.firestore, 'orders');
+    const ordersRef = collection(this.firestore, 'orders-kh');
     collectionData(ordersRef, { idField: 'id' }).subscribe((data: any[]) => {
       // Sort orders by date descending
       const sortedOrders = (data as Order[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -99,14 +99,14 @@ export class DataService {
       status: 'pending',
       date: new Date().toISOString()
     };
-    
-    const ordersRef = collection(this.firestore, 'orders');
+
+    const ordersRef = collection(this.firestore, 'orders-kh');
     const docRef = await addDoc(ordersRef, newOrder);
-    
+
     // We add the id property onto the object for immediate return since addDoc doesn't include it in the returned object, 
     // although collectionData listener will update the list with the correct ID.
     const completeOrder: Order = { ...newOrder, id: docRef.id } as Order;
-    
+
     this.clearCart();
     return completeOrder;
   }
@@ -114,20 +114,20 @@ export class DataService {
   async generateBill(orderId: string) {
     try {
       // 1. Update order status
-      const orderRef = doc(this.firestore, `orders/${orderId}`);
+      const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
       await updateDoc(orderRef, { status: 'completed' });
-      
+
       // 2. Reduce stock for each product in the order
       // Note: In a production app, this should be done via a Firestore transaction or Cloud Function
       // to avoid race conditions. We're using standard updates here for simplicity.
       const orderDoc = await getDoc(orderRef);
       if (orderDoc.exists()) {
         const orderData = orderDoc.data() as Order;
-        
+
         for (const item of orderData.items) {
-          const productRef = doc(this.firestore, `products/${item.productId}`);
+          const productRef = doc(this.firestore, `products-kh/${item.productId}`);
           const productDoc = await getDoc(productRef);
-          
+
           if (productDoc.exists()) {
             const currentStock = productDoc.data()['stock'] || 0;
             const newStock = Math.max(0, currentStock - item.quantity);
@@ -142,12 +142,34 @@ export class DataService {
 
   // Generic CRUD for Admin
   async addCategory(category: Omit<Category, 'id'>) {
-    const categoriesRef = collection(this.firestore, 'categories');
+    const categoriesRef = collection(this.firestore, 'categories-kh');
     await addDoc(categoriesRef, category);
   }
-  
+
+  async updateCategory(id: string, category: Partial<Category>) {
+    const categoryRef = doc(this.firestore, `categories-kh/${id}`);
+    await updateDoc(categoryRef, category);
+  }
+
+  async deleteCategory(id: string) {
+    const categoryRef = doc(this.firestore, `categories-kh/${id}`);
+    const { deleteDoc } = await import('@angular/fire/firestore');
+    await deleteDoc(categoryRef);
+  }
+
   async addProduct(product: Omit<Product, 'id'>) {
-    const productsRef = collection(this.firestore, 'products');
+    const productsRef = collection(this.firestore, 'products-kh');
     await addDoc(productsRef, product);
+  }
+
+  async updateProduct(id: string, product: Partial<Product>) {
+    const productRef = doc(this.firestore, `products-kh/${id}`);
+    await updateDoc(productRef, product);
+  }
+
+  async deleteProduct(id: string) {
+    const productRef = doc(this.firestore, `products-kh/${id}`);
+    const { deleteDoc } = await import('@angular/fire/firestore');
+    await deleteDoc(productRef);
   }
 }

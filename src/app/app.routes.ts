@@ -10,6 +10,7 @@ import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard
 import { AdminCategoriesComponent } from './admin/admin-categories/admin-categories.component';
 import { AdminProductsComponent } from './admin/admin-products/admin-products.component';
 import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
+import { adminGuard } from './core/guards/admin.guard';
 
 // User
 import { UserLayoutComponent } from './user/user-layout/user-layout.component';
@@ -26,6 +27,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayoutComponent,
+    canActivate: [adminGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },

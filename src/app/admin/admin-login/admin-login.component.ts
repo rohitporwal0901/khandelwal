@@ -22,28 +22,36 @@ import { AuthService } from '../../core/services/auth.service';
             <div class="input-with-icon">
               <span class="material-symbols-outlined icon">mail</span>
               <input type="email" class="form-control" 
-                     [(ngModel)]="email" name="email" 
-                     placeholder="admin@khandelwalcards.com" required>
+                     [class.is-invalid]="emailField.invalid && (emailField.dirty || emailField.touched)"
+                     [(ngModel)]="email" name="email" #emailField="ngModel"
+                     placeholder="admin@khandelwalcards.com" required email>
+            </div>
+            <div class="validation-error" *ngIf="emailField.invalid && (emailField.dirty || emailField.touched)">
+              <small *ngIf="emailField.errors?.['required']">Email is required.</small>
+              <small *ngIf="emailField.errors?.['email']">Please enter a valid email address.</small>
             </div>
           </div>
           
           <div class="form-group">
             <label class="form-label">Password</label>
-            <div class="input-with-icon">
+            <div class="input-with-icon right-icon">
               <span class="material-symbols-outlined icon">lock</span>
-              <input type="password" class="form-control" 
+              <input [type]="showPassword() ? 'text' : 'password'" class="form-control" 
                      [(ngModel)]="password" name="password" 
                      placeholder="••••••••" required>
+              <button type="button" class="btn-icon eye-btn" (click)="togglePassword()">
+                <span class="material-symbols-outlined">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
             </div>
           </div>
           
-          <div class="form-options">
+          <!-- <div class="form-options">
             <label class="remember-me">
               <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe">
               Remember me
             </label>
             <a href="#" class="forgot-link text-primary">Forgot Password?</a>
-          </div>
+          </div> -->
           
           <div class="error-msg" *ngIf="errorMsg()">
             {{ errorMsg() }}
@@ -103,6 +111,29 @@ import { AuthService } from '../../core/services/auth.service';
       .form-control {
         padding-left: 2.75rem;
       }
+      
+      &.right-icon .form-control {
+        padding-right: 2.75rem;
+      }
+      
+      .eye-btn {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:hover {
+          color: var(--text-main);
+        }
+      }
     }
     
     .form-options {
@@ -154,6 +185,21 @@ import { AuthService } from '../../core/services/auth.service';
       border-radius: var(--border-radius-sm);
     }
     
+    .validation-error {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      padding-left: 0.5rem;
+    }
+    
+    .form-control.is-invalid {
+      border-color: var(--error);
+      
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+      }
+    }
+    
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -166,15 +212,20 @@ export class AdminLoginComponent {
   email = 'admin@khandelwalcards.com';
   password = '123456';
   rememberMe = false;
-  
+
   isLoading = signal(false);
   isSuccess = signal(false);
   errorMsg = signal('');
+  showPassword = signal(false);
+
+  togglePassword() {
+    this.showPassword.update(v => !v);
+  }
 
   async onSubmit() {
     this.isLoading.set(true);
     this.errorMsg.set('');
-    
+
     try {
       await this.authService.login(this.email, this.password);
       this.isSuccess.set(true);
