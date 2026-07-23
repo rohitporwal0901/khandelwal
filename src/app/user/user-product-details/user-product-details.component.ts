@@ -94,6 +94,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
       </div>
     </app-bottom-sheet>
     
+    <!-- Floating Error Toast -->
+    <div class="floating-error-toast" *ngIf="product() as prod">
+      <div class="toast-content" [class.show]="isQtySheetOpen() && selectedQty() > prod.stock">
+        <span class="material-symbols-outlined">warning</span>
+        <span>Stock limit exceeded! Only {{ prod.stock }} left.</span>
+      </div>
+    </div>
+    
     <div class="initial-loader" *ngIf="!dataService.isProductsLoaded()">
       <span class="spinner-large"></span>
       <p class="loader-text">Loading details...</p>
@@ -419,7 +427,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
       font-weight: 600;
       border-radius: 8px;
       border-left: 4px solid #dc3545;
-      animation: slideInError 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: slideInError 0.3s ease-out;
       
       .material-symbols-outlined {
         font-size: 1.1rem;
@@ -427,8 +435,41 @@ import { toSignal } from '@angular/core/rxjs-interop';
     }
     
     @keyframes slideInError {
-      0% { opacity: 0; transform: translateY(-10px); }
+      0% { opacity: 0; transform: translateY(-5px); }
       100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Floating Error Toast */
+    .floating-error-toast {
+      position: fixed;
+      top: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    
+    .toast-content {
+      background: #dc3545;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
+      transform: translateY(-100px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .toast-content.show {
+      transform: translateY(0);
+      opacity: 1;
     }
     
     .not-found {
