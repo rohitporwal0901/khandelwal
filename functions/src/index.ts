@@ -1,17 +1,12 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { generateItemsTable, generateOrderEmailTemplate } from './utils/emailTemplate';
 
 admin.initializeApp();
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'chindichorarts@gmail.com',
-    pass: 'tydl enit plgt ravo'
-  }
-});
+// 🔑 Replace with your actual Resend API key from resend.com/api-keys
+const resend = new Resend('re_ek26zoJD_PkdgAAtsukNA2cZAonPf9H1v');
 
 export const sendOrderEmail = functions.firestore
   .document('orders-kh/{orderId}')
@@ -22,7 +17,6 @@ export const sendOrderEmail = functions.firestore
     if (!order) return;
 
     console.log("order", order);
-
 
     try {
       // Fetch product details for the email
@@ -36,15 +30,19 @@ export const sendOrderEmail = functions.firestore
       const itemsHtml = generateItemsTable(order, productsMap);
       const emailHtml = generateOrderEmailTemplate(order, orderId, itemsHtml);
 
-      const mailOptions = {
-        from: '"Khandelwal Cards" <chindichorarts@gmail.com>',
+      const { data, error } = await resend.emails.send({
+        from: 'Khandelwal Cards <onboarding@resend.dev>',
         to: 'rohit@quadralyst.com',
         subject: `New Order Received! #${orderId.substring(0, 8).toUpperCase()}`,
         html: emailHtml
-      };
+      });
 
-      await transporter.sendMail(mailOptions);
-      console.log('Order email sent successfully for order:', orderId);
+      if (error) {
+        console.error('Resend error:', error);
+        return;
+      }
+
+      console.log('Order email sent successfully! ID:', data?.id);
 
     } catch (error) {
       console.error('Error sending order email:', error);
