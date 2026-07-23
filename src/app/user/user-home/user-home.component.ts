@@ -43,15 +43,22 @@ import { DataService } from '../../core/services/data.service';
         </h3>
         <h3 *ngIf="!selectedCategory()">All Products</h3>
         
-        <div class="initial-loader" *ngIf="!dataService.isProductsLoaded()">
-          <span class="spinner-large"></span>
-          <p class="loader-text">Please wait...</p>
+        <div class="products-grid skeleton-grid" *ngIf="!dataService.isProductsLoaded()">
+          <div class="product-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
+            <div class="img-wrapper skeleton-text" style="border-radius: 0;"></div>
+            <div class="product-info">
+              <div class="skeleton-text" style="height: 10px; width: 40%; margin-bottom: 8px;"></div>
+              <div class="skeleton-text" style="height: 18px; width: 80%;"></div>
+            </div>
+          </div>
         </div>
         
         <div class="products-grid" *ngIf="dataService.isProductsLoaded()">
           <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
             <div class="img-wrapper">
-              <img [src]="prod.images[0]" [alt]="prod.name" [class.grayscale]="prod.stock === 0">
+              <div class="skeleton-text" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 0; z-index: 1;" *ngIf="!loadedImages()[prod.id]"></div>
+              <img [src]="prod.images[0]" [alt]="prod.name" [class.grayscale]="prod.stock === 0"
+                   [class.loaded]="loadedImages()[prod.id]" (load)="onImageLoad(prod.id)">
               <div class="sku-badge">{{ prod.sku }}</div>
               <div class="out-of-stock-overlay" *ngIf="prod.stock === 0">
                 OUT OF STOCK
@@ -60,6 +67,9 @@ import { DataService } from '../../core/services/data.service';
             <div class="product-info">
               <span class="category-label">{{ getCategoryName(prod.categoryId) }}</span>
               <h4>{{ prod.name }}</h4>
+              <div class="stock-label" *ngIf="prod.stock > 0">
+                <span class="material-symbols-outlined">inventory_2</span> {{ prod.stock }} Available
+              </div>
             </div>
           </div>
         </div>
@@ -201,7 +211,14 @@ import { DataService } from '../../core/services/data.service';
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.4s ease, filter 0.3s ease;
+          transition: transform 0.4s ease, filter 0.3s ease, opacity 0.3s ease;
+          opacity: 0;
+          z-index: 2;
+          position: relative;
+          
+          &.loaded {
+            opacity: 1;
+          }
           
           &.grayscale {
             filter: grayscale(100%) opacity(0.7);
@@ -237,6 +254,7 @@ import { DataService } from '../../core/services/data.service';
           border-radius: 6px;
           box-shadow: 0 2px 6px rgba(0,0,0,0.08);
           letter-spacing: 0.5px;
+          z-index: 10;
         }
       }
       
@@ -267,6 +285,19 @@ import { DataService } from '../../core/services/data.service';
           -webkit-box-orient: vertical;
           overflow: hidden;
           line-height: 1.3;
+        }
+        
+        .stock-label {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          margin-top: 0.5rem;
+          
+          span {
+            font-size: 0.9rem;
+          }
         }
       }
     }
@@ -314,6 +345,18 @@ import { DataService } from '../../core/services/data.service';
       50% { opacity: 1; }
     }
     
+    /* Skeleton Loading Styles */
+    .skeleton-text {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
     .spinner-small {
       width: 24px;
       height: 24px;
@@ -336,6 +379,11 @@ export class UserHomeComponent {
 
   selectedCategory = signal<string | null>(null);
   searchQuery = signal<string>('');
+  loadedImages = signal<Record<string, boolean>>({});
+
+  onImageLoad(id: string) {
+    this.loadedImages.update(current => ({ ...current, [id]: true }));
+  }
 
   filteredProducts = computed(() => {
     const cat = this.selectedCategory();
