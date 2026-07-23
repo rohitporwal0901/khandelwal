@@ -41,8 +41,11 @@ import { DataService } from '../../core/services/data.service';
         <div class="products-grid">
           <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
             <div class="img-wrapper">
-              <img [src]="prod.images[0]" [alt]="prod.name">
+              <img [src]="prod.images[0]" [alt]="prod.name" [class.grayscale]="prod.stock === 0">
               <div class="sku-badge">{{ prod.sku }}</div>
+              <div class="out-of-stock-overlay" *ngIf="prod.stock === 0">
+                OUT OF STOCK
+              </div>
             </div>
             <div class="product-info">
               <span class="category-label">{{ getCategoryName(prod.categoryId) }}</span>
@@ -188,7 +191,27 @@ import { DataService } from '../../core/services/data.service';
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.4s ease;
+          transition: transform 0.4s ease, filter 0.3s ease;
+          
+          &.grayscale {
+            filter: grayscale(100%) opacity(0.7);
+          }
+        }
+        
+        .out-of-stock-overlay {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0,0,0,0.7);
+          color: white;
+          font-weight: 700;
+          font-size: 0.85rem;
+          padding: 8px 16px;
+          border-radius: 4px;
+          letter-spacing: 1px;
+          white-space: nowrap;
+          z-index: 2;
         }
         
         .sku-badge {

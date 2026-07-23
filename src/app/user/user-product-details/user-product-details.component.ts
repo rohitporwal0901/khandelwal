@@ -32,11 +32,12 @@ import { FormsModule } from '@angular/forms';
           </div>
           
           <div class="action-buttons myntra-actions">
-            <button class="btn-myntra btn-outline-myntra" (click)="openQtySheet()">
-              <span class="material-symbols-outlined">shopping_bag</span>
-              ADD TO BAG
+            <button class="btn-myntra btn-outline-myntra" (click)="openQtySheet()" [disabled]="prod.stock === 0" [class.disabled-btn]="prod.stock === 0">
+              <span class="material-symbols-outlined" *ngIf="prod.stock > 0">shopping_bag</span>
+              <span class="material-symbols-outlined" *ngIf="prod.stock === 0">block</span>
+              {{ prod.stock === 0 ? 'OUT OF STOCK' : 'ADD TO BAG' }}
             </button>
-            <button class="btn-myntra btn-primary-myntra" (click)="openQtySheet()">
+            <button class="btn-myntra btn-primary-myntra" (click)="openQtySheet()" *ngIf="prod.stock > 0">
               <span class="material-symbols-outlined">flash_on</span>
               BUY IT NOW
             </button>
@@ -230,8 +231,20 @@ import { FormsModule } from '@angular/forms';
       color: #282c3f;
       border: 1px solid #d4d5d9;
       
-      &:hover {
+      &:hover:not(:disabled) {
         border-color: #282c3f;
+      }
+    }
+    
+    .disabled-btn {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #f5f5f6 !important;
+      color: #7e818c !important;
+      border-color: #d4d5d9 !important;
+      
+      &:active {
+        transform: none !important;
       }
     }
     
