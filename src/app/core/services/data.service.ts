@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, effect } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc, writeBatch } from '@angular/fire/firestore';
 
 export interface Category {
@@ -72,19 +72,26 @@ export class DataService {
     });
 
     // Initialize cart from localStorage if exists
-    const savedCart = localStorage.getItem('khandelwal_cart');
-    if (savedCart) {
-      try {
-        this.cart.set(JSON.parse(savedCart));
-      } catch (e) {
-        console.error('Failed to parse cart from local storage', e);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const savedCart = localStorage.getItem('khandelwal_cart');
+        if (savedCart) {
+          this.cart.set(JSON.parse(savedCart));
+        }
       }
+    } catch (e) {
+      console.error('Failed to parse cart from local storage', e);
     }
+  }
 
-    // Save cart to localStorage whenever it changes
-    effect(() => {
-      localStorage.setItem('khandelwal_cart', JSON.stringify(this.cart()));
-    });
+  private saveCartToStorage() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('khandelwal_cart', JSON.stringify(this.cart()));
+      }
+    } catch (e) {
+      console.error('Failed to save cart to local storage', e);
+    }
   }
 
   // Cart Actions (Local State)
@@ -97,14 +104,17 @@ export class DataService {
     } else {
       this.cart.set([...currentCart, { productId, quantity }]);
     }
+    this.saveCartToStorage();
   }
 
   removeFromCart(productId: string) {
     this.cart.set(this.cart().filter(item => item.productId !== productId));
+    this.saveCartToStorage();
   }
 
   clearCart() {
     this.cart.set([]);
+    this.saveCartToStorage();
   }
 
   async placeOrder(customerDetails: Omit<Order, 'id' | 'items' | 'status' | 'date'>) {
