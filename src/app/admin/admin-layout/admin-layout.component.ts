@@ -2,11 +2,12 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ConfirmationModalComponent],
   template: `
     <div class="admin-container">
       <aside class="sidebar">
@@ -40,7 +41,7 @@ import { AuthService } from '../../core/services/auth.service';
         </nav>
         
         <div class="sidebar-footer">
-          <button class="btn btn-outline" (click)="logout()" style="width: 100%">
+          <button class="btn btn-outline" (click)="promptLogout()" style="width: 100%">
             <span class="material-symbols-outlined">logout</span> Logout
           </button>
         </div>
@@ -74,6 +75,15 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </main>
     </div>
+    
+    <app-confirmation-modal
+      [isOpen]="isLogoutModalOpen"
+      title="Confirm Logout"
+      message="Are you sure you want to log out of the admin panel?"
+      confirmText="Logout"
+      (confirm)="confirmLogout()"
+      (cancel)="cancelLogout()">
+    </app-confirmation-modal>
   `,
   styles: [`
     .admin-container {
@@ -245,9 +255,20 @@ export class AdminLayoutComponent {
   authService = inject(AuthService);
   router = inject(Router);
   currentDate = new Date();
+  
+  isLogoutModalOpen = false;
 
-  logout() {
+  promptLogout() {
+    this.isLogoutModalOpen = true;
+  }
+  
+  confirmLogout() {
+    this.isLogoutModalOpen = false;
     this.authService.logout();
     this.router.navigate(['/admin/login']);
+  }
+  
+  cancelLogout() {
+    this.isLogoutModalOpen = false;
   }
 }

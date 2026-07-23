@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-admin-login',
@@ -207,6 +208,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class AdminLoginComponent {
   authService = inject(AuthService);
+  snackbar = inject(SnackbarService);
   router = inject(Router);
 
   email = 'admin@khandelwalcards.com';
@@ -226,16 +228,21 @@ export class AdminLoginComponent {
     this.isLoading.set(true);
     this.errorMsg.set('');
 
-    try {
-      await this.authService.login(this.email, this.password);
-      this.isSuccess.set(true);
-      setTimeout(() => {
-        this.router.navigate(['/admin/dashboard']);
-      }, 500);
-    } catch (err: any) {
-      this.errorMsg.set(err);
-    } finally {
-      this.isLoading.set(false);
-    }
+    setTimeout(async () => {
+      try {
+        const success = await this.authService.login(this.email, this.password);
+        
+        if (success) {
+          this.snackbar.show('Logged in successfully!', 'success');
+          this.router.navigate(['/admin/dashboard']);
+        } else {
+          this.errorMsg.set('Invalid admin credentials.');
+        }
+      } catch (err: any) {
+        this.errorMsg.set(err.message || 'Login failed');
+      } finally {
+        this.isLoading.set(false);
+      }
+    }, 1200);
   }
 }

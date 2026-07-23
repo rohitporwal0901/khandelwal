@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DataService, Category } from '../../core/services/data.service';
 import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.component';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-admin-categories',
@@ -33,7 +34,7 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
         <tbody>
           <tr *ngFor="let cat of categories()">
             <td><strong>{{ cat.name }}</strong></td>
-            <td><span class="text-muted">{{ cat.description | slice:0:50 }}{{ (cat.description?.length || 0) > 50 ? '...' : '' }}</span></td>
+            <td><span class="text-muted">{{ cat.description | slice:0:50 }}{{ cat.description && cat.description.length > 50 ? '...' : '' }}</span></td>
             <td>
               <span class="badge" [ngClass]="cat.status === 'active' ? 'badge-success' : 'badge-error'">
                 {{ cat.status | titlecase }}
@@ -218,6 +219,7 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
 })
 export class AdminCategoriesComponent {
   dataService = inject(DataService);
+  snackbar = inject(SnackbarService);
   categories = this.dataService.categories;
   
   isDrawerOpen = signal(false);
@@ -261,6 +263,7 @@ export class AdminCategoriesComponent {
     const id = this.categoryToDelete();
     if (id) {
       this.dataService.deleteCategory(id);
+      this.snackbar.show('Category deleted successfully', 'success');
     }
     this.isDeleteModalOpen.set(false);
     this.categoryToDelete.set(null);
@@ -283,14 +286,17 @@ export class AdminCategoriesComponent {
     try {
       if (this.isEditing() && 'id' in this.newCategory) {
         await this.dataService.updateCategory((this.newCategory as Category).id, this.newCategory);
+        this.snackbar.show('Category updated successfully', 'success');
       } else {
         // Pass empty string for image since it is required by the original interface but omitted in UI
         const payload = { ...this.newCategory, image: '' };
         await this.dataService.addCategory(payload as Omit<Category, 'id'>);
+        this.snackbar.show('Category added successfully', 'success');
       }
       this.closeDrawer();
     } catch (err) {
       console.error("Error saving category:", err);
+      this.snackbar.show('Failed to save category', 'error');
     } finally {
       this.isSaving.set(false);
     }

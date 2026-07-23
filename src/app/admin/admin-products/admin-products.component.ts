@@ -6,6 +6,7 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
 import { ImageGalleryComponent } from '../../shared/image-gallery/image-gallery.component';
 import { Storage, ref, uploadBytesResumable, getDownloadURL } from '@angular/fire/storage';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-admin-products',
@@ -282,7 +283,7 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
         .thumbnail-img {
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          object-fit: cover;
           transition: opacity 0.4s ease, transform 0.4s ease;
           opacity: 0;
           z-index: 2;
@@ -602,10 +603,11 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
 export class AdminProductsComponent {
   dataService = inject(DataService);
   storage = inject(Storage);
+  snackbar = inject(SnackbarService);
 
   products = this.dataService.products;
   categories = this.dataService.categories;
-  
+
   currentPage = signal(1);
   pageSize = signal(6);
 
@@ -618,7 +620,7 @@ export class AdminProductsComponent {
   totalPages = computed(() => {
     return Math.ceil(this.products().length / this.pageSize());
   });
-  
+
   loadedImages = signal<Record<string, boolean>>({});
 
   isAddDrawerOpen = signal(false);
@@ -631,7 +633,7 @@ export class AdminProductsComponent {
 
   isUploading = signal(false);
   uploadProgress = signal(0);
-  
+
   isSaving = signal(false);
 
   newProduct: Product | Omit<Product, 'id'> = {
@@ -694,6 +696,7 @@ export class AdminProductsComponent {
     const id = this.productToDelete();
     if (id) {
       this.dataService.deleteProduct(id);
+      this.snackbar.show('Product deleted successfully', 'success');
     }
     this.isDeleteModalOpen.set(false);
     this.productToDelete.set(null);
@@ -759,7 +762,7 @@ export class AdminProductsComponent {
       });
       return; // Stop saving if invalid
     }
-    
+
     this.isSaving.set(true);
     try {
       // Ensure stock is saved as a number since input type is text now
@@ -767,15 +770,18 @@ export class AdminProductsComponent {
         ...this.newProduct,
         stock: Number(this.newProduct.stock)
       };
-      
+
       if (this.isEditing() && 'id' in productToSave) {
         await this.dataService.updateProduct((productToSave as Product).id, productToSave);
+        this.snackbar.show('Product updated successfully', 'success');
       } else {
         await this.dataService.addProduct(productToSave as Omit<Product, 'id'>);
+        this.snackbar.show('Product added successfully', 'success');
       }
       this.closeAddDrawer();
     } catch (err) {
       console.error("Error saving product:", err);
+      this.snackbar.show('Failed to save product', 'error');
     } finally {
       this.isSaving.set(false);
     }
