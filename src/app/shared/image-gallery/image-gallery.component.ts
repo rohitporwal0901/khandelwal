@@ -1,4 +1,4 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -152,19 +152,46 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class ImageGalleryComponent {
+export class ImageGalleryComponent implements OnInit, OnDestroy {
   @Input() images: string[] = [];
   currentIndex = signal<number>(0);
+  private autoSlideInterval: any;
+
+  ngOnInit() {
+    this.startAutoSlide();
+  }
+
+  ngOnDestroy() {
+    this.stopAutoSlide();
+  }
+
+  startAutoSlide() {
+    this.stopAutoSlide();
+    if (this.images.length > 1) {
+      this.autoSlideInterval = setInterval(() => {
+        this.next();
+      }, 3000);
+    }
+  }
+
+  stopAutoSlide() {
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
+  }
 
   next() {
     this.currentIndex.update(i => (i + 1) % this.images.length);
+    this.startAutoSlide(); // reset timer on manual interaction
   }
 
   prev() {
     this.currentIndex.update(i => (i - 1 + this.images.length) % this.images.length);
+    this.startAutoSlide(); // reset timer
   }
 
   setIndex(i: number) {
     this.currentIndex.set(i);
+    this.startAutoSlide(); // reset timer
   }
 }

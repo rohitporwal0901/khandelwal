@@ -31,12 +31,14 @@ import { FormsModule } from '@angular/forms';
             <span class="price-value">Enquire for Price</span>
           </div>
           
-          <div class="action-buttons">
-            <button class="btn btn-outline w-100 mb-3 select-qty-btn" (click)="openQtySheet()">
-              Add to cart
+          <div class="action-buttons myntra-actions">
+            <button class="btn-myntra btn-outline-myntra" (click)="openQtySheet()">
+              <span class="material-symbols-outlined">shopping_bag</span>
+              ADD TO BAG
             </button>
-            <button class="btn btn-primary w-100 select-qty-btn" (click)="openQtySheet()">
-              Buy it now
+            <button class="btn-myntra btn-primary-myntra" (click)="openQtySheet()">
+              <span class="material-symbols-outlined">flash_on</span>
+              BUY IT NOW
             </button>
           </div>
           
@@ -44,29 +46,7 @@ import { FormsModule } from '@angular/forms';
             <p>{{ prod.description }}</p>
           </div>
           
-          <div class="accordions mt-4">
-            <div class="accordion-item">
-              <div class="accordion-header">
-                <span class="material-symbols-outlined icon">local_shipping</span>
-                <span>Shipping</span>
-                <span class="material-symbols-outlined arrow">expand_more</span>
-              </div>
-            </div>
-            <div class="accordion-item">
-              <div class="accordion-header">
-                <span class="material-symbols-outlined icon">straighten</span>
-                <span>Sizing</span>
-                <span class="material-symbols-outlined arrow">expand_more</span>
-              </div>
-            </div>
-            <div class="accordion-item">
-              <div class="accordion-header">
-                <span class="material-symbols-outlined icon">favorite</span>
-                <span>Care Instructions</span>
-                <span class="material-symbols-outlined arrow">expand_more</span>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
@@ -209,34 +189,59 @@ import { FormsModule } from '@angular/forms';
       }
     }
     
-    .accordion-item {
-      border-top: 1px solid rgba(0,0,0,0.1);
+    .myntra-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1.5rem 0;
       
-      &:last-child {
-        border-bottom: 1px solid rgba(0,0,0,0.1);
+      @media (min-width: 768px) {
+        flex-direction: row;
       }
     }
     
-    .accordion-header {
+    .btn-myntra {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 4px;
       display: flex;
       align-items: center;
-      padding: 1rem 0;
+      justify-content: center;
+      gap: 0.5rem;
       cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      width: 100%;
       
-      .icon {
-        margin-right: 0.75rem;
-        font-size: 1.25rem;
-        color: #000;
+      span {
+        font-size: 1.2rem;
       }
       
-      span:not(.icon):not(.arrow) {
-        flex: 1;
-        font-weight: 600;
-        font-size: 0.95rem;
+      &:active {
+        transform: scale(0.98);
       }
+    }
+    
+    .btn-outline-myntra {
+      background: white;
+      color: #282c3f;
+      border: 1px solid #d4d5d9;
       
-      .arrow {
-        color: var(--text-muted);
+      &:hover {
+        border-color: #282c3f;
+      }
+    }
+    
+    .btn-primary-myntra {
+      background: var(--primary);
+      color: white;
+      border: 1px solid var(--primary);
+      
+      &:hover {
+        background: var(--primary-dark);
       }
     }
     
