@@ -43,7 +43,7 @@ import { DataService } from '../../core/services/data.service';
         </h3>
         <h3 *ngIf="!selectedCategory()">All Products</h3>
         
-        <div class="products-grid skeleton-grid" *ngIf="!dataService.isProductsLoaded()">
+        <div class="products-grid skeleton-grid" *ngIf="!dataService.isProductsLoaded() || isFiltering()">
           <div class="product-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
             <div class="img-wrapper skeleton-text" style="border-radius: 0;"></div>
             <div class="product-info">
@@ -53,7 +53,7 @@ import { DataService } from '../../core/services/data.service';
           </div>
         </div>
         
-        <div class="products-grid" *ngIf="dataService.isProductsLoaded()">
+        <div class="products-grid" *ngIf="dataService.isProductsLoaded() && !isFiltering()">
           <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
             <div class="img-wrapper">
               <div class="skeleton-text" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 0; z-index: 1;" *ngIf="!loadedImages()[prod.id]"></div>
@@ -74,7 +74,7 @@ import { DataService } from '../../core/services/data.service';
           </div>
         </div>
         
-        <div class="empty-state" *ngIf="dataService.isProductsLoaded() && filteredProducts().length === 0">
+        <div class="empty-state" *ngIf="dataService.isProductsLoaded() && !isFiltering() && filteredProducts().length === 0">
           <span class="material-symbols-outlined">inventory_2</span>
           <p>No products found in this category.</p>
         </div>
@@ -347,8 +347,8 @@ import { DataService } from '../../core/services/data.service';
     
     /* Skeleton Loading Styles */
     .skeleton-text {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%) !important;
+      background-size: 200% 100% !important;
       animation: skeletonLoading 1.5s infinite;
       border-radius: 4px;
     }
@@ -380,6 +380,18 @@ export class UserHomeComponent {
   selectedCategory = signal<string | null>(null);
   searchQuery = signal<string>('');
   loadedImages = signal<Record<string, boolean>>({});
+  isFiltering = signal<boolean>(false);
+  filterTimeout: any;
+
+  triggerLoading() {
+    this.isFiltering.set(true);
+    if (this.filterTimeout) {
+      clearTimeout(this.filterTimeout);
+    }
+    this.filterTimeout = setTimeout(() => {
+      this.isFiltering.set(false);
+    }, 1500); // 1.5 seconds feels more natural than a strict 2s
+  }
 
   onImageLoad(id: string) {
     this.loadedImages.update(current => ({ ...current, [id]: true }));
@@ -406,11 +418,15 @@ export class UserHomeComponent {
   });
 
   selectCategory(id: string | null) {
-    this.selectedCategory.set(id);
+    if (this.selectedCategory() !== id) {
+      this.selectedCategory.set(id);
+      this.triggerLoading();
+    }
   }
 
   onSearch(val: string) {
     this.searchQuery.set(val);
+    this.triggerLoading();
   }
 
   getCategoryName(id: string): string {
