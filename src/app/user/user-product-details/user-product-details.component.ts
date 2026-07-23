@@ -1,10 +1,11 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService, Product } from '../../core/services/data.service';
 import { ImageGalleryComponent } from '../../shared/image-gallery/image-gallery.component';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 import { FormsModule } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-user-product-details',
@@ -26,10 +27,6 @@ import { FormsModule } from '@angular/forms';
         <div class="info-column">
           <h2 class="product-title">{{ prod.name }}</h2>
           <p class="sku-text">SKU: {{ prod.sku }}</p>
-          
-          <div class="price-placeholder">
-            <span class="price-value">Enquire for Price</span>
-          </div>
           
           <div class="action-buttons myntra-actions">
             <button class="btn-myntra btn-outline-myntra" (click)="openQtySheet()" [disabled]="prod.stock === 0" [class.disabled-btn]="prod.stock === 0">
@@ -75,13 +72,16 @@ import { FormsModule } from '@angular/forms';
           <input type="number" class="form-control" [ngModel]="selectedQty()" (ngModelChange)="selectedQty.set($event)" min="1" [max]="prod.stock">
           
           <!-- Stock Info -->
-          <div class="stock-info mt-2">
-            <small [class.text-error]="selectedQty() > prod.stock" [class.text-muted]="selectedQty() <= prod.stock">
+          <div class="stock-info mt-3" [class.has-error]="selectedQty() > prod.stock">
+            <div class="stock-badge">
+              <span class="material-symbols-outlined">inventory_2</span>
               Available Stock: {{ prod.stock }}
-            </small>
-            <small class="text-error d-block" *ngIf="selectedQty() > prod.stock">
-              Quantity exceeds available stock.
-            </small>
+            </div>
+            
+            <div class="error-message" *ngIf="selectedQty() > prod.stock">
+              <span class="material-symbols-outlined">error</span>
+              Cannot select more than available stock ({{ prod.stock }} items).
+            </div>
           </div>
         </div>
         
@@ -94,26 +94,49 @@ import { FormsModule } from '@angular/forms';
       </div>
     </app-bottom-sheet>
     
-    <div class="not-found" *ngIf="!product() && !isLoading()">
+    <div class="initial-loader" *ngIf="!dataService.isProductsLoaded()">
+      <span class="spinner-large"></span>
+      <p class="loader-text">Loading details...</p>
+    </div>
+    
+    <div class="not-found" *ngIf="dataService.isProductsLoaded() && !product()">
       <h3>Product not found</h3>
       <button class="btn btn-primary mt-3" (click)="goBack()">Go Back</button>
     </div>
   `,
   styles: [`
     .product-details-container {
+      position: relative;
       padding-bottom: 80px; /* Space for fixed bottom CTA */
+      background: white;
+      min-height: 100vh;
     }
     
     .back-btn-wrapper {
       position: absolute;
-      top: 1rem;
-      left: 1rem;
+      top: 1.5rem;
+      left: 1.5rem;
       z-index: 100;
       
       .btn-icon {
-        background: rgba(255, 255, 255, 0.9);
-        box-shadow: var(--shadow-md);
-        border: none;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-dark);
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: white;
+          transform: translateY(-2px);
+        }
       }
     }
     
@@ -127,29 +150,32 @@ import { FormsModule } from '@angular/forms';
     }
     
     .info-column {
-      padding: 1.5rem;
-      background: var(--surface);
+      padding: 1.5rem 1.25rem;
+      background: white;
+      margin-top: 0;
+      position: relative;
+      z-index: 10;
     }
     
     .product-title {
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 1.7rem;
+      font-weight: 800;
       margin-bottom: 0.5rem;
-      line-height: 1.2;
+      line-height: 1.25;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
     }
     
     .sku-text {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-    }
-    
-    .price-placeholder {
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
       margin-bottom: 1.5rem;
-      .price-value {
-        font-size: 1.25rem;
-        font-weight: 600;
-      }
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(158, 27, 34, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(158, 27, 34, 0.1);
     }
     
     .action-buttons {
@@ -341,6 +367,70 @@ import { FormsModule } from '@angular/forms';
     .w-100 { width: 100%; }
     .text-center { text-align: center; }
     
+    .custom-qty input {
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 0.75rem;
+    }
+    
+    .stock-info {
+      margin-top: 1rem;
+      border-radius: 8px;
+    }
+    
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 6px 14px;
+      background: #f8f9fa;
+      color: var(--text-main);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      
+      .material-symbols-outlined {
+        font-size: 1.1rem;
+        color: var(--primary);
+      }
+    }
+    
+    .stock-info.has-error .stock-badge {
+      background: rgba(220, 53, 69, 0.05);
+      color: #dc3545;
+      border-color: rgba(220, 53, 69, 0.2);
+      
+      .material-symbols-outlined {
+        color: #dc3545;
+      }
+    }
+    
+    .error-message {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding: 10px 12px;
+      background: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border-left: 4px solid #dc3545;
+      animation: slideInError 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      
+      .material-symbols-outlined {
+        font-size: 1.1rem;
+      }
+    }
+    
+    @keyframes slideInError {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
     .not-found {
       padding: 3rem 1.5rem;
       text-align: center;
@@ -348,31 +438,44 @@ import { FormsModule } from '@angular/forms';
     
     .text-error { color: var(--error, #dc3545); }
     .d-block { display: block; }
+    
+    .initial-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 2rem;
+      color: var(--primary);
+    }
+    
+    .spinner-large {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(158, 27, 34, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })
-export class UserProductDetailsComponent implements OnInit {
+export class UserProductDetailsComponent {
   route = inject(ActivatedRoute);
   router = inject(Router);
   dataService = inject(DataService);
   
-  product = signal<Product | null>(null);
-  isLoading = signal(true);
+  paramMap = toSignal(this.route.paramMap);
+  
+  product = computed(() => {
+    const params = this.paramMap();
+    if (!params) return null;
+    const id = params.get('id');
+    if (!id) return null;
+    return this.dataService.products().find(p => p.id === id) || null;
+  });
   
   isQtySheetOpen = signal(false);
   selectedQty = signal<number>(100);
-
-  ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        const prod = this.dataService.products().find(p => p.id === id);
-        if (prod) {
-          this.product.set(prod);
-        }
-      }
-      this.isLoading.set(false);
-    });
-  }
 
   getCategoryName(id: string): string {
     const cat = this.dataService.categories().find(c => c.id === id);
