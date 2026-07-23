@@ -426,6 +426,11 @@ export class AdminOrdersComponent implements OnInit {
         // Generate PDF Invoice
         this.invoiceService.generateInvoice(updatedOrder, this.products());
       }
+      
+      // Auto close drawer after showing success animation
+      setTimeout(() => {
+        this.closeDrawer();
+      }, 1500);
     } catch (error) {
       console.error(error);
       this.isGenerating.set(false);
