@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService, Product, Category } from '../../core/services/data.service';
@@ -19,11 +19,11 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         <p class="text-muted">Manage inventory and product details</p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-outline" (click)="bulkAddMockProducts()" [disabled]="isGenerating()">
+        <!-- <button class="btn btn-outline" (click)="bulkAddMockProducts()" [disabled]="isGenerating()">
           <span class="material-symbols-outlined" *ngIf="!isGenerating()">library_add</span>
           <span class="spinner" *ngIf="isGenerating()"></span> 
           {{ isGenerating() ? 'Adding 100...' : 'Bulk Add 100' }}
-        </button>
+        </button> -->
         <button class="btn btn-primary" (click)="openAddDrawer()">
           <span class="material-symbols-outlined">add</span> Add Product
         </button>
@@ -37,12 +37,38 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         <p>Loading products...</p>
       </div>
       
-      <div class="products-grid" [class.blur-content]="isPaginating()">
+      <div class="products-grid" *ngIf="isLoading()">
+        <div class="product-card glass-panel" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
+          <div class="card-img-wrapper" style="background: #f0f0f0;">
+             <div class="skeleton-text" style="width: 100%; height: 100%; border-radius: 0;"></div>
+          </div>
+          <div class="card-info">
+            <div class="skeleton-text" style="height: 18px; width: 80%; margin-bottom: 8px;"></div>
+            <div class="skeleton-text" style="height: 12px; width: 60%; margin-bottom: 12px;"></div>
+            <div class="skeleton-text" style="height: 14px; width: 40%; margin-bottom: 16px;"></div>
+            <div class="card-actions" style="display: flex; gap: 10px;">
+              <div class="skeleton-text" style="height: 36px; width: 50%; border-radius: 4px;"></div>
+              <div class="skeleton-text" style="height: 36px; width: 50%; border-radius: 4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="products-grid" [class.blur-content]="isPaginating()" *ngIf="!isLoading()">
         <div class="product-card glass-panel" *ngFor="let prod of paginatedProducts()">
         <div class="card-img-wrapper" (click)="openDetailsDrawer(prod)">
           <div class="skeleton-loader" *ngIf="!loadedImages()[prod.id]"></div>
-          <img [src]="prod.images[0]" [alt]="prod.name" class="thumbnail-img" 
-               [class.loaded]="loadedImages()[prod.id]" (load)="onImageLoad(prod.id)">
+          
+          <div class="img-carousel">
+            <!-- Auto swiper up to 3 images -->
+            <img *ngFor="let img of (prod.images.length > 2 ? prod.images.slice(0,3) : prod.images.length === 2 ? [prod.images[0], prod.images[1], prod.images[0]] : prod.images)" 
+                 [src]="img" 
+                 [alt]="prod.name" 
+                 class="thumbnail-img carousel-img" 
+                 [class.loaded]="loadedImages()[prod.id]" 
+                 (load)="onImageLoad(prod.id)">
+          </div>
+          
           <div class="status-badge" [ngClass]="prod.status === 'active' ? 'badge-success' : 'badge-error'">
             {{ prod.status | titlecase }}
           </div>
@@ -64,14 +90,14 @@ import { SnackbarService } from '../../core/services/snackbar.service';
           </div>
         </div>
       </div>
-      <div class="empty-state" *ngIf="products().length === 0">
+      <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
         <span class="material-symbols-outlined">inventory_2</span>
         <p>No products found. Start adding some!</p>
       </div>
     </div>
     </div>
     
-    <div class="pagination-bar" *ngIf="products().length > 0">
+    <div class="pagination-bar" *ngIf="!isLoading() && products().length > 0">
       <button class="btn btn-outline" [disabled]="currentPage() === 1" (click)="prevPage()">
         <span class="material-symbols-outlined">chevron_left</span> Previous
       </button>
@@ -314,11 +340,43 @@ import { SnackbarService } from '../../core/services/snackbar.service';
             opacity: 1;
           }
         }
+        .img-carousel {
+          position: relative;
+          width: 100%;
+          height: 100%;
+        }
+
+        .carousel-img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          opacity: 0;
+          z-index: 1;
+        }
+        
+        .carousel-img.loaded {
+          opacity: 0; /* Let animation control it */
+        }
+        
+        .carousel-img:nth-child(1) { animation: crossfade 9s infinite; animation-delay: 0s; }
+        .carousel-img:nth-child(2) { animation: crossfade 9s infinite; animation-delay: 3s; }
+        .carousel-img:nth-child(3) { animation: crossfade 9s infinite; animation-delay: 6s; }
+        .carousel-img:only-child { animation: none !important; opacity: 1 !important; z-index: 2 !important; }
+        
+        @keyframes crossfade {
+          0%, 25% { opacity: 1; z-index: 2; }
+          33%, 92% { opacity: 0; z-index: 1; }
+          100% { opacity: 1; z-index: 2; }
+        }
         
         .status-badge {
           position: absolute;
           top: 0.75rem;
           right: 0.75rem;
+          z-index: 10;
           font-size: 0.7rem;
           font-weight: 600;
           padding: 0.25rem 0.6rem;
@@ -406,6 +464,18 @@ import { SnackbarService } from '../../core/services/snackbar.service';
     }
     
     @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* Skeleton Loading Styles */
+    .skeleton-text {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes skeletonLoading {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
@@ -658,7 +728,7 @@ import { SnackbarService } from '../../core/services/snackbar.service';
     }
   `]
 })
-export class AdminProductsComponent {
+export class AdminProductsComponent implements OnInit {
   dataService = inject(DataService);
   storage = inject(Storage);
   snackbar = inject(SnackbarService);
@@ -669,6 +739,13 @@ export class AdminProductsComponent {
   currentPage = signal(1);
   pageSize = signal(10);
   isPaginating = signal(false);
+  isLoading = signal(true);
+
+  ngOnInit() {
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 2000);
+  }
 
   paginatedProducts = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();

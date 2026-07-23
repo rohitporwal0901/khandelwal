@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../../core/services/data.service';
 
@@ -15,45 +15,59 @@ import { DataService } from '../../core/services/data.service';
     </div>
     
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon bg-primary-light">
-          <span class="material-symbols-outlined text-primary">inventory_2</span>
+      <!-- Skeleton Loaders -->
+      <ng-container *ngIf="isLoading()">
+        <div class="stat-card" *ngFor="let i of [1,2,3,4]">
+          <div class="stat-icon skeleton-icon"></div>
+          <div class="stat-info" style="flex: 1">
+            <div class="skeleton-text skeleton-title"></div>
+            <div class="skeleton-text skeleton-subtitle"></div>
+          </div>
         </div>
-        <div class="stat-info">
-          <h3>{{ totalProducts() }}</h3>
-          <p>Total Products</p>
+      </ng-container>
+
+      <!-- Actual Stats -->
+      <ng-container *ngIf="!isLoading()">
+        <div class="stat-card">
+          <div class="stat-icon bg-primary-light">
+            <span class="material-symbols-outlined text-primary">inventory_2</span>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalProducts() }}</h3>
+            <p>Total Products</p>
+          </div>
         </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon bg-secondary-light">
-          <span class="material-symbols-outlined text-secondary">category</span>
+        
+        <div class="stat-card">
+          <div class="stat-icon bg-secondary-light">
+            <span class="material-symbols-outlined text-secondary">category</span>
+          </div>
+          <div class="stat-info">
+            <h3>{{ totalCategories() }}</h3>
+            <p>Categories</p>
+          </div>
         </div>
-        <div class="stat-info">
-          <h3>{{ totalCategories() }}</h3>
-          <p>Categories</p>
+        
+        <div class="stat-card">
+          <div class="stat-icon bg-warning-light">
+            <span class="material-symbols-outlined text-warning" style="color: #b38600">pending_actions</span>
+          </div>
+          <div class="stat-info">
+            <h3>{{ pendingOrders() }}</h3>
+            <p>Pending Orders</p>
+          </div>
         </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon bg-warning-light">
-          <span class="material-symbols-outlined text-warning" style="color: #b38600">pending_actions</span>
+        
+        <div class="stat-card">
+          <div class="stat-icon bg-success-light">
+            <span class="material-symbols-outlined text-success">check_circle</span>
+          </div>
+          <div class="stat-info">
+            <h3>{{ completedOrders() }}</h3>
+            <p>Completed Orders</p>
+          </div>
         </div>
-        <div class="stat-info">
-          <h3>{{ pendingOrders() }}</h3>
-          <p>Pending Orders</p>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon bg-success-light">
-          <span class="material-symbols-outlined text-success">check_circle</span>
-        </div>
-        <div class="stat-info">
-          <h3>{{ completedOrders() }}</h3>
-          <p>Completed Orders</p>
-        </div>
-      </div>
+      </ng-container>
     </div>
     
     <div class="dashboard-widgets">
@@ -72,7 +86,15 @@ import { DataService } from '../../core/services/data.service';
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody *ngIf="isLoading()">
+              <tr *ngFor="let i of [1,2,3,4,5]">
+                <td><div class="skeleton-text skeleton-subtitle" style="width: 80%"></div></td>
+                <td><div class="skeleton-text skeleton-subtitle" style="width: 60%"></div></td>
+                <td><div class="skeleton-text skeleton-subtitle" style="width: 40%"></div></td>
+                <td><div class="skeleton-text skeleton-subtitle" style="width: 60px; height: 24px; border-radius: 12px; margin: 0;"></div></td>
+              </tr>
+            </tbody>
+            <tbody *ngIf="!isLoading()">
               <tr *ngFor="let order of recentOrders()">
                 <td><strong>{{ order.id }}</strong></td>
                 <td>{{ order.customerName }}</td>
@@ -96,19 +118,32 @@ import { DataService } from '../../core/services/data.service';
           <h3>Low Stock Alert</h3>
         </div>
         <div class="low-stock-list">
-          <div class="stock-item" *ngFor="let product of lowStockProducts()">
-            <img [src]="product.images[0]" alt="{{ product.name }}">
-            <div class="stock-details">
-              <strong>{{ product.name }}</strong>
-              <span class="text-muted text-sm">SKU: {{ product.sku }}</span>
+          <ng-container *ngIf="isLoading()">
+            <div class="stock-item" *ngFor="let i of [1,2,3,4]">
+              <div class="skeleton-icon" style="width: 48px; height: 48px; border-radius: 4px;"></div>
+              <div class="stock-details" style="flex: 1">
+                <div class="skeleton-text" style="height: 16px; width: 70%; margin-bottom: 6px;"></div>
+                <div class="skeleton-text" style="height: 12px; width: 40%;"></div>
+              </div>
+              <div class="skeleton-text" style="width: 60px; height: 24px; border-radius: 4px;"></div>
             </div>
-            <div class="stock-badge badge-error">
-              {{ product.stock }} left
+          </ng-container>
+          
+          <ng-container *ngIf="!isLoading()">
+            <div class="stock-item" *ngFor="let product of lowStockProducts()">
+              <img [src]="product.images[0]" alt="{{ product.name }}">
+              <div class="stock-details">
+                <strong>{{ product.name }}</strong>
+                <span class="text-muted text-sm">SKU: {{ product.sku }}</span>
+              </div>
+              <div class="stock-badge badge-error">
+                {{ product.stock }} left
+              </div>
             </div>
-          </div>
-          <div class="text-center text-muted py-4" *ngIf="lowStockProducts().length === 0">
-            All products are well stocked.
-          </div>
+            <div class="text-center text-muted py-4" *ngIf="lowStockProducts().length === 0">
+              All products are well stocked.
+            </div>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -221,6 +256,25 @@ import { DataService } from '../../core/services/data.service';
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      max-height: 450px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+    
+    /* Scrollbar styling for low stock list */
+    .low-stock-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .low-stock-list::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.02);
+      border-radius: 4px;
+    }
+    .low-stock-list::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.1);
+      border-radius: 4px;
+    }
+    .low-stock-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(0,0,0,0.2);
     }
     
     .stock-item {
@@ -259,10 +313,48 @@ import { DataService } from '../../core/services/data.service';
     .text-sm { font-size: 0.8rem; }
     .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
     .text-center { text-align: center; }
+    
+    /* Skeleton Loading Styles */
+    .skeleton-icon {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+    }
+    
+    .skeleton-text {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 4px;
+    }
+    
+    .skeleton-title {
+      height: 28px;
+      width: 60%;
+      margin-bottom: 8px;
+    }
+    
+    .skeleton-subtitle {
+      height: 14px;
+      width: 80%;
+    }
+    
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   `]
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit {
   dataService = inject(DataService);
+  
+  isLoading = signal(true);
+
+  ngOnInit() {
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 2000);
+  }
   
   totalProducts = computed(() => this.dataService.products().length);
   totalCategories = computed(() => this.dataService.categories().length);

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService, Category } from '../../core/services/data.service';
@@ -31,10 +31,21 @@ import { SnackbarService } from '../../core/services/snackbar.service';
             <th class="text-right">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody *ngIf="isLoading()">
+          <tr *ngFor="let i of [1,2,3,4,5]">
+            <td><div class="skeleton-text" style="width: 120px; height: 16px;"></div></td>
+            <td><div class="skeleton-text" style="width: 250px; height: 16px;"></div></td>
+            <td><div class="skeleton-text" style="width: 60px; height: 24px; border-radius: 12px;"></div></td>
+            <td class="text-right">
+              <div class="skeleton-text" style="width: 32px; height: 32px; border-radius: 50%; display: inline-block;"></div>
+              <div class="skeleton-text" style="width: 32px; height: 32px; border-radius: 50%; display: inline-block; margin-left: 8px;"></div>
+            </td>
+          </tr>
+        </tbody>
+        <tbody *ngIf="!isLoading()">
           <tr *ngFor="let cat of categories()">
             <td><strong>{{ cat.name }}</strong></td>
-            <td><span class="text-muted">{{ cat.description | slice:0:50 }}{{ cat.description && cat.description.length > 50 ? '...' : '' }}</span></td>
+            <td><span class="text-muted">{{ cat.description | slice:0:50 }}{{ cat.description && cat.description.length > 50 ? '...' : 'No description' }}</span></td>
             <td>
               <span class="badge" [ngClass]="cat.status === 'active' ? 'badge-success' : 'badge-error'">
                 {{ cat.status | titlecase }}
@@ -52,7 +63,7 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         </tbody>
       </table>
       
-      <div class="empty-state" *ngIf="categories().length === 0">
+      <div class="empty-state" *ngIf="!isLoading() && categories().length === 0">
         <span class="material-symbols-outlined">category</span>
         <p>No categories found. Start by adding one!</p>
       </div>
@@ -215,32 +226,51 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       
       button { flex: 1; }
     }
+    
+    /* Skeleton Loading Styles */
+    .skeleton-text {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   `]
 })
-export class AdminCategoriesComponent {
+export class AdminCategoriesComponent implements OnInit {
   dataService = inject(DataService);
   snackbar = inject(SnackbarService);
   categories = this.dataService.categories;
-  
+
+  isLoading = signal(true);
   isDrawerOpen = signal(false);
   isEditing = signal(false);
   isSaving = signal(false);
-  
+
   isDeleteModalOpen = signal(false);
   categoryToDelete = signal<string | null>(null);
-  
+
   newCategory: Category | Omit<Category, 'id' | 'image'> = {
     name: '',
     description: '',
     status: 'active'
   };
 
+  ngOnInit() {
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 2000);
+  }
+
   openDrawer() {
     this.isEditing.set(false);
     this.isDrawerOpen.set(true);
     this.newCategory = { name: '', description: '', status: 'active' };
   }
-  
+
   openEditDrawer(cat: Category) {
     this.isEditing.set(true);
     // clone the category
@@ -249,16 +279,16 @@ export class AdminCategoriesComponent {
     };
     this.isDrawerOpen.set(true);
   }
-  
+
   closeDrawer() {
     this.isDrawerOpen.set(false);
   }
-  
+
   promptDeleteCategory(id: string) {
     this.categoryToDelete.set(id);
     this.isDeleteModalOpen.set(true);
   }
-  
+
   confirmDelete() {
     const id = this.categoryToDelete();
     if (id) {
@@ -268,12 +298,12 @@ export class AdminCategoriesComponent {
     this.isDeleteModalOpen.set(false);
     this.categoryToDelete.set(null);
   }
-  
+
   cancelDelete() {
     this.isDeleteModalOpen.set(false);
     this.categoryToDelete.set(null);
   }
-  
+
   async saveCategory(form: any) {
     if (form.invalid) {
       Object.keys(form.controls).forEach(key => {
@@ -281,7 +311,7 @@ export class AdminCategoriesComponent {
       });
       return;
     }
-    
+
     this.isSaving.set(true);
     try {
       if (this.isEditing() && 'id' in this.newCategory) {

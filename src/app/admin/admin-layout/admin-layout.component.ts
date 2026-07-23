@@ -12,8 +12,11 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
     <div class="admin-container">
       <aside class="sidebar">
         <div class="logo">
-          <h2>Khandelwal Cards</h2>
-          <span class="badge badge-warning">Admin Panel</span>
+          <img src="favicon.ico" alt="Logo" class="sidebar-logo">
+          <div class="logo-text">
+            <h2>Khandelwal Cards</h2>
+            <span class="badge badge-warning">Admin Panel</span>
+          </div>
         </div>
         
         <nav class="nav-menu">
@@ -29,15 +32,10 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
           <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item">
             <span class="material-symbols-outlined">shopping_cart</span> Orders
           </a>
-          <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
-            <span class="material-symbols-outlined">group</span> Customers
-          </a>
-          <a routerLink="/admin/notifications" routerLinkActive="active" class="nav-item">
-            <span class="material-symbols-outlined">notifications</span> Notifications
-          </a>
-          <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+
+          <!-- <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
             <span class="material-symbols-outlined">settings</span> Settings
-          </a>
+          </a> -->
         </nav>
         
         <div class="sidebar-footer">
@@ -49,11 +47,6 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
       
       <main class="main-content">
         <header class="topbar">
-          <div class="search-bar">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Search orders, products...">
-          </div>
-          
           <div class="topbar-actions">
             <span class="date">{{ currentDate | date:'mediumDate' }}</span>
             <button class="btn-icon">
@@ -103,13 +96,35 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
     }
     
     .logo {
-      padding: 1.5rem;
+      padding: 1.25rem 1.5rem;
       border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      
+      .sidebar-logo {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+      }
+      
+      .logo-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
       
       h2 {
         color: var(--primary);
-        margin: 0 0 0.25rem 0;
-        font-size: 1.25rem;
+        margin: 0 0 0.15rem 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1.1;
+      }
+      
+      .badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
       }
     }
     
@@ -164,30 +179,8 @@ import { ConfirmationModalComponent } from '../../shared/confirmation-modal/conf
       border-bottom: 1px solid rgba(0,0,0,0.05);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       padding: 0 2rem;
-    }
-    
-    .search-bar {
-      display: flex;
-      align-items: center;
-      background: var(--background);
-      border-radius: var(--border-radius-md);
-      padding: 0.5rem 1rem;
-      width: 300px;
-      
-      span {
-        color: var(--text-muted);
-        margin-right: 0.5rem;
-      }
-      
-      input {
-        border: none;
-        background: transparent;
-        outline: none;
-        width: 100%;
-        font-family: inherit;
-      }
     }
     
     .topbar-actions {
@@ -255,19 +248,19 @@ export class AdminLayoutComponent {
   authService = inject(AuthService);
   router = inject(Router);
   currentDate = new Date();
-  
+
   isLogoutModalOpen = false;
 
   promptLogout() {
     this.isLogoutModalOpen = true;
   }
-  
+
   confirmLogout() {
     this.isLogoutModalOpen = false;
     this.authService.logout();
     this.router.navigate(['/admin/login']);
   }
-  
+
   cancelLogout() {
     this.isLogoutModalOpen = false;
   }

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService, Order } from '../../core/services/data.service';
 import { InvoiceService } from '../../core/services/invoice.service';
@@ -27,8 +27,20 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
             <th>Status</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let order of orders()" (click)="openOrderDetails(order)" class="clickable-row">
+        <tbody *ngIf="isLoading()">
+          <tr *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
+            <td><div class="skeleton-text" style="width: 80px; height: 16px;"></div></td>
+            <td>
+              <div class="skeleton-text" style="width: 120px; height: 16px; margin-bottom: 4px;"></div>
+              <div class="skeleton-text" style="width: 80px; height: 12px;"></div>
+            </td>
+            <td><div class="skeleton-text" style="width: 60px; height: 16px;"></div></td>
+            <td><div class="skeleton-text" style="width: 80px; height: 16px;"></div></td>
+            <td><div class="skeleton-text" style="width: 80px; height: 24px; border-radius: 12px;"></div></td>
+          </tr>
+        </tbody>
+        <tbody *ngIf="!isLoading()">
+          <tr *ngFor="let order of paginatedOrders()" (click)="openOrderDetails(order)" class="clickable-row">
             <td><strong>{{ order.id }}</strong></td>
             <td>
               <div class="customer-info">
@@ -49,6 +61,13 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
           </tr>
         </tbody>
       </table>
+      
+      <!-- Pagination Footer -->
+      <div class="pagination-footer" *ngIf="!isLoading() && totalPages() > 1">
+        <button class="btn btn-outline" (click)="prevPage()" [disabled]="currentPage() === 1">Previous</button>
+        <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button class="btn btn-outline" (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+      </div>
     </div>
 
     <!-- Right Drawer for Order Details -->
@@ -291,9 +310,36 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
     .text-sm { font-size: 0.8rem; }
     .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
     .text-center { text-align: center; }
+    
+    /* Skeleton Loading Styles */
+    .skeleton-text {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    .pagination-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: var(--surface);
+      
+      .page-info {
+        font-weight: 500;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+    }
   `]
 })
-export class AdminOrdersComponent {
+export class AdminOrdersComponent implements OnInit {
   dataService = inject(DataService);
   invoiceService = inject(InvoiceService);
   orders = this.dataService.orders;
@@ -304,6 +350,37 @@ export class AdminOrdersComponent {
   
   isGenerating = signal(false);
   showSuccessAnim = signal(false);
+  
+  isLoading = signal(true);
+  currentPage = signal(1);
+  itemsPerPage = signal(10);
+  
+  ngOnInit() {
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 2000);
+  }
+  
+  paginatedOrders = computed(() => {
+    // Sort orders by date descending (newest first)
+    const sorted = [...this.orders()].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    return sorted.slice(start, start + this.itemsPerPage());
+  });
+  
+  totalPages = computed(() => Math.ceil(this.orders().length / this.itemsPerPage()) || 1);
+  
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+  
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
 
   getTotalItems(order: Order): number {
     return order.items.reduce((sum, item) => sum + item.quantity, 0);

@@ -16,7 +16,7 @@ import { DataService } from '../../core/services/data.service';
         
         <div class="search-box">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search by name or SKU..." [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+          <input type="text" placeholder="Search by  SKU..." [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
         </div>
       </div>
       
@@ -330,30 +330,30 @@ import { DataService } from '../../core/services/data.service';
 })
 export class UserHomeComponent {
   dataService = inject(DataService);
-  
+
   categories = this.dataService.categories;
   products = this.dataService.products;
-  
+
   selectedCategory = signal<string | null>(null);
   searchQuery = signal<string>('');
-  
+
   filteredProducts = computed(() => {
     const cat = this.selectedCategory();
     const query = this.searchQuery().toLowerCase().trim();
-    
+
     let activeProducts = this.products().filter(p => p.status === 'active');
-    
+
     if (cat) {
       activeProducts = activeProducts.filter(p => p.categoryId === cat);
     }
-    
+
     if (query) {
-      activeProducts = activeProducts.filter(p => 
-        p.name.toLowerCase().includes(query) || 
+      activeProducts = activeProducts.filter(p =>
+        p.name.toLowerCase().includes(query) ||
         (p.sku && p.sku.toLowerCase().includes(query))
       );
     }
-    
+
     return activeProducts;
   });
 
