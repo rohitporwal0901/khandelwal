@@ -25,6 +25,11 @@ export interface OrderItem {
   quantity: number;
 }
 
+export interface StockCheckResult {
+  sufficient: boolean;
+  issues: { productId: string; productName: string; ordered: number; available: number }[];
+}
+
 export interface Order {
   id: string;
   customerName: string;
@@ -33,7 +38,8 @@ export interface Order {
   address: string;
   notes: string;
   items: OrderItem[];
-  status: 'pending' | 'completed';
+  status: 'pending' | 'completed' | 'cancelled';
+  cancellationReason?: string;
   date: string;
 }
 
@@ -143,6 +149,33 @@ export class DataService {
     return completeOrder;
   }
 
+  async checkStockForOrder(orderId: string): Promise<StockCheckResult> {
+    const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
+    const orderDoc = await getDoc(orderRef);
+    const issues: StockCheckResult['issues'] = [];
+
+    if (orderDoc.exists()) {
+      const orderData = orderDoc.data() as Order;
+      for (const item of orderData.items) {
+        const productRef = doc(this.firestore, `products-kh/${item.productId}`);
+        const productDoc = await getDoc(productRef);
+        if (productDoc.exists()) {
+          const stock = productDoc.data()['stock'] || 0;
+          const name = productDoc.data()['name'] || 'Unknown Product';
+          if (stock < item.quantity) {
+            issues.push({ productId: item.productId, productName: name, ordered: item.quantity, available: stock });
+          }
+        }
+      }
+    }
+    return { sufficient: issues.length === 0, issues };
+  }
+
+  async cancelOrder(orderId: string, reason: string) {
+    const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
+    await updateDoc(orderRef, { status: 'cancelled', cancellationReason: reason });
+  }
+
   async generateBill(orderId: string) {
     try {
       // 1. Update order status
@@ -150,8 +183,6 @@ export class DataService {
       await updateDoc(orderRef, { status: 'completed' });
 
       // 2. Reduce stock for each product in the order
-      // Note: In a production app, this should be done via a Firestore transaction or Cloud Function
-      // to avoid race conditions. We're using standard updates here for simplicity.
       const orderDoc = await getDoc(orderRef);
       if (orderDoc.exists()) {
         const orderData = orderDoc.data() as Order;

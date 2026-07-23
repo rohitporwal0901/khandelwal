@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataService, Order } from '../../core/services/data.service';
+import { DataService, Order, StockCheckResult } from '../../core/services/data.service';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.component';
 
@@ -51,7 +51,8 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
             <td>{{ getTotalItems(order) }} items</td>
             <td>{{ order.date | date:'mediumDate' }}</td>
             <td>
-              <span class="badge" [ngClass]="order.status === 'pending' ? 'badge-warning' : 'badge-success'">
+              <span class="badge" 
+                [ngClass]="order.status === 'pending' ? 'badge-warning' : order.status === 'cancelled' ? 'badge-error' : 'badge-success'">
                 {{ order.status | titlecase }}
               </span>
             </td>
@@ -147,12 +148,18 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
         <div class="drawer-actions mt-4" *ngIf="order.status === 'pending'">
           <button type="button" class="btn btn-primary w-100 generate-btn" 
                   [disabled]="isGenerating()"
-                  (click)="generateBill(order.id)">
+                  (click)="onGenerateBillClick(order)">
             <span *ngIf="!isGenerating()">
               <span class="material-symbols-outlined">receipt_long</span> Generate Bill & Update Stock
             </span>
             <span *ngIf="isGenerating()" class="loader"></span>
           </button>
+        </div>
+
+        <div class="cancelled-banner mt-4" *ngIf="order.status === 'cancelled'">
+          <span class="material-symbols-outlined" style="color: var(--error); font-size: 2rem;">cancel</span>
+          <h4 style="color: var(--error);">Order Cancelled</h4>
+          <p class="text-muted" *ngIf="order.cancellationReason">Reason: {{ order.cancellationReason }}</p>
         </div>
         
         <div class="success-message mt-4" *ngIf="showSuccessAnim()">
@@ -162,6 +169,36 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
         </div>
       </div>
     </app-side-drawer>
+
+    <!-- Stock Warning Modal -->
+    <div class="modal-overlay" *ngIf="showStockWarning()" (click)="closeStockWarning()">
+      <div class="stock-warning-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="material-symbols-outlined" style="color: var(--warning); font-size: 2.5rem;">warning</span>
+          <h3>Insufficient Stock!</h3>
+          <p class="text-muted">The following items don't have enough stock to fulfill this order:</p>
+        </div>
+        <div class="modal-body">
+          <div class="stock-issue-row" *ngFor="let issue of stockIssues()">
+            <div>
+              <strong>{{ issue.productName }}</strong>
+            </div>
+            <div class="stock-numbers">
+              <span class="badge badge-error">Ordered: {{ issue.ordered }}</span>
+              <span class="badge badge-warning">Available: {{ issue.available }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="closeStockWarning()">Go Back</button>
+          <button class="btn" style="background: var(--error); color: white;" 
+                  [disabled]="isCancelling()" (click)="confirmCancelOrder()">
+            <span *ngIf="!isCancelling()">Cancel This Order</span>
+            <span *ngIf="isCancelling()" class="loader"></span>
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .page-header {
@@ -450,6 +487,83 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
         font-size: 0.9rem;
       }
     }
+    .cancelled-banner {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(220, 53, 69, 0.05);
+      border-radius: 12px;
+      border: 1px dashed var(--error);
+      
+      h4 { margin: 0.5rem 0; }
+      p { margin: 0; }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .stock-warning-modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+      animation: slideUp 0.25s ease-out;
+      overflow: hidden;
+
+      .modal-header {
+        padding: 2rem 2rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        h3 { margin: 0.5rem 0 0.25rem; }
+        p { margin: 0; font-size: 0.9rem; }
+      }
+
+      .modal-body {
+        padding: 1.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .stock-issue-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: #fef9f9;
+        border: 1px solid rgba(220,53,69,0.15);
+        border-radius: 8px;
+
+        .stock-numbers {
+          display: flex;
+          gap: 0.5rem;
+        }
+      }
+
+      .modal-footer {
+        padding: 1.25rem 2rem;
+        display: flex;
+        gap: 1rem;
+        border-top: 1px solid rgba(0,0,0,0.06);
+
+        button { flex: 1; }
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   `]
 })
 export class AdminOrdersComponent implements OnInit {
@@ -463,6 +577,10 @@ export class AdminOrdersComponent implements OnInit {
   
   isGenerating = signal(false);
   showSuccessAnim = signal(false);
+  showStockWarning = signal(false);
+  stockIssues = signal<StockCheckResult['issues']>([]);
+  isCancelling = signal(false);
+  pendingBillOrderId = signal<string | null>(null);
   
   isLoading = signal(true);
   currentPage = signal(1);
@@ -528,6 +646,41 @@ export class AdminOrdersComponent implements OnInit {
     }, 300);
   }
   
+  async onGenerateBillClick(order: Order) {
+    this.isGenerating.set(true);
+    const result = await this.dataService.checkStockForOrder(order.id);
+    this.isGenerating.set(false);
+
+    if (!result.sufficient) {
+      // Show warning modal
+      this.stockIssues.set(result.issues);
+      this.pendingBillOrderId.set(order.id);
+      this.showStockWarning.set(true);
+      return;
+    }
+
+    // Stock OK — proceed with bill
+    await this.generateBill(order.id);
+  }
+
+  closeStockWarning() {
+    this.showStockWarning.set(false);
+    this.stockIssues.set([]);
+    this.pendingBillOrderId.set(null);
+  }
+
+  async confirmCancelOrder() {
+    const orderId = this.pendingBillOrderId();
+    if (!orderId) return;
+
+    this.isCancelling.set(true);
+    const reason = `Insufficient stock: ${this.stockIssues().map(i => `${i.productName} (ordered ${i.ordered}, available ${i.available})`).join(', ')}`;
+    await this.dataService.cancelOrder(orderId, reason);
+    this.isCancelling.set(false);
+    this.closeStockWarning();
+    this.closeDrawer();
+  }
+
   async generateBill(orderId: string) {
     this.isGenerating.set(true);
     
