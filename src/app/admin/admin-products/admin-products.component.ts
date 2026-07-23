@@ -18,9 +18,16 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         <h2>Products</h2>
         <p class="text-muted">Manage inventory and product details</p>
       </div>
-      <button class="btn btn-primary" (click)="openAddDrawer()">
-        <span class="material-symbols-outlined">add</span> Add Product
-      </button>
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="bulkAddMockProducts()" [disabled]="isGenerating()">
+          <span class="material-symbols-outlined" *ngIf="!isGenerating()">library_add</span>
+          <span class="spinner" *ngIf="isGenerating()"></span> 
+          {{ isGenerating() ? 'Adding 100...' : 'Bulk Add 100' }}
+        </button>
+        <button class="btn btn-primary" (click)="openAddDrawer()">
+          <span class="material-symbols-outlined">add</span> Add Product
+        </button>
+      </div>
     </div>
     
     <div class="products-grid">
@@ -232,6 +239,12 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       
       h2 { margin: 0; }
       p { margin: 0; }
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
     }
     
     .products-grid {
@@ -630,6 +643,7 @@ export class AdminProductsComponent {
 
   isDeleteModalOpen = signal(false);
   productToDelete = signal<string | null>(null);
+  isGenerating = signal(false);
 
   isUploading = signal(false);
   uploadProgress = signal(0);
@@ -795,5 +809,18 @@ export class AdminProductsComponent {
   closeDetailsDrawer() {
     this.isDetailsDrawerOpen.set(false);
     this.selectedProduct.set(null);
+  }
+
+  async bulkAddMockProducts() {
+    this.isGenerating.set(true);
+    try {
+      await this.dataService.bulkAddMockProducts();
+      this.snackbar.show('100 mock products added successfully!', 'success');
+    } catch (err) {
+      console.error("Error bulk adding products:", err);
+      this.snackbar.show('Failed to add mock products', 'error');
+    } finally {
+      this.isGenerating.set(false);
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, effect } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc, writeBatch } from '@angular/fire/firestore';
 
 export interface Category {
   id: string;
@@ -186,5 +186,33 @@ export class DataService {
     const productRef = doc(this.firestore, `products-kh/${id}`);
     const { deleteDoc } = await import('@angular/fire/firestore');
     await deleteDoc(productRef);
+  }
+
+  async bulkAddMockProducts() {
+    const batch = writeBatch(this.firestore);
+    const productsRef = collection(this.firestore, 'products-kh');
+    const categoryId = "m15O9WnOtpBSyhD4yGG5";
+    const images = [
+      "https://images.unsplash.com/photo-1537233777085-782a6136be4f?auto=format&fit=crop&q=80&w=1500",
+      "https://images.unsplash.com/photo-1605335032514-6cc91f9b068e?auto=format&fit=crop&q=80&w=1500",
+      "https://images.unsplash.com/photo-1544376662-7946222bfa89?auto=format&fit=crop&q=80&w=1436"
+    ];
+
+    for (let i = 1; i <= 100; i++) {
+      const newDocRef = doc(productsRef);
+      const skuNumber = (1000 + i).toString();
+      const product: Omit<Product, 'id'> = {
+        name: `Premium Wedding Card - Model ${skuNumber}`,
+        sku: `MOCK-${skuNumber}`,
+        categoryId: categoryId,
+        description: `Exquisite premium printing card for special occasions. Featuring glassmorphism design cues. Item number ${skuNumber}.`,
+        images: images,
+        stock: Math.floor(Math.random() * 500) + 10,
+        status: 'active'
+      };
+      batch.set(newDocRef, product);
+    }
+
+    await batch.commit();
   }
 }

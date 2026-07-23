@@ -42,6 +42,7 @@ import { DataService } from '../../core/services/data.service';
           <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
             <div class="img-wrapper">
               <img [src]="prod.images[0]" [alt]="prod.name">
+              <div class="sku-badge">{{ prod.sku }}</div>
             </div>
             <div class="product-info">
               <span class="category-label">{{ getCategoryName(prod.categoryId) }}</span>
@@ -161,57 +162,78 @@ import { DataService } from '../../core/services/data.service';
     
     .product-card {
       background: var(--surface);
-      border-radius: var(--border-radius-md);
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.02);
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
       
       &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
       }
       
       .img-wrapper {
+        position: relative;
         width: 100%;
-        height: 200px;
-        background: #f8f9fa;
-        padding: 0.5rem;
+        height: 180px;
+        background: var(--background);
+        overflow: hidden;
         
         img {
           width: 100%;
           height: 100%;
-          object-fit: contain;
-          transition: transform 0.3s ease;
+          object-fit: cover;
+          transition: transform 0.4s ease;
+        }
+        
+        .sku-badge {
+          position: absolute;
+          bottom: 10px;
+          left: 10px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(4px);
+          color: var(--primary-dark);
+          font-size: 0.65rem;
+          font-weight: 700;
+          padding: 4px 8px;
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+          letter-spacing: 0.5px;
         }
       }
       
       &:hover .img-wrapper img {
-        transform: scale(1.05);
+        transform: scale(1.06);
       }
       
       .product-info {
-        padding: 0.75rem;
+        padding: 0.85rem;
         
         .category-label {
-          font-size: 0.7rem;
-          color: var(--primary);
+          font-size: 0.65rem;
+          color: var(--text-muted);
           font-weight: 600;
           text-transform: uppercase;
-          margin-bottom: 0.25rem;
+          margin-bottom: 0.3rem;
           display: block;
+          letter-spacing: 0.5px;
         }
         
         h4 {
           margin: 0;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text-main);
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+          line-height: 1.3;
         }
       }
     }
