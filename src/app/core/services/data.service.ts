@@ -48,6 +48,7 @@ export class DataService {
   products = signal<Product[]>([]);
   orders = signal<Order[]>([]);
   cart = signal<OrderItem[]>([]);
+  isProductsLoaded = signal<boolean>(false);
 
   constructor() {
     this.initFirestoreListeners();
@@ -62,6 +63,7 @@ export class DataService {
     const productsRef = collection(this.firestore, 'products-kh');
     collectionData(productsRef, { idField: 'id' }).subscribe((data: any[]) => {
       this.products.set(data as Product[]);
+      this.isProductsLoaded.set(true);
     });
 
     const ordersRef = collection(this.firestore, 'orders-kh');

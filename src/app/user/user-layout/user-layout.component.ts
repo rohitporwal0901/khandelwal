@@ -38,10 +38,10 @@ import { DataService } from '../../core/services/data.service';
           </div>
           <span>Cart</span>
         </a>
-        <a class="nav-item">
+        <!-- <a class="nav-item">
           <span class="material-symbols-outlined">person</span>
           <span>Profile</span>
-        </a>
+        </a> -->
       </nav>
     </div>
   `,
@@ -64,9 +64,14 @@ import { DataService } from '../../core/services/data.service';
       justify-content: space-between;
       align-items: center;
       padding: 1rem 1.5rem;
-      background: var(--surface);
-      border-bottom: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(158, 27, 34, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       z-index: 10;
+      position: sticky;
+      top: 0;
       
       .logo {
         display: flex;
@@ -75,16 +80,23 @@ import { DataService } from '../../core/services/data.service';
         text-decoration: none;
         
         .logo-img {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           object-fit: cover;
+          box-shadow: 0 2px 8px rgba(158, 27, 34, 0.2);
+          border: 2px solid #fff;
         }
         
         h1 {
           margin: 0;
-          font-size: 1.2rem;
-          color: var(--primary);
+          font-size: 1.3rem;
+          color: var(--primary-dark);
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
       }
     }
@@ -97,12 +109,14 @@ import { DataService } from '../../core/services/data.service';
       .badge {
         position: absolute;
         top: -8px;
-        right: -8px;
+        right: -12px;
         background: var(--primary);
         color: white;
-        border-radius: 50%;
-        width: 20px;
+        border-radius: 20px;
+        min-width: 20px;
         height: 20px;
+        padding: 0 5px;
+        box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -142,7 +156,7 @@ import { DataService } from '../../core/services/data.service';
         font-size: 1.5rem;
       }
       
-      span:last-child {
+      > span:last-child {
         font-size: 0.75rem;
       }
       
@@ -160,17 +174,21 @@ import { DataService } from '../../core/services/data.service';
         
         .badge {
           position: absolute;
-          top: -4px;
-          right: -8px;
+          top: -6px;
+          right: -12px;
           background: var(--primary);
           color: white;
-          border-radius: 50%;
-          width: 16px;
-          height: 16px;
+          border-radius: 20px;
+          min-width: 20px;
+          height: 20px;
+          padding: 0 5px;
+          box-sizing: border-box;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.7rem;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border: 1.5px solid white;
         }
       }
     }
@@ -178,8 +196,8 @@ import { DataService } from '../../core/services/data.service';
 })
 export class UserLayoutComponent {
   dataService = inject(DataService);
-  
+
   cartCount = () => {
-    return this.dataService.cart().reduce((sum, item) => sum + item.quantity, 0);
+    return this.dataService.cart().length;
   };
 }

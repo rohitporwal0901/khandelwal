@@ -12,7 +12,7 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
   template: `
     <div class="cart-container">
       <div class="page-header">
-        <h2>Your Cart</h2>
+        <h2>Your Cart <span class="cart-count-badge" *ngIf="cartItems().length > 0">{{ cartItems().length }} Product{{ cartItems().length > 1 ? 's' : '' }}</span></h2>
       </div>
       
       <div class="empty-cart" *ngIf="cartItems().length === 0 && !orderSuccess()">
@@ -30,7 +30,7 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
             <img [src]="getProductImage(item.productId)" alt="Product">
             <div class="item-details">
               <h4>{{ getProductName(item.productId) }}</h4>
-              <p class="text-muted">Quantity: <strong>{{ item.quantity }}</strong></p>
+              <div class="qty-badge">Qty: {{ item.quantity }}</div>
             </div>
             <button class="btn-icon remove-btn" (click)="removeItem(item.productId)">
               <span class="material-symbols-outlined">delete</span>
@@ -99,9 +99,13 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
         
         <div class="sheet-actions mt-4">
           <button type="button" class="btn btn-outline" (click)="closeCheckout()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="!checkoutForm.valid || isSubmitting()">
+          <button type="submit" class="btn btn-primary premium-submit-btn" [disabled]="!checkoutForm.valid || isSubmitting()">
             <span *ngIf="!isSubmitting()">Confirm Order</span>
-            <span *ngIf="isSubmitting()" class="loader"></span>
+            <div *ngIf="isSubmitting()" class="premium-loader">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
           </button>
         </div>
       </form>
@@ -115,7 +119,22 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
     
     .page-header {
       margin-bottom: 1.5rem;
-      h2 { margin: 0; }
+      h2 { 
+        margin: 0; 
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .cart-count-badge {
+        font-size: 0.8rem;
+        background: var(--primary);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        vertical-align: middle;
+        box-shadow: 0 2px 8px rgba(158, 27, 34, 0.2);
+      }
     }
     
     .empty-cart {
@@ -174,6 +193,18 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
         p {
           margin: 0;
           font-size: 0.85rem;
+        }
+        
+        .qty-badge {
+          display: inline-block;
+          background: rgba(158, 27, 34, 0.05); /* Romantic subtle red/pink */
+          color: var(--primary);
+          padding: 4px 12px;
+          border-radius: 16px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          margin-top: 0.5rem;
+          border: 1px solid rgba(158, 27, 34, 0.15);
         }
       }
       
@@ -253,14 +284,39 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
       }
     }
     
-    .loader {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
+    .premium-submit-btn {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      
+      &:disabled {
+        background: var(--primary-dark);
+        opacity: 0.8;
+      }
+    }
+    
+    .premium-loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 24px;
+      
+      .dot {
+        width: 8px;
+        height: 8px;
+        background-color: white;
+        border-radius: 50%;
+        animation: premiumBounce 1.4s infinite ease-in-out both;
+      }
+      
+      .dot:nth-child(1) { animation-delay: -0.32s; }
+      .dot:nth-child(2) { animation-delay: -0.16s; }
+    }
+    
+    @keyframes premiumBounce {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
     }
     
     @keyframes spin { to { transform: rotate(360deg); } }

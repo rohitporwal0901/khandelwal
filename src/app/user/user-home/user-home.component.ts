@@ -24,6 +24,11 @@ import { DataService } from '../../core/services/data.service';
         <h3>Categories</h3>
         <div class="category-scroll">
           <div class="category-pill" 
+               [class.active]="selectedCategory() === null"
+               (click)="selectCategory(null)">
+            All
+          </div>
+          <div class="category-pill" 
                *ngFor="let cat of categories()"
                [class.active]="selectedCategory() === cat.id"
                (click)="selectCategory(cat.id)">
@@ -38,7 +43,12 @@ import { DataService } from '../../core/services/data.service';
         </h3>
         <h3 *ngIf="!selectedCategory()">All Products</h3>
         
-        <div class="products-grid">
+        <div class="initial-loader" *ngIf="!dataService.isProductsLoaded()">
+          <span class="spinner-large"></span>
+          <p class="loader-text">Please wait...</p>
+        </div>
+        
+        <div class="products-grid" *ngIf="dataService.isProductsLoaded()">
           <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
             <div class="img-wrapper">
               <img [src]="prod.images[0]" [alt]="prod.name" [class.grayscale]="prod.stock === 0">
@@ -54,7 +64,7 @@ import { DataService } from '../../core/services/data.service';
           </div>
         </div>
         
-        <div class="empty-state" *ngIf="filteredProducts().length === 0">
+        <div class="empty-state" *ngIf="dataService.isProductsLoaded() && filteredProducts().length === 0">
           <span class="material-symbols-outlined">inventory_2</span>
           <p>No products found in this category.</p>
         </div>
@@ -272,6 +282,50 @@ import { DataService } from '../../core/services/data.service';
         margin-bottom: 1rem;
       }
     }
+    
+    .initial-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 2rem;
+      color: var(--primary);
+    }
+    
+    .spinner-large {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(158, 27, 34, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    .loader-text {
+      font-weight: 600;
+      color: var(--primary-dark);
+      letter-spacing: 0.5px;
+      margin-top: 1.5rem;
+      animation: pulse-text 2s infinite ease-in-out;
+    }
+    
+    @keyframes pulse-text {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+    
+    .spinner-small {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(128, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   `]
 })
 export class UserHomeComponent {
@@ -282,7 +336,6 @@ export class UserHomeComponent {
   
   selectedCategory = signal<string | null>(null);
   searchQuery = signal<string>('');
-  visibleCount = signal<number>(10);
   
   filteredProducts = computed(() => {
     const cat = this.selectedCategory();
@@ -301,37 +354,19 @@ export class UserHomeComponent {
       );
     }
     
-    return activeProducts.slice(0, this.visibleCount());
+    return activeProducts;
   });
 
-  selectCategory(id: string) {
-    if (this.selectedCategory() === id) {
-      this.selectedCategory.set(null); // toggle off
-    } else {
-      this.selectedCategory.set(id);
-    }
-    this.visibleCount.set(10); // reset visible count on filter change
+  selectCategory(id: string | null) {
+    this.selectedCategory.set(id);
   }
 
   onSearch(val: string) {
     this.searchQuery.set(val);
-    this.visibleCount.set(10); // reset visible count on search change
   }
 
   getCategoryName(id: string): string {
     const cat = this.categories().find(c => c.id === id);
     return cat ? cat.name : '';
-  }
-  
-  @HostListener('window:scroll', [])
-  onScroll(): void {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
-      // User has scrolled to near the bottom, load more items
-      const current = this.visibleCount();
-      const total = this.products().length; // theoretically active, but total is a safe upper bound
-      if (current < total) {
-        this.visibleCount.set(current + 10);
-      }
-    }
   }
 }
