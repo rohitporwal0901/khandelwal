@@ -30,11 +30,19 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
             <img [src]="getProductImage(item.productId)" alt="Product">
             <div class="item-details">
               <h4>{{ getProductName(item.productId) }}</h4>
+              <p class="sku-text">SKU: {{ getProductSku(item.productId) }}</p>
               <div class="qty-badge">Qty: {{ item.quantity }}</div>
             </div>
-            <button class="btn-icon remove-btn" (click)="removeItem(item.productId)">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
+            <div class="remove-action-container">
+              <button class="btn-icon remove-btn" (click)="removeItem(item.productId)" [class.active-delete]="productToRemove() === item.productId">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+              
+              <div class="inline-confirm" [class.show]="productToRemove() === item.productId">
+                <button class="btn-yes" (click)="confirmRemove()">Yes</button>
+                <button class="btn-no" (click)="cancelRemove()">No</button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -195,6 +203,13 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
           font-size: 0.85rem;
         }
         
+        .sku-text {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          margin-bottom: 0.25rem;
+          font-weight: 500;
+        }
+        
         .qty-badge {
           display: inline-block;
           background: rgba(158, 27, 34, 0.05); /* Romantic subtle red/pink */
@@ -209,12 +224,84 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
       }
       
       .remove-btn {
-        color: var(--error);
-        background: rgba(220, 53, 69, 0.1);
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
         
-        &:hover {
-          background: var(--error);
-          color: white;
+        &:hover, &.active-delete {
+          background: rgba(220, 53, 69, 0.1);
+          color: var(--error, #dc3545);
+        }
+        
+        span {
+          font-size: 1.3rem;
+        }
+      }
+      
+      .remove-action-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .inline-confirm {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 5px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        display: flex;
+        gap: 6px;
+        padding: 6px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px) scale(0.95);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 20;
+        border: 1px solid rgba(0,0,0,0.05);
+        
+        &.show {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0) scale(1);
+        }
+        
+        button {
+          padding: 6px 14px;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          transition: background 0.2s, color 0.2s;
+        }
+        
+        .btn-yes {
+          background: rgba(220, 53, 69, 0.1);
+          color: #dc3545;
+          
+          &:hover {
+            background: #dc3545;
+            color: white;
+          }
+        }
+        
+        .btn-no {
+          background: #f8f9fa;
+          color: #495057;
+          
+          &:hover {
+            background: #e9ecef;
+          }
         }
       }
     }
@@ -342,6 +429,7 @@ export class UserCartComponent {
   isSubmitting = signal(false);
   orderSuccess = signal(false);
   lastOrderId = '';
+  productToRemove = signal<string | null>(null);
   
   customerDetails: Omit<Order, 'id' | 'items' | 'status' | 'date'> = {
     customerName: '',
@@ -356,13 +444,30 @@ export class UserCartComponent {
     return prod ? prod.name : 'Unknown Product';
   }
   
+  getProductSku(productId: string): string {
+    const prod = this.products().find(p => p.id === productId);
+    return prod ? prod.sku : '';
+  }
+  
   getProductImage(productId: string): string {
     const prod = this.products().find(p => p.id === productId);
     return prod && prod.images.length ? prod.images[0] : '';
   }
 
   removeItem(productId: string) {
-    this.dataService.removeFromCart(productId);
+    this.productToRemove.set(productId);
+  }
+  
+  confirmRemove() {
+    const id = this.productToRemove();
+    if (id) {
+      this.dataService.removeFromCart(id);
+    }
+    this.productToRemove.set(null);
+  }
+  
+  cancelRemove() {
+    this.productToRemove.set(null);
   }
 
   continueShopping() {

@@ -100,11 +100,16 @@ export class DataService {
   addToCart(productId: string, quantity: number) {
     const currentCart = this.cart();
     const existing = currentCart.find(item => item.productId === productId);
+    const product = this.products().find(p => p.id === productId);
+    const maxStock = product ? product.stock : 0;
+
     if (existing) {
-      existing.quantity += quantity;
+      const newQty = existing.quantity + quantity;
+      existing.quantity = newQty > maxStock ? maxStock : newQty;
       this.cart.set([...currentCart]);
     } else {
-      this.cart.set([...currentCart, { productId, quantity }]);
+      const newQty = quantity > maxStock ? maxStock : quantity;
+      this.cart.set([...currentCart, { productId, quantity: newQty }]);
     }
     this.saveCartToStorage();
   }

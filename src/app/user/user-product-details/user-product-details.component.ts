@@ -96,9 +96,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
     
     <!-- Floating Error Toast -->
     <div class="floating-error-toast" *ngIf="product() as prod">
-      <div class="toast-content" [class.show]="isQtySheetOpen() && selectedQty() > prod.stock">
+      <div class="toast-content" [class.show]="isQtySheetOpen() && selectedQty() > prod.stock && !cartStockError()?.show">
         <span class="material-symbols-outlined">warning</span>
         <span>Stock limit exceeded! Only {{ prod.stock }} left.</span>
+      </div>
+      
+      <div class="toast-content cart-error" [class.show]="cartStockError()?.show">
+        <span class="material-symbols-outlined">error</span>
+        <div class="toast-text">
+          <strong>Stock Limit Reached</strong>
+          <span *ngIf="cartStockError()">You have {{ cartStockError()?.cartQty }} in cart. Only {{ cartStockError()?.maxAllowed }} more available.</span>
+        </div>
       </div>
     </div>
     
@@ -366,7 +374,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
       display: flex;
       gap: 1rem;
       
-      button { flex: 1; }
+      button { 
+        flex: 1; 
+        padding: 0.85rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+      }
     }
     
     .mb-4 { margin-bottom: 1.5rem; }
@@ -443,10 +461,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
     .floating-error-toast {
       position: fixed;
       top: 20px;
-      left: 0;
-      right: 0;
+      left: 16px;
+      right: 16px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
       z-index: 9999;
       pointer-events: none;
     }
@@ -454,22 +474,42 @@ import { toSignal } from '@angular/core/rxjs-interop';
     .toast-content {
       background: #dc3545;
       color: white;
-      padding: 12px 24px;
-      border-radius: 30px;
+      padding: 12px 16px;
+      border-radius: 12px;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
+      align-items: flex-start;
+      gap: 12px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
       transform: translateY(-100px);
       opacity: 0;
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .toast-content .material-symbols-outlined {
+      margin-top: 2px;
+      font-size: 1.25rem;
     }
     
     .toast-content.show {
       transform: translateY(0);
       opacity: 1;
+    }
+    
+    .toast-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+      line-height: 1.4;
+    }
+    
+    .toast-text strong {
+      font-size: 0.95rem;
+      font-weight: 700;
     }
     
     .not-found {
@@ -517,6 +557,7 @@ export class UserProductDetailsComponent {
   
   isQtySheetOpen = signal(false);
   selectedQty = signal<number>(100);
+  cartStockError = signal<{ show: boolean, maxAllowed: number, cartQty: number } | null>(null);
 
   getCategoryName(id: string): string {
     const cat = this.dataService.categories().find(c => c.id === id);
@@ -537,11 +578,25 @@ export class UserProductDetailsComponent {
   
   addToCart() {
     const prod = this.product();
-    if (prod && this.selectedQty() > 0 && this.selectedQty() <= prod.stock) {
+    if (prod && this.selectedQty() > 0) {
+      const currentCartItem = this.dataService.cart().find(i => i.productId === prod.id);
+      const currentCartQty = currentCartItem ? currentCartItem.quantity : 0;
+      const totalRequested = currentCartQty + this.selectedQty();
+      
+      if (totalRequested > prod.stock) {
+        const maxAllowed = Math.max(0, prod.stock - currentCartQty);
+        this.cartStockError.set({ show: true, maxAllowed, cartQty: currentCartQty });
+        
+        // Hide after 4 seconds
+        setTimeout(() => {
+          this.cartStockError.set(null);
+        }, 4000);
+        return;
+      }
+      
       this.dataService.addToCart(prod.id, this.selectedQty());
       this.closeQtySheet();
       
-      // Optional: Add a toast notification here
       setTimeout(() => {
         this.router.navigate(['/shop/cart']);
       }, 300);
