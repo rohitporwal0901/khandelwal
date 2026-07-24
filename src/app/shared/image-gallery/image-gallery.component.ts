@@ -38,12 +38,12 @@ import { CommonModule } from '@angular/common';
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0;
     }
     .main-image {
       width: 100%;
-      aspect-ratio: 4/5;
-      border-radius: var(--border-radius-md);
+      height: 260px;
+      border-radius: 0;
       overflow: hidden;
       position: relative;
       background: var(--background);
@@ -109,20 +109,20 @@ import { CommonModule } from '@angular/common';
     
     .thumbnail-list {
       display: flex;
-      gap: 1rem;
+      gap: 8px;
       overflow-x: auto;
-      padding-bottom: 0.5rem;
-      justify-content: center;
+      padding: 12px var(--space-base) 0;
+      background: var(--surface);
+      justify-content: flex-start;
       
-      /* Hide scrollbar for cleaner look */
       &::-webkit-scrollbar { display: none; }
       -ms-overflow-style: none;
       scrollbar-width: none;
       
       .thumb {
-        width: 70px;
-        height: 70px;
-        border-radius: var(--border-radius-sm);
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-sm);
         overflow: hidden;
         cursor: pointer;
         border: 2px solid transparent;
@@ -136,15 +136,14 @@ import { CommonModule } from '@angular/common';
         }
         
         &.active {
-          border-color: #000;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 1px var(--primary);
         }
       }
     }
     
     @media (max-width: 768px) {
       .desktop-only { display: none !important; }
-      .thumbnail-list { gap: 0.5rem; justify-content: flex-start; }
-      .main-image { border-radius: 0; }
     }
     
     @media (min-width: 769px) {

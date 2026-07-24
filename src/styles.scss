@@ -1,42 +1,78 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
 :root {
-  /* Indian Wedding Theme Colors */
-  --primary: #800000; /* Maroon */
-  --primary-light: #9e1b1b;
+  /* ─── Brand Colors ─────────────────────────────── */
+  --primary: #8B0000;       /* Deep Maroon */
+  --primary-light: #b01c1c;
   --primary-dark: #5a0000;
-  
-  --secondary: #d4af37; /* Gold */
-  --secondary-light: #f3d56b;
+  --primary-rgb: 139, 0, 0;
+
+  --secondary: #d4af37;     /* Gold */
+  --secondary-light: #f0cc5a;
   --secondary-dark: #aa8c2c;
-  
-  --accent: #f5f5dc; /* Cream */
-  --accent-light: #fffdf2;
-  
-  --background: #f8f9fa; /* Light Grey */
-  --surface: #ffffff; /* White */
-  
-  /* Text Colors */
-  --text-main: #212529;
-  --text-muted: #6c757d;
+
+  --accent: #fdf6ec;        /* Warm Cream */
+  --accent-light: #fffdf7;
+
+  /* ─── Surfaces ─────────────────────────────────── */
+  --background: #f5f5f7;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f8f9fa;
+
+  /* ─── Text ──────────────────────────────────────── */
+  --text-main: #1a1a2e;
+  --text-secondary: #3d3d5c;
+  --text-muted: #8c8ca1;
   --text-light: #f8f9fa;
-  
-  /* States */
-  --success: #28a745;
-  --warning: #ffc107;
-  --error: #dc3545;
-  
-  /* Shadows & Borders */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 24px rgba(0,0,0,0.12);
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 16px;
-  --border-radius-xl: 24px;
-  
-  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  /* ─── Status Colors ─────────────────────────────── */
+  --success: #16a34a;
+  --success-light: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-light: rgba(217, 119, 6, 0.1);
+  --error: #dc2626;
+  --error-light: rgba(220, 38, 38, 0.1);
+
+  /* ─── Spacing Scale ─────────────────────────────── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-base: 16px;
+  --space-lg:  20px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ─── Border Radius ─────────────────────────────── */
+  --radius-xs:  4px;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  20px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* Backward compat */
+  --border-radius-sm: var(--radius-sm);
+  --border-radius-md: var(--radius-md);
+  --border-radius-lg: var(--radius-lg);
+  --border-radius-xl: var(--radius-2xl);
+
+  /* ─── Shadows ───────────────────────────────────── */
+  --shadow-xs: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-primary: 0 8px 24px rgba(139, 0, 0, 0.25);
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.07);
+
+  /* ─── Transitions ───────────────────────────────── */
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 * {
