@@ -176,6 +176,11 @@ export class DataService {
     await updateDoc(orderRef, { status: 'cancelled', cancellationReason: reason });
   }
 
+  async updateOrder(orderId: string, data: Partial<Order>) {
+    const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
+    await updateDoc(orderRef, data);
+  }
+
   async generateBill(orderId: string) {
     try {
       // 1. Update order status

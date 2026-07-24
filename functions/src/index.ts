@@ -1,11 +1,13 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Resend } from 'resend';
-import { generateItemsTable, generateOrderEmailTemplate, generateCancellationEmailTemplate } from './utils/emailTemplate';
+import { generateItemsTable, generateOrderEmailTemplate, generateCancellationEmailTemplate, generateCompletionEmailTemplate } from './utils/emailTemplate';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 admin.initializeApp();
 
-const resend = new Resend('re_ek26zoJD_PkdgAAtsukNA2cZAonPf9H1v');
+const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 // Trigger 1: New order created → send order confirmation to admin
 export const sendOrderEmail = functions.firestore
@@ -28,7 +30,7 @@ export const sendOrderEmail = functions.firestore
 
       const { data, error } = await resend.emails.send({
         from: 'Khandelwal Cards <onboarding@resend.dev>',
-        to: 'rohit@quadralyst.com',
+        to: 'rohitporwal209@gmail.com',
         subject: `New Order Received! #${orderId.substring(0, 8).toUpperCase()}`,
         html: emailHtml
       });
@@ -73,3 +75,39 @@ export const sendCancellationEmail = functions.firestore
     }
   });
 
+// Trigger 3: Order completed → send completion email to customer
+export const sendCompletionEmail = functions.firestore
+  .document('orders-kh/{orderId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+    const orderId = context.params.orderId;
+
+    // Only fire when status changes TO 'completed'
+    if (before?.status === after?.status || after?.status !== 'completed') return;
+    if (!after?.email) return;
+
+    try {
+      const productsSnapshot = await admin.firestore().collection('products-kh').get();
+      const productsMap = new Map();
+      productsSnapshot.forEach(doc => {
+        productsMap.set(doc.id, doc.data());
+      });
+
+      const itemsHtml = generateItemsTable(after, productsMap);
+      const emailHtml = generateCompletionEmailTemplate(after, orderId, itemsHtml);
+
+      const { data, error } = await resend.emails.send({
+        from: 'Khandelwal Cards <onboarding@resend.dev>',
+        to: after.email,
+        subject: `Order Completed! - #${orderId.substring(0, 8).toUpperCase()}`,
+        html: emailHtml
+      });
+
+      if (error) { console.error('Resend completion error:', error); return; }
+      console.log('Completion email sent to:', after.email, '| ID:', data?.id);
+
+    } catch (error) {
+      console.error('Error sending completion email:', error);
+    }
+  });

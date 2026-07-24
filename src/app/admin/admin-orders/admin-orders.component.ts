@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataService, Order, StockCheckResult } from '../../core/services/data.service';
+import { DataService, Order, StockCheckResult, OrderItem } from '../../core/services/data.service';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.component';
 
@@ -138,8 +138,11 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
                 <strong>{{ getProductName(item.productId) }}</strong>
                 <span class="text-muted text-sm d-block mt-1">Code: <strong>{{ getProductSku(item.productId) }}</strong></span>
               </div>
-              <div class="item-qty">
+              <div class="item-actions">
                 <span class="badge badge-warning">Qty: {{ item.quantity }}</span>
+                <button class="btn-delete" *ngIf="order.status === 'pending'" (click)="initRemoveItem(order, item)" title="Remove Item">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
               </div>
             </div>
           </div>
@@ -147,12 +150,23 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
         
         <div class="drawer-actions mt-4" *ngIf="order.status === 'pending'">
           <button type="button" class="btn btn-primary w-100 generate-btn" 
+                  *ngIf="order.items.length > 0"
                   [disabled]="isGenerating()"
                   (click)="onGenerateBillClick(order)">
             <span *ngIf="!isGenerating()">
               <span class="material-symbols-outlined">receipt_long</span> Generate Bill & Update Stock
             </span>
             <span *ngIf="isGenerating()" class="loader"></span>
+          </button>
+
+          <button type="button" class="btn w-100 generate-btn" style="background: var(--error); color: white;"
+                  *ngIf="order.items.length === 0"
+                  [disabled]="isCancelling()"
+                  (click)="confirmCancelEmptyOrder(order)">
+            <span *ngIf="!isCancelling()">
+              <span class="material-symbols-outlined">cancel</span> No Items Left - Cancel Order
+            </span>
+            <span *ngIf="isCancelling()" class="loader"></span>
           </button>
         </div>
 
@@ -195,6 +209,25 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
                   [disabled]="isCancelling()" (click)="confirmCancelOrder()">
             <span *ngIf="!isCancelling()">Cancel This Order</span>
             <span *ngIf="isCancelling()" class="loader"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remove Item Modal -->
+    <div class="modal-overlay" *ngIf="itemToRemove()" (click)="cancelRemoveItem()">
+      <div class="stock-warning-modal confirm-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <span class="material-symbols-outlined" style="color: var(--error); font-size: 2.5rem;">delete</span>
+          <h3>Remove Item?</h3>
+          <p class="text-muted">Are you sure you want to remove this item from the order?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" (click)="cancelRemoveItem()">No, Keep it</button>
+          <button class="btn" style="background: var(--error); color: white;" 
+                  [disabled]="isRemovingItem()" (click)="confirmRemoveItemAction()">
+            <span *ngIf="!isRemovingItem()">Yes, Delete</span>
+            <span *ngIf="isRemovingItem()" class="loader"></span>
           </button>
         </div>
       </div>
@@ -307,26 +340,84 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
         display: flex;
         align-items: center;
         gap: 1rem;
-        padding: 0.75rem;
-        background: var(--surface);
-        border: 1px solid rgba(0,0,0,0.05);
-        border-radius: var(--border-radius-md);
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        transition: all 0.2s ease;
+        
+        &:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          transform: translateY(-1px);
+        }
         
         img {
           width: 50px;
           height: 50px;
           object-fit: cover;
-          border-radius: var(--border-radius-sm);
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          flex-shrink: 0;
         }
         
         .item-info {
           flex: 1;
           display: flex;
           flex-direction: column;
+          min-width: 0; /* Fixes flexbox text truncation */
+          
+          strong {
+            font-size: 0.95rem;
+            color: #1e293b;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .text-muted {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+          }
         }
 
-        .item-qty {
-          margin-left: auto;
+        .item-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          flex-shrink: 0;
+          
+          .badge {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.6rem;
+            white-space: nowrap;
+          }
+          
+          .btn-delete {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            
+            &:hover {
+              background: #ef4444;
+              color: white;
+              transform: scale(1.05);
+            }
+            
+            span {
+              font-size: 1.1rem;
+            }
+          }
         }
       }
     }
@@ -582,6 +673,9 @@ export class AdminOrdersComponent implements OnInit {
   isCancelling = signal(false);
   pendingBillOrderId = signal<string | null>(null);
   
+  itemToRemove = signal<{order: Order, item: OrderItem} | null>(null);
+  isRemovingItem = signal(false);
+  
   isLoading = signal(true);
   currentPage = signal(1);
   itemsPerPage = signal(10);
@@ -679,6 +773,52 @@ export class AdminOrdersComponent implements OnInit {
     this.isCancelling.set(false);
     this.closeStockWarning();
     this.closeDrawer();
+  }
+
+  initRemoveItem(order: Order, item: OrderItem) {
+    this.itemToRemove.set({order, item});
+  }
+
+  cancelRemoveItem() {
+    this.itemToRemove.set(null);
+  }
+
+  async confirmRemoveItemAction() {
+    const data = this.itemToRemove();
+    if (!data) return;
+    
+    this.isRemovingItem.set(true);
+    try {
+      const updatedItems = data.order.items.filter(i => i.productId !== data.item.productId);
+      await this.dataService.updateOrder(data.order.id, { items: updatedItems });
+      
+      // Also update selectedOrder locally to reflect change instantly in the drawer
+      const newSelectedOrder = {...data.order, items: updatedItems};
+      this.selectedOrder.set(newSelectedOrder);
+    } catch (e) {
+      console.error('Error removing item:', e);
+    } finally {
+      this.isRemovingItem.set(false);
+      this.cancelRemoveItem();
+    }
+  }
+
+  async confirmCancelEmptyOrder(order: Order) {
+    this.isCancelling.set(true);
+    try {
+      const reason = 'All items were removed from the order before generating bill.';
+      await this.dataService.cancelOrder(order.id, reason);
+      
+      const newSelectedOrder = {...order, status: 'cancelled' as const, cancellationReason: reason};
+      this.selectedOrder.set(newSelectedOrder);
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+    } finally {
+      this.isCancelling.set(false);
+      setTimeout(() => {
+        this.closeDrawer();
+      }, 2000);
+    }
   }
 
   async generateBill(orderId: string) {

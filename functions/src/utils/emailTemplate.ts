@@ -60,6 +60,36 @@ export const generateCancellationEmailTemplate = (order: any, orderId: string, r
   `;
 };
 
+export const generateCompletionEmailTemplate = (order: any, orderId: string, itemsHtml: string) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
+      <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #eaeaea;">
+        <div style="font-size: 3rem;">✅</div>
+        <h1 style="color: #28a745; margin: 10px 0 0;">Order Completed!</h1>
+        <p style="color: #666; margin-top: 5px;">Your bill has been generated and your order is ready.</p>
+        <div style="display: inline-block; background-color: #e8f5e9; padding: 8px 16px; border-radius: 20px; margin-top: 10px; font-weight: bold; color: #2e7d32;">
+          Order ID: #${orderId.substring(0, 8).toUpperCase()}
+        </div>
+      </div>
+      <div style="padding: 20px 0;">
+        <p style="color: #333; font-size: 16px;">Dear <strong>${order.customerName}</strong>,</p>
+        <p style="color: #555; line-height: 1.6;">Great news! Your order has been successfully processed and the bill has been generated. Below is the final summary of your ordered items.</p>
+        
+        <h3 style="color: #333; margin-top: 30px; margin-bottom: 10px;">Final Order Summary</h3>
+        ${itemsHtml}
+        
+        <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; text-align: center;">
+          <p style="margin: 0; color: #555; font-size: 14px;">Thank you for choosing <strong>Khandelwal Cards</strong>!</p>
+          <p style="margin: 5px 0 0 0; color: #888; font-size: 13px;">If you have any questions, please contact us.</p>
+        </div>
+      </div>
+      <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eaeaea; color: #888; font-size: 12px;">
+        <p>Khandelwal Cards — Automated Order System</p>
+      </div>
+    </div>
+  `;
+};
+
 export const generateItemsTable = (order: any, productsMap: Map<string, any>) => {
   let itemsHtml = `
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
