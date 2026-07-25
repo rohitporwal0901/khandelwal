@@ -19,11 +19,14 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         <p class="text-muted">Manage inventory and product details</p>
       </div>
       <div class="header-actions">
-        <!-- <button class="btn btn-outline" (click)="bulkAddMockProducts()" [disabled]="isGenerating()">
-          <span class="material-symbols-outlined" *ngIf="!isGenerating()">library_add</span>
-          <span class="spinner" *ngIf="isGenerating()"></span> 
-          {{ isGenerating() ? 'Adding 100...' : 'Bulk Add 100' }}
-        </button> -->
+        <div class="search-box">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input type="text" placeholder="Search by SKU"
+                 [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+          <button class="search-clear" *ngIf="searchQuery()" (click)="onSearch('')">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
         <button class="btn btn-primary" (click)="openAddDrawer()">
           <span class="material-symbols-outlined">add</span> Add Product
         </button>
@@ -72,6 +75,12 @@ import { SnackbarService } from '../../core/services/snackbar.service';
           <div class="status-badge" [ngClass]="prod.status === 'active' ? 'badge-success' : 'badge-error'">
             {{ prod.status | titlecase }}
           </div>
+          <div class="stock-badge out-of-stock" *ngIf="prod.stock === 0">
+            Out of Stock
+          </div>
+          <div class="stock-badge low-stock" *ngIf="prod.stock > 0 && prod.stock < 1500">
+            Low Stock
+          </div>
         </div>
         <div class="card-info">
           <h4 (click)="openDetailsDrawer(prod)">{{ prod.name }}</h4>
@@ -90,14 +99,14 @@ import { SnackbarService } from '../../core/services/snackbar.service';
           </div>
         </div>
       </div>
-      <div class="empty-state" *ngIf="!isLoading() && products().length === 0">
+      <div class="empty-state" *ngIf="!isLoading() && filteredProducts().length === 0">
         <span class="material-symbols-outlined">inventory_2</span>
-        <p>No products found. Start adding some!</p>
+        <p>No products found.</p>
       </div>
     </div>
     </div>
     
-    <div class="pagination-bar" *ngIf="!isLoading() && products().length > 0">
+    <div class="pagination-bar" *ngIf="!isLoading() && filteredProducts().length > 0">
       <button class="btn btn-outline" [disabled]="currentPage() === 1" (click)="prevPage()">
         <span class="material-symbols-outlined">chevron_left</span> Previous
       </button>
@@ -127,9 +136,19 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         <div class="form-row">
           <div class="form-group flex-1">
             <label class="form-label">Product Code (SKU)</label>
-            <input type="text" class="form-control" [class.is-invalid]="skuField.invalid && (skuField.dirty || skuField.touched)" [(ngModel)]="newProduct.sku" name="sku" #skuField="ngModel" required>
+            <input type="text" class="form-control" 
+                   [class.is-invalid]="(skuField.invalid && (skuField.dirty || skuField.touched)) || duplicateSkuError()" 
+                   [(ngModel)]="newProduct.sku" 
+                   (ngModelChange)="checkDuplicateSku($event)"
+                   (input)="checkDuplicateSku()"
+                   name="sku" 
+                   #skuField="ngModel" 
+                   required>
             <div class="validation-error" *ngIf="skuField.invalid && (skuField.dirty || skuField.touched)">
               <small>SKU is required.</small>
+            </div>
+            <div class="validation-error" *ngIf="duplicateSkuError()">
+              <small>{{ duplicateSkuError() }}</small>
             </div>
           </div>
           <div class="form-group flex-1">
@@ -208,7 +227,7 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         
         <div class="drawer-actions mt-4">
           <button type="button" class="btn btn-outline" (click)="closeAddDrawer()" [disabled]="isSaving()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="isUploading() || isSaving()">
+          <button type="submit" class="btn btn-primary" [disabled]="isUploading() || isSaving() || !!duplicateSkuError()">
             <span *ngIf="isSaving()" class="loader-sm"></span>
             <span *ngIf="!isSaving()">{{ isUploading() ? 'Uploading...' : (isEditing() ? 'Update Product' : 'Save Product') }}</span>
           </button>
@@ -279,6 +298,45 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       display: flex;
       gap: 1rem;
       align-items: center;
+    }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: var(--border-radius-md);
+      padding: 0 12px;
+      height: 40px;
+      gap: 8px;
+      width: 250px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(139,0,0,0.08);
+      }
+
+      .search-icon { color: var(--text-muted); font-size: 1.2rem; flex-shrink: 0; }
+
+      input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        background: transparent;
+        font-family: inherit;
+        width: 100%;
+        &::placeholder { color: var(--text-muted); }
+      }
+
+      .search-clear {
+        background: none; border: none; padding: 0; cursor: pointer;
+        color: var(--text-muted); display: flex; align-items: center;
+        .material-symbols-outlined { font-size: 1.1rem; }
+        &:hover { color: var(--text-main); }
+      }
     }
     
     .products-grid {
@@ -384,6 +442,32 @@ import { SnackbarService } from '../../core/services/snackbar.service';
           background: rgba(255,255,255,0.95);
           backdrop-filter: blur(4px);
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .stock-badge {
+          position: absolute;
+          top: 0.75rem;
+          left: 0.75rem;
+          z-index: 10;
+          font-size: 0.7rem;
+          font-weight: 700;
+          padding: 0.25rem 0.6rem;
+          border-radius: 4px;
+          background: rgba(255,255,255,0.95);
+          backdrop-filter: blur(4px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .out-of-stock {
+          color: var(--error);
+          border: 1px solid var(--error);
+          background: rgba(255, 235, 238, 0.95);
+        }
+        
+        .low-stock {
+          color: #d97706; /* Amber/Warning color */
+          border: 1px solid #d97706;
+          background: rgba(254, 243, 199, 0.95);
         }
       }
       
@@ -740,6 +824,7 @@ export class AdminProductsComponent implements OnInit {
   pageSize = signal(10);
   isPaginating = signal(false);
   isLoading = signal(true);
+  searchQuery = signal<string>('');
 
   ngOnInit() {
     setTimeout(() => {
@@ -747,14 +832,31 @@ export class AdminProductsComponent implements OnInit {
     }, 2000);
   }
 
+  onSearch(val: string) {
+    this.searchQuery.set(val);
+    this.currentPage.set(1); // Reset pagination on search
+  }
+
+  filteredProducts = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    let list = this.products();
+    if (query) {
+      list = list.filter(p =>
+        p.sku.toLowerCase().includes(query) ||
+        p.name.toLowerCase().includes(query)
+      );
+    }
+    return list;
+  });
+
   paginatedProducts = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
     const end = start + this.pageSize();
-    return this.products().slice(start, end);
+    return this.filteredProducts().slice(start, end);
   });
 
   totalPages = computed(() => {
-    return Math.ceil(this.products().length / this.pageSize());
+    return Math.ceil(this.filteredProducts().length / this.pageSize());
   });
 
   loadedImages = signal<Record<string, boolean>>({});
@@ -772,6 +874,7 @@ export class AdminProductsComponent implements OnInit {
   uploadProgress = signal(0);
 
   isSaving = signal(false);
+  duplicateSkuError = signal<string>('');
 
   newProduct: Product | Omit<Product, 'id'> = {
     name: '',
@@ -815,6 +918,7 @@ export class AdminProductsComponent implements OnInit {
   openAddDrawer() {
     this.isEditing.set(false);
     this.isAddDrawerOpen.set(true);
+    this.duplicateSkuError.set('');
     this.newProduct = {
       name: '', sku: '', categoryId: '', description: '',
       stock: 0, status: 'active', images: []
@@ -823,9 +927,27 @@ export class AdminProductsComponent implements OnInit {
 
   openEditDrawer(prod: Product) {
     this.isEditing.set(true);
+    this.duplicateSkuError.set('');
     // clone the product so we don't mutate the UI immediately before save
     this.newProduct = JSON.parse(JSON.stringify(prod));
     this.isAddDrawerOpen.set(true);
+  }
+
+  checkDuplicateSku(skuValue?: string) {
+    const sku = (skuValue || this.newProduct.sku || '').trim().toLowerCase();
+    if (!sku) {
+      this.duplicateSkuError.set('');
+      return;
+    }
+    const currentId = ('id' in this.newProduct) ? (this.newProduct as Product).id : null;
+    const exists = this.products().some(p =>
+      p.sku.trim().toLowerCase() === sku && p.id !== currentId
+    );
+    if (exists) {
+      this.duplicateSkuError.set(`Product Code (SKU) "${this.newProduct.sku}" already exists!`);
+    } else {
+      this.duplicateSkuError.set('');
+    }
   }
 
   closeAddDrawer() {
@@ -900,11 +1022,15 @@ export class AdminProductsComponent implements OnInit {
   }
 
   async saveProduct(form: any) {
-    if (form.invalid || this.newProduct.images.length === 0) {
+    this.checkDuplicateSku();
+    if (form.invalid || this.newProduct.images.length === 0 || !!this.duplicateSkuError()) {
       // Mark all controls as touched to trigger validation UI
       Object.keys(form.controls).forEach(key => {
         form.controls[key].markAsTouched();
       });
+      if (this.duplicateSkuError()) {
+        this.snackbar.show(this.duplicateSkuError(), 'error');
+      }
       return; // Stop saving if invalid
     }
 
@@ -922,6 +1048,7 @@ export class AdminProductsComponent implements OnInit {
       } else {
         await this.dataService.addProduct(productToSave as Omit<Product, 'id'>);
         this.snackbar.show('Product added successfully', 'success');
+        this.currentPage.set(1); // Jump to page 1 to see newly added product at top
       }
       this.closeAddDrawer();
     } catch (err) {

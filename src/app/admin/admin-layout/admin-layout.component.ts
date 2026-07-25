@@ -34,9 +34,13 @@ import { DataService } from '../../core/services/data.service';
             <span class="material-symbols-outlined">shopping_cart</span> Orders
           </a>
 
-          <!-- <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+          <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
+            <span class="material-symbols-outlined">group</span> Customers
+          </a>
+
+          <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
             <span class="material-symbols-outlined">settings</span> Settings
-          </a> -->
+          </a>
         </nav>
         
         <div class="sidebar-footer">

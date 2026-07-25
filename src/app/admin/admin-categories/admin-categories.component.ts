@@ -78,9 +78,20 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       <form (ngSubmit)="saveCategory(catForm)" #catForm="ngForm">
         <div class="form-group">
           <label class="form-label">Category Name</label>
-          <input type="text" class="form-control" [class.is-invalid]="nameField.invalid && (nameField.dirty || nameField.touched || catForm.submitted)" [(ngModel)]="newCategory.name" name="name" #nameField="ngModel" required placeholder="e.g. Wedding Cards">
+          <input type="text" class="form-control" 
+                 [class.is-invalid]="(nameField.invalid && (nameField.dirty || nameField.touched || catForm.submitted)) || duplicateCategoryError()" 
+                 [(ngModel)]="newCategory.name" 
+                 (ngModelChange)="checkDuplicateCategory($event)"
+                 (input)="checkDuplicateCategory()"
+                 name="name" 
+                 #nameField="ngModel" 
+                 required 
+                 placeholder="e.g. Wedding Cards">
           <div class="validation-error" *ngIf="nameField.invalid && (nameField.dirty || nameField.touched || catForm.submitted)">
             <small>Category name is required.</small>
+          </div>
+          <div class="validation-error" *ngIf="duplicateCategoryError()">
+            <small>{{ duplicateCategoryError() }}</small>
           </div>
         </div>
         
@@ -99,7 +110,7 @@ import { SnackbarService } from '../../core/services/snackbar.service';
         
         <div class="drawer-actions mt-4">
           <button type="button" class="btn btn-outline" (click)="closeDrawer()" [disabled]="isSaving()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving() || !!duplicateCategoryError()">
             <span *ngIf="isSaving()" class="loader-sm"></span>
             <span *ngIf="!isSaving()">{{ isEditing() ? 'Update Category' : 'Save Category' }}</span>
           </button>
@@ -249,6 +260,7 @@ export class AdminCategoriesComponent implements OnInit {
   isDrawerOpen = signal(false);
   isEditing = signal(false);
   isSaving = signal(false);
+  duplicateCategoryError = signal<string>('');
 
   isDeleteModalOpen = signal(false);
   categoryToDelete = signal<string | null>(null);
@@ -268,16 +280,35 @@ export class AdminCategoriesComponent implements OnInit {
   openDrawer() {
     this.isEditing.set(false);
     this.isDrawerOpen.set(true);
+    this.duplicateCategoryError.set('');
     this.newCategory = { name: '', description: '', status: 'active' };
   }
 
   openEditDrawer(cat: Category) {
     this.isEditing.set(true);
+    this.duplicateCategoryError.set('');
     // clone the category
     this.newCategory = {
       ...cat
     };
     this.isDrawerOpen.set(true);
+  }
+
+  checkDuplicateCategory(nameValue?: string) {
+    const name = (nameValue || this.newCategory.name || '').trim().toLowerCase();
+    if (!name) {
+      this.duplicateCategoryError.set('');
+      return;
+    }
+    const currentId = ('id' in this.newCategory) ? (this.newCategory as Category).id : null;
+    const exists = this.categories().some(c => 
+      c.name.trim().toLowerCase() === name && c.id !== currentId
+    );
+    if (exists) {
+      this.duplicateCategoryError.set(`Category "${this.newCategory.name}" already exists!`);
+    } else {
+      this.duplicateCategoryError.set('');
+    }
   }
 
   closeDrawer() {
@@ -305,10 +336,14 @@ export class AdminCategoriesComponent implements OnInit {
   }
 
   async saveCategory(form: any) {
-    if (form.invalid) {
+    this.checkDuplicateCategory();
+    if (form.invalid || !!this.duplicateCategoryError()) {
       Object.keys(form.controls).forEach(key => {
         form.controls[key].markAsTouched();
       });
+      if (this.duplicateCategoryError()) {
+        this.snackbar.show(this.duplicateCategoryError(), 'error');
+      }
       return;
     }
 

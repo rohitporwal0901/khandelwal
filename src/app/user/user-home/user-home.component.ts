@@ -4,43 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../core/services/data.service';
 
-const HERO_SLIDES = [
-  {
-    title: 'Wedding Invitation Cards',
-    subtitle: 'Premium printed cards for your special day',
-    tag: 'Most Popular',
-    bg: 'linear-gradient(135deg, #8B0000 0%, #5a0000 100%)',
-    img: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    title: 'Birthday Celebrations',
-    subtitle: 'Make every birthday unforgettable',
-    tag: 'Trending',
-    bg: 'linear-gradient(135deg, #7B3F00 0%, #4a2700 100%)',
-    img: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    title: 'Festive Greetings',
-    subtitle: 'Diwali, Eid, Christmas & more',
-    tag: 'New Arrival',
-    bg: 'linear-gradient(135deg, #1a3a4a 0%, #0d2030 100%)',
-    img: 'https://images.unsplash.com/photo-1574265254022-3ad33dde6a65?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    title: 'Corporate & Events',
-    subtitle: 'Professional cards for every occasion',
-    tag: 'Premium',
-    bg: 'linear-gradient(135deg, #2d4a22 0%, #1a2e14 100%)',
-    img: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    title: 'Bulk Orders Welcome',
-    subtitle: 'Best prices on 500+ cards',
-    tag: 'Best Deal',
-    bg: 'linear-gradient(135deg, #4a1a6e 0%, #2d0e42 100%)',
-    img: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=800'
-  }
-];
+// Slides are now fetched dynamically from DataService
 
 @Component({
   selector: 'app-user-home',
@@ -49,16 +13,36 @@ const HERO_SLIDES = [
   template: `
     <div class="home-container">
 
+      <!-- ─── Initial Loading / Placeholder Banner ─── -->
+      <div class="hero-start-banner" *ngIf="slides().length === 0">
+        <div class="banner-content">
+          <div class="brand-badge">Premium Collection</div>
+          <h2 class="brand-title">Khandelwal Cards</h2>
+          <p class="brand-subtitle">Crafting Memories with Elegance</p>
+          <div class="shimmer-line"></div>
+        </div>
+      </div>
+
       <!-- ─── Hero Slider (Crossfade) ──────────── -->
       <div class="hero-slider"
+           *ngIf="slides().length > 0"
            (touchstart)="onTouchStart($event)"
            (touchend)="onTouchEnd($event)">
 
         <div class="slide"
-             *ngFor="let slide of slides; let i = index"
-             [style.background]="slide.bg"
+             *ngFor="let slide of slides(); let i = index"
+             [style.background]="slide.bg || '#000'"
              [class.active]="activeDotIndex() === i">
-          <img class="slide-img" [src]="slide.img" [alt]="slide.title" loading="lazy">
+          
+          <div class="skeleton-loader" *ngIf="!loadedImages()[slide.id]"></div>
+          
+          <img class="slide-img" 
+               [src]="slide.img" 
+               [alt]="slide.title" 
+               loading="lazy"
+               (load)="onImageLoad(slide.id)"
+               [class.img-loaded]="loadedImages()[slide.id]">
+               
           <div class="slide-overlay"></div>
           <div class="slide-content">
             <span class="slide-tag">{{ slide.tag }}</span>
@@ -69,7 +53,7 @@ const HERO_SLIDES = [
 
         <!-- Dots -->
         <div class="slider-dots">
-          <button class="dot" *ngFor="let slide of slides; let i = index"
+          <button class="dot" *ngFor="let slide of slides(); let i = index"
                   [class.active]="activeDotIndex() === i"
                   (click)="goToSlide(i)" [attr.aria-label]="'Slide ' + (i+1)">
           </button>
@@ -170,6 +154,98 @@ const HERO_SLIDES = [
   styles: [`
     .home-container { padding-bottom: 1rem; background: var(--background); }
 
+    /* ─── Hero Start Banner ────────────────────── */
+    .hero-start-banner {
+      width: 100%;
+      height: 210px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #4a0000 0%, #8B0000 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-start-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
+      animation: pulseGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { opacity: 0.5; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.1); }
+    }
+
+    .banner-content {
+      position: relative;
+      text-align: center;
+      z-index: 2;
+      padding: 0 20px;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      color: #D4AF37;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 0 0 5px;
+      color: #fff;
+      background: linear-gradient(to right, #FFF, #D4AF37, #FFF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% auto;
+      animation: shineText 4s linear infinite;
+    }
+
+    @keyframes shineText {
+      to { background-position: 200% center; }
+    }
+
+    .brand-subtitle {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+
+    .shimmer-line {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+      margin: 12px auto 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .shimmer-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, #fff, transparent);
+      animation: shimmerLine 2s infinite;
+    }
+
+    @keyframes shimmerLine {
+      100% { left: 200%; }
+    }
+
     /* ─── Hero Slider ─────────────────────────── */
     .hero-slider {
       position: relative;
@@ -199,8 +275,30 @@ const HERO_SLIDES = [
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0.45;
-      transition: opacity 0.3s ease;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 2;
+      
+      &.img-loaded {
+        opacity: 0.45;
+      }
+    }
+    
+    .skeleton-loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonLoading 1.5s infinite;
+      z-index: 1;
+    }
+    
+    @keyframes skeletonLoading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
     .slide-overlay {
       position: absolute;
@@ -415,7 +513,6 @@ const HERO_SLIDES = [
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0;
         transition: opacity 0.35s ease;
         z-index: 1;
 
@@ -551,7 +648,7 @@ const HERO_SLIDES = [
 })
 export class UserHomeComponent implements OnInit, OnDestroy {
   dataService = inject(DataService);
-  slides = HERO_SLIDES;
+  slides = computed(() => this.dataService.homeSlides().filter(s => s.status === 'active'));
 
   categories = this.dataService.categories;
   products = this.dataService.products;
@@ -579,7 +676,8 @@ export class UserHomeComponent implements OnInit, OnDestroy {
 
   /** Move to next slide — simple modulo, fade handles the loop */
   private advance() {
-    this.currentSlide.update(s => (s + 1) % this.slides.length);
+    if (this.slides().length === 0) return;
+    this.currentSlide.update(s => (s + 1) % this.slides().length);
   }
 
   ngOnDestroy() {
@@ -598,14 +696,14 @@ export class UserHomeComponent implements OnInit, OnDestroy {
 
   onTouchEnd(e: TouchEvent) {
     const diff = this.touchStartX - e.changedTouches[0].screenX;
-    if (Math.abs(diff) > 40) {
+    if (Math.abs(diff) > 40 && this.slides().length > 0) {
       if (diff > 0) {
         // swipe left → next
-        const next = (this.activeDotIndex() + 1) % this.slides.length;
+        const next = (this.activeDotIndex() + 1) % this.slides().length;
         this.goToSlide(next);
       } else {
         // swipe right → prev
-        const prev = (this.activeDotIndex() - 1 + this.slides.length) % this.slides.length;
+        const prev = (this.activeDotIndex() - 1 + this.slides().length) % this.slides().length;
         this.goToSlide(prev);
       }
     }
@@ -624,7 +722,11 @@ export class UserHomeComponent implements OnInit, OnDestroy {
       p.name.toLowerCase().includes(query) ||
       (p.sku && p.sku.toLowerCase().includes(query))
     );
-    return list;
+    return list.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
   });
 
   selectCategory(id: string | null) {

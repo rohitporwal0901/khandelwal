@@ -7,6 +7,7 @@ export interface Category {
   image: string;
   description: string;
   status: 'active' | 'disabled';
+  createdAt?: string;
 }
 
 export interface Product {
@@ -18,6 +19,7 @@ export interface Product {
   stock: number;
   status: 'active' | 'disabled';
   images: string[];
+  createdAt?: string;
 }
 
 export interface OrderItem {
@@ -28,6 +30,17 @@ export interface OrderItem {
 export interface StockCheckResult {
   sufficient: boolean;
   issues: { productId: string; productName: string; ordered: number; available: number }[];
+}
+
+export interface HomeSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  tag: string;
+  bg: string;
+  img: string;
+  status: 'active' | 'inactive';
+  order: number;
 }
 
 export interface Order {
@@ -55,6 +68,7 @@ export class DataService {
   orders = signal<Order[]>([]);
   cart = signal<OrderItem[]>([]);
   isProductsLoaded = signal<boolean>(false);
+  homeSlides = signal<HomeSlide[]>([]);
 
   constructor() {
     this.initFirestoreListeners();
@@ -63,12 +77,22 @@ export class DataService {
   private initFirestoreListeners() {
     const categoriesRef = collection(this.firestore, 'categories-kh');
     collectionData(categoriesRef, { idField: 'id' }).subscribe((data: any[]) => {
-      this.categories.set(data as Category[]);
+      const sortedCategories = (data as Category[]).sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+      this.categories.set(sortedCategories);
     });
 
     const productsRef = collection(this.firestore, 'products-kh');
     collectionData(productsRef, { idField: 'id' }).subscribe((data: any[]) => {
-      this.products.set(data as Product[]);
+      const sortedProducts = (data as Product[]).sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+      this.products.set(sortedProducts);
       this.isProductsLoaded.set(true);
     });
 
@@ -77,6 +101,12 @@ export class DataService {
       // Sort orders by date descending
       const sortedOrders = (data as Order[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       this.orders.set(sortedOrders);
+    });
+
+    const homeSlidesRef = collection(this.firestore, 'home-slides-kh');
+    collectionData(homeSlidesRef, { idField: 'id' }).subscribe((data: any[]) => {
+      const sortedSlides = (data as HomeSlide[]).sort((a, b) => a.order - b.order);
+      this.homeSlides.set(sortedSlides);
     });
 
     // Initialize cart from localStorage if exists
@@ -211,7 +241,11 @@ export class DataService {
   // Generic CRUD for Admin
   async addCategory(category: Omit<Category, 'id'>) {
     const categoriesRef = collection(this.firestore, 'categories-kh');
-    await addDoc(categoriesRef, category);
+    const payload = {
+      ...category,
+      createdAt: new Date().toISOString()
+    };
+    await addDoc(categoriesRef, payload);
   }
 
   async updateCategory(id: string, category: Partial<Category>) {
@@ -227,7 +261,11 @@ export class DataService {
 
   async addProduct(product: Omit<Product, 'id'>) {
     const productsRef = collection(this.firestore, 'products-kh');
-    await addDoc(productsRef, product);
+    const payload = {
+      ...product,
+      createdAt: new Date().toISOString()
+    };
+    await addDoc(productsRef, payload);
   }
 
   async updateProduct(id: string, product: Partial<Product>) {
@@ -261,11 +299,29 @@ export class DataService {
         description: `Exquisite premium printing card for special occasions. Featuring glassmorphism design cues. Item number ${skuNumber}.`,
         images: images,
         stock: Math.floor(Math.random() * 500) + 10,
-        status: 'active'
+        status: 'active',
+        createdAt: new Date().toISOString()
       };
       batch.set(newDocRef, product);
     }
 
     await batch.commit();
+  }
+
+  // Home Slide CRUD
+  async addHomeSlide(slide: Omit<HomeSlide, 'id'>) {
+    const slidesRef = collection(this.firestore, 'home-slides-kh');
+    await addDoc(slidesRef, slide);
+  }
+
+  async updateHomeSlide(id: string, slide: Partial<HomeSlide>) {
+    const slideRef = doc(this.firestore, `home-slides-kh/${id}`);
+    await updateDoc(slideRef, slide);
+  }
+
+  async deleteHomeSlide(id: string) {
+    const slideRef = doc(this.firestore, `home-slides-kh/${id}`);
+    const { deleteDoc } = await import('@angular/fire/firestore');
+    await deleteDoc(slideRef);
   }
 }
