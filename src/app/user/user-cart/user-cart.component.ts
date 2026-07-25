@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DataService, Order } from '../../core/services/data.service';
+import { AuthService } from '../../core/services/auth.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
 
 @Component({
@@ -125,13 +126,11 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
           </div>
         </div>
 
-        <div class="form-group" [class.has-error]="phoneField.invalid && (phoneField.touched || checkoutForm.submitted)">
-          <label class="form-label">Phone Number <span class="req">*</span></label>
-          <input type="tel" class="form-control" [(ngModel)]="customerDetails.phone"
-                 name="phone" required #phoneField="ngModel" placeholder="+91 98765 43210">
-          <div class="field-error" *ngIf="phoneField.invalid && (phoneField.touched || checkoutForm.submitted)">
-            <span class="material-symbols-outlined">error</span> Phone number is required
-          </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number <span class="locked-badge">🔒 Locked</span></label>
+          <input type="tel" class="form-control readonly-input" [(ngModel)]="customerDetails.phone"
+                 name="phone" readonly #phoneField="ngModel" placeholder="+91 98765 43210">
+          <div class="field-hint">Phone number cannot be changed for this account.</div>
         </div>
 
         <div class="form-group" [class.has-error]="emailField.invalid && (emailField.touched || checkoutForm.submitted)">
@@ -422,6 +421,9 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
       border-color: var(--error);
       box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
     }
+    .locked-badge { font-size: 0.72rem; background: rgba(0,0,0,0.06); color: var(--text-secondary); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .readonly-input { background: #f9f9f9 !important; color: var(--text-secondary) !important; cursor: not-allowed; }
+    .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
     .sheet-actions { display: flex; gap: 10px; margin-top: 4px; }
@@ -454,6 +456,7 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
 })
 export class UserCartComponent {
   dataService = inject(DataService);
+  authService = inject(AuthService);
   router = inject(Router);
 
   cartItems = this.dataService.cart;
@@ -498,13 +501,41 @@ export class UserCartComponent {
   }
   cancelRemove() { this.productToRemove.set(null); }
   continueShopping() { this.orderSuccess.set(false); this.router.navigate(['/shop']); }
-  openCheckout() { this.isCheckoutOpen.set(true); }
+  openCheckout() {
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/shop/login'], { queryParams: { returnUrl: '/shop/cart' } });
+      return;
+    }
+    const profile = this.authService.currentUserProfile();
+    this.customerDetails = {
+      customerName: profile?.name || '',
+      phone: profile?.phone || '',
+      email: profile?.email || '',
+      address: profile?.address || '',
+      notes: ''
+    };
+    this.isCheckoutOpen.set(true);
+  }
   closeCheckout() { this.isCheckoutOpen.set(false); }
 
   async submitOrder() {
     this.isSubmitting.set(true);
     try {
-      const newOrder = await this.dataService.placeOrder(this.customerDetails);
+      const user = this.authService.currentUser();
+      const orderPayload = {
+        ...this.customerDetails,
+        uid: user?.uid
+      };
+      const newOrder = await this.dataService.placeOrder(orderPayload);
+      
+      if (user) {
+        await this.authService.updateUserProfile(user.uid, {
+          name: this.customerDetails.customerName,
+          email: this.customerDetails.email,
+          address: this.customerDetails.address
+        });
+      }
+
       this.lastOrderId = newOrder.id;
       this.isSubmitting.set(false);
       this.closeCheckout();

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc, writeBatch } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc, writeBatch, query, where, getDocs } from '@angular/fire/firestore';
 
 export interface Category {
   id: string;
@@ -54,6 +54,7 @@ export interface Order {
   status: 'pending' | 'completed' | 'cancelled';
   cancellationReason?: string;
   date: string;
+  uid?: string; // Firebase Auth UID — stored at order time
 }
 
 @Injectable({
@@ -171,12 +172,19 @@ export class DataService {
     const ordersRef = collection(this.firestore, 'orders-kh');
     const docRef = await addDoc(ordersRef, newOrder);
 
-    // We add the id property onto the object for immediate return since addDoc doesn't include it in the returned object, 
-    // although collectionData listener will update the list with the correct ID.
     const completeOrder: Order = { ...newOrder, id: docRef.id } as Order;
 
     this.clearCart();
     return completeOrder;
+  }
+
+  // Fetch orders for a specific user by uid
+  async getUserOrders(uid: string): Promise<Order[]> {
+    const ordersRef = collection(this.firestore, 'orders-kh');
+    const q = query(ordersRef, where('uid', '==', uid));
+    const snap = await getDocs(q);
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() } as Order));
+    return orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   async checkStockForOrder(orderId: string): Promise<StockCheckResult> {

@@ -19,6 +19,10 @@ import { UserLayoutComponent } from './user/user-layout/user-layout.component';
 import { UserHomeComponent } from './user/user-home/user-home.component';
 import { UserProductDetailsComponent } from './user/user-product-details/user-product-details.component';
 import { UserCartComponent } from './user/user-cart/user-cart.component';
+import { UserAuthComponent } from './user/user-auth/user-auth.component';
+import { UserAccountComponent } from './user/user-account/user-account.component';
+import { UserOrdersComponent } from './user/user-orders/user-orders.component';
+import { userGuard } from './core/guards/user.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'shop', pathMatch: 'full' },
@@ -46,9 +50,12 @@ export const routes: Routes = [
     path: 'shop',
     component: UserLayoutComponent,
     children: [
-      { path: '', component: UserHomeComponent },
-      { path: 'product/:id', component: UserProductDetailsComponent },
-      { path: 'cart', component: UserCartComponent }
+      { path: '', component: UserHomeComponent, canActivate: [userGuard] },
+      { path: 'product/:id', component: UserProductDetailsComponent, canActivate: [userGuard] },
+      { path: 'cart', component: UserCartComponent, canActivate: [userGuard] },
+      { path: 'login', component: UserAuthComponent },
+      { path: 'account', component: UserAccountComponent, canActivate: [userGuard] },
+      { path: 'orders', component: UserOrdersComponent, canActivate: [userGuard] }
     ]
   },
 

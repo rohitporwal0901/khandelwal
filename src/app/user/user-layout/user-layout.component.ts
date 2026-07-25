@@ -2,6 +2,7 @@ import { Component, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-layout',
@@ -44,6 +45,13 @@ import { DataService } from '../../core/services/data.service';
             <span class="nav-badge" *ngIf="cartCount() > 0">{{ cartCount() }}</span>
           </div>
           <span class="nav-label">Cart</span>
+        </a>
+        <a [routerLink]="authService.isAuthenticated() ? '/shop/account' : '/shop/login'"
+           routerLinkActive="active" class="nav-item" id="nav-account">
+          <div class="nav-icon-wrap">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+          <span class="nav-label">Account</span>
         </a>
       </nav>
     </div>
@@ -272,6 +280,7 @@ import { DataService } from '../../core/services/data.service';
 })
 export class UserLayoutComponent {
   dataService = inject(DataService);
+  authService = inject(AuthService);
   isScrolled = signal(false);
 
   cartCount = () => this.dataService.cart().length;
