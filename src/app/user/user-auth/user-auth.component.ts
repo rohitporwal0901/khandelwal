@@ -89,6 +89,7 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           <input *ngFor="let i of [0,1,2,3,4,5]"
             type="password"
             class="pin-box"
+            [class.filled]="loginPinDigits[i] !== ''"
             maxlength="1"
             inputmode="numeric"
             [id]="'login-pin-' + i"
@@ -128,15 +129,22 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           <div class="sheet-handle"></div>
           
           <div class="sheet-header">
-            <div class="header-badge">🎉 New Member Application</div>
-            <h2 class="auth-title mt-1">Create Account</h2>
+            <div class="sheet-top-row">
+              <div>
+                <div class="header-badge">🎉 New Member Application</div>
+                <h2 class="auth-title mt-1">Create Account</h2>
+              </div>
+              <button class="btn-close-rapido" (click)="goBack()" title="Close">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
             <div class="phone-change-wrap">
               <span class="phone-display">+91 {{ phoneNumber }}</span>
               <button class="change-link" (click)="goBack()">Change</button>
             </div>
           </div>
 
-          <div class="form-group mt-3">
+          <div class="form-group mt-2">
             <label class="form-label">Your Full Name / Business Name</label>
             <div class="input-with-icon">
               <span class="material-symbols-outlined icon">storefront</span>
@@ -145,12 +153,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
             </div>
           </div>
 
-          <div class="form-group mt-3">
+          <div class="form-group mt-2">
             <label class="form-label">Set 6-digit Security PIN</label>
             <div class="pin-boxes">
               <input *ngFor="let i of [0,1,2,3,4,5]"
                 type="password"
                 class="pin-box"
+                [class.filled]="registerPinDigits[i] !== ''"
                 maxlength="1"
                 inputmode="numeric"
                 [id]="'reg-pin-' + i"
@@ -160,12 +169,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
             </div>
           </div>
 
-          <div class="form-group mt-3">
+          <div class="form-group mt-2">
             <label class="form-label">Confirm 6-digit PIN</label>
             <div class="pin-boxes">
               <input *ngFor="let i of [0,1,2,3,4,5]"
                 type="password"
                 class="pin-box"
+                [class.filled]="confirmPinDigits[i] !== ''"
                 maxlength="1"
                 inputmode="numeric"
                 [id]="'conf-pin-' + i"
@@ -204,12 +214,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
         </div>
         <p class="auth-subtitle mt-2">Set a new 6-digit PIN for your account</p>
 
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
           <label class="form-label">New PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
               type="password"
               class="pin-box"
+              [class.filled]="newPinDigits[i] !== ''"
               maxlength="1"
               inputmode="numeric"
               [id]="'new-pin-' + i"
@@ -219,12 +230,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           </div>
         </div>
 
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
           <label class="form-label">Confirm New PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
               type="password"
               class="pin-box"
+              [class.filled]="newConfirmPinDigits[i] !== ''"
               maxlength="1"
               inputmode="numeric"
               [id]="'new-conf-pin-' + i"
@@ -293,13 +305,24 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 100%;
+      width: 100%;
+      background: var(--surface);
+    }
     .auth-page {
-      min-height: 100dvh;
-      background: var(--background);
+      min-height: 100%;
+      width: 100%;
+      background: var(--surface);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 0 0 2rem;
+      padding: 0;
+      margin: 0;
+      flex: 1;
     }
 
     /* ─── Brand Header ──────────────────────── */
@@ -310,8 +333,10 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       align-items: center;
       gap: 14px;
       padding: 24px var(--space-base) 28px;
-      margin-bottom: -18px;
+      margin-bottom: -24px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: relative;
+      z-index: 1;
     }
     .brand-logo {
       width: 46px;
@@ -343,12 +368,15 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     /* ─── Auth Card ─────────────────────────── */
     .auth-card {
       background: var(--surface);
-      border-radius: 22px 22px 0 0;
+      border-radius: 28px 28px 0 0;
       width: 100%;
       flex: 1;
-      padding: 28px var(--space-base) 2rem;
+      padding: 32px var(--space-base) 2rem;
       position: relative;
-      box-shadow: 0 -6px 24px rgba(0,0,0,0.08);
+      z-index: 2;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
       
       &.muted-bg {
         background: #f4f2f0;
@@ -360,15 +388,17 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(212, 175, 55, 0.12);
-      color: #9A7B1C;
-      font-size: 0.75rem;
+      background: linear-gradient(135deg, #FFF9E6 0%, #FFF2CC 100%);
+      color: #8A6D14;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
+      border: 1px solid #E6C875;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+      width: fit-content;
       
-      .icon-small { font-size: 1rem; }
+      .icon-small { font-size: 1.05rem; color: #D4AF37; }
     }
 
     .back-btn {
@@ -422,26 +452,28 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     .phone-input-wrap {
       display: flex;
       align-items: center;
-      border: 1.5px solid rgba(0,0,0,0.12);
-      border-radius: 14px;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 16px;
       overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      background: white;
+      transition: all 0.2s ease;
+      background: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      height: 56px;
       &:focus-within {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(139,0,0,0.08);
+        border-color: #8B0000;
+        box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.08);
       }
     }
     .country-code {
       padding: 0 16px;
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       font-weight: 700;
-      color: var(--text-secondary);
-      border-right: 1.5px solid rgba(0,0,0,0.08);
-      height: 52px;
+      color: #1E293B;
+      border-right: 1.5px solid #E2E8F0;
+      height: 100%;
       display: flex;
       align-items: center;
-      background: #f9f9f9;
+      background: #F8FAFC;
       white-space: nowrap;
     }
     .phone-input {
@@ -449,12 +481,15 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       border: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
+      color: #0F172A;
       padding: 0 16px;
-      height: 52px;
+      height: 100%;
+      background: #FFFFFF !important;
       &:focus-within { box-shadow: none !important; }
+      &::placeholder { color: #94A3B8; font-weight: 500; letter-spacing: 0.5px; }
     }
 
     /* ─── Generic Input ─────────────────────── */
@@ -494,34 +529,34 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       }
     }
 
-    /* ─── PIN Boxes ─────────────────────────── */
+    /* ─── PIN Boxes (Rapido Compact Style) ──── */
     .pin-boxes {
       display: flex;
-      gap: 10px;
+      gap: 6px;
       justify-content: center;
     }
     .pin-box {
-      width: 46px;
-      height: 54px;
-      border: 2px solid rgba(0,0,0,0.12);
-      border-radius: 14px;
+      width: 38px;
+      height: 42px;
+      border: 1.5px solid #D8D8DE;
+      border-radius: 8px;
       text-align: center;
-      font-size: 1.4rem;
+      font-size: 1.15rem;
       font-weight: 700;
       font-family: inherit;
-      color: var(--primary);
-      background: white;
+      color: #282C3F;
+      background: #FFFFFF;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      transition: all 0.15s ease;
       -webkit-text-security: disc;
       &:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(139,0,0,0.12);
-        transform: scale(1.05);
-      }
-      &:not(:placeholder-shown) {
         border-color: #D4AF37;
-        background: rgba(212,175,55,0.06);
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+      }
+      &.filled {
+        border-color: #D4AF37;
+        background: #FFFDF0;
+        color: #8B0000;
       }
     }
 
@@ -546,9 +581,9 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       left: 0;
       width: 100%;
       background: white;
-      border-radius: 28px 28px 0 0;
-      padding: 16px var(--space-base) 2rem;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+      border-radius: 24px 24px 0 0;
+      padding: 12px var(--space-base) 2rem;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
       animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
     }
@@ -561,11 +596,32 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       height: 5px;
       background: rgba(0,0,0,0.12);
       border-radius: 999px;
-      margin: 0 auto 16px;
+      margin: 0 auto 12px;
     }
     .sheet-header {
       border-bottom: 1px solid rgba(0,0,0,0.06);
-      padding-bottom: 16px;
+      padding-bottom: 12px;
+    }
+    .sheet-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .btn-close-rapido {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #F5F5F6;
+      border: none;
+      color: #535766;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      &:hover { background: #EAEAEA; color: #282C3F; }
+      &:active { transform: scale(0.9); }
+      .material-symbols-outlined { font-size: 1.2rem; }
     }
     .header-badge {
       display: inline-block;
@@ -677,12 +733,12 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     /* ─── Buttons ───────────────────────────── */
     .btn-primary {
       width: 100%;
-      height: 52px;
-      background: linear-gradient(135deg, #7a0000 0%, #8B0000 100%);
+      height: 56px;
+      background: linear-gradient(135deg, #8B0000 0%, #600000 100%);
       color: white;
       border: none;
-      border-radius: 14px;
-      font-size: 0.95rem;
+      border-radius: 16px;
+      font-size: 1.05rem;
       font-weight: 700;
       letter-spacing: 0.5px;
       cursor: pointer;
@@ -690,14 +746,20 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
-      box-shadow: 0 6px 20px rgba(139,0,0,0.25);
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
       margin-top: 1.5rem;
-      &:active { transform: scale(0.98); }
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(139, 0, 0, 0.35);
+      }
+      &:active:not(:disabled) { transform: scale(0.98); }
       &:disabled {
-        opacity: 0.55;
+        background: #E2E8F0 !important;
+        color: #94A3B8 !important;
         cursor: not-allowed;
-        box-shadow: none;
+        box-shadow: none !important;
+        opacity: 1 !important;
       }
     }
     .btn-gradient {
@@ -753,9 +815,12 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     /* ─── Misc ──────────────────────────────── */
     .terms-text {
       text-align: center;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: #64748B;
+      margin-top: auto;
+      padding-top: 2.5rem;
+      padding-bottom: 1rem;
+      line-height: 1.5;
     }
     .link-text { color: var(--primary); font-weight: 600; cursor: pointer; }
     .flex-align { display: flex; align-items: center; justify-content: center; }

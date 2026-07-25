@@ -11,15 +11,12 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <div class="account-page">
 
-      <!-- ─── Premium Profile Hero Banner ─────── -->
-      <div class="profile-banner">
-        <!-- Background decorative circles -->
-        <div class="bg-circle circle-1"></div>
-        <div class="bg-circle circle-2"></div>
-
-        <div class="profile-main">
-          <!-- Interactive Avatar with Photo Upload -->
-          <div class="avatar-container">
+      <!-- ─── Clean Myntra-Style Profile Header ─── -->
+      <div class="profile-header">
+        <div class="profile-card-inner">
+          
+          <!-- Avatar & Camera Upload -->
+          <div class="avatar-wrap">
             <div class="profile-avatar" [class.uploading]="photoUploading()">
               <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
               <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
@@ -29,119 +26,122 @@ import { AuthService } from '../../core/services/auth.service';
               </div>
             </div>
 
-            <!-- Camera button triggering file input -->
-            <button class="camera-btn" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Profile Picture">
-              <span class="material-symbols-outlined icon">add_a_photo</span>
+            <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
+              <span class="material-symbols-outlined icon">photo_camera</span>
             </button>
             <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
           </div>
 
-          <div class="profile-info">
-            <div class="verified-badge">
+          <!-- User Details -->
+          <div class="profile-details">
+            <div class="verified-tag">
               <span class="material-symbols-outlined icon-ver">verified</span>
               <span>Verified Wholesale Client</span>
             </div>
-            <h2 class="profile-name">{{ profile()?.name || 'Member Account' }}</h2>
-            <p class="profile-phone">🇮🇳 +91 {{ profile()?.phone }}</p>
+            <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
+            <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
+
+            <div class="status-badge-clean">
+              <span class="dot-green"></span>
+              <span>Active Wholesale Access</span>
+            </div>
           </div>
         </div>
 
-        <!-- Floating Stats Banner -->
-        <div class="stats-float-card">
-          <div class="stat-item">
-            <span class="stat-label">Security Tier</span>
-            <span class="stat-value text-gold">Gold Member</span>
+        <!-- Sleek VIP Insider Strip (Myntra Style) -->
+        <div class="insider-strip">
+          <div class="strip-left">
+            <span class="material-symbols-outlined crown-icon">workspace_premium</span>
+            <div class="strip-text">
+              <strong>Khandelwal Gold Partner</strong>
+              <span>Wholesale pricing & priority printing active</span>
+            </div>
           </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-label">Access Status</span>
-            <span class="stat-value text-green flex-align">
-              <span class="dot"></span> Active
-            </span>
-          </div>
+          <span class="material-symbols-outlined arrow-icon">chevron_right</span>
         </div>
       </div>
 
-      <!-- ─── Menu Sections ──────────────────── -->
-      <div class="content-body">
+      <!-- ─── Clean Menu Sections ────────────── -->
+      <div class="menu-container">
         
-        <div class="section-title">Wholesale Store & Orders</div>
-        <div class="menu-card">
-          <div class="menu-item" (click)="router.navigate(['/shop/orders'])">
-            <div class="menu-icon orders-icon">
-              <span class="material-symbols-outlined">package_2</span>
+        <div class="section-heading">Orders & Catalogue</div>
+        <div class="menu-box">
+          <div class="menu-row" (click)="router.navigate(['/shop/orders'])">
+            <span class="material-symbols-outlined row-icon icon-orders">package_2</span>
+            <div class="row-info">
+              <span class="row-title">My Orders</span>
+              <span class="row-subtitle">Track custom printing & production status</span>
             </div>
-            <div class="menu-content">
-              <span class="menu-label">My Orders</span>
-              <span class="menu-sub">Track production & printing status</span>
-            </div>
-            <span class="material-symbols-outlined menu-arrow">arrow_forward_ios</span>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
           </div>
 
-          <div class="divider"></div>
+          <div class="row-divider"></div>
 
-          <div class="menu-item" (click)="router.navigate(['/shop'])">
-            <div class="menu-icon shop-icon">
-              <span class="material-symbols-outlined">storefront</span>
+          <div class="menu-row" (click)="router.navigate(['/shop'])">
+            <span class="material-symbols-outlined row-icon icon-shop">auto_stories</span>
+            <div class="row-info">
+              <span class="row-title">Browse Catalogue</span>
+              <span class="row-subtitle">Explore wedding & invitation card designs</span>
             </div>
-            <div class="menu-content">
-              <span class="menu-label">Browse Catalogue</span>
-              <span class="menu-sub">Explore wedding & invitation card designs</span>
-            </div>
-            <span class="material-symbols-outlined menu-arrow">arrow_forward_ios</span>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
           </div>
         </div>
 
-        <div class="section-title mt-4">Security & Support</div>
-        <div class="menu-card">
-          <div class="menu-item" (click)="showChangePinSheet.set(true)">
-            <div class="menu-icon pin-icon">
-              <span class="material-symbols-outlined">lock_reset</span>
+        <div class="section-heading mt-4">Security & Settings</div>
+        <div class="menu-box">
+          <div class="menu-row" (click)="showChangePinSheet.set(true)">
+            <span class="material-symbols-outlined row-icon icon-pin">lock_reset</span>
+            <div class="row-info">
+              <span class="row-title">Change Security PIN</span>
+              <span class="row-subtitle">Update your 6-digit wholesale access code</span>
             </div>
-            <div class="menu-content">
-              <span class="menu-label">Change Security PIN</span>
-              <span class="menu-sub">Update your 6-digit wholesale access PIN</span>
-            </div>
-            <span class="material-symbols-outlined menu-arrow">arrow_forward_ios</span>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
           </div>
 
-          <div class="divider"></div>
+          <div class="row-divider"></div>
 
-          <div class="menu-item" (click)="contactSupport()">
-            <div class="menu-icon support-icon">
-              <span class="material-symbols-outlined">support_agent</span>
+          <div class="menu-row" (click)="contactSupport()">
+            <span class="material-symbols-outlined row-icon icon-support">support_agent</span>
+            <div class="row-info">
+              <span class="row-title">Wholesale Support Desk</span>
+              <span class="row-subtitle">Contact admin for custom bulk printing</span>
             </div>
-            <div class="menu-content">
-              <span class="menu-label">Wholesale Support Desk</span>
-              <span class="menu-sub">Contact admin for custom bulk printing</span>
-            </div>
-            <span class="material-symbols-outlined menu-arrow">arrow_forward_ios</span>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
           </div>
         </div>
 
-        <!-- ─── Sign Out Button ────────────────── -->
-        <div class="logout-section mt-4">
-          <button class="logout-btn" (click)="confirmLogout.set(true)">
+        <!-- ─── Sign Out ──────────────────────── -->
+        <div class="logout-wrap mt-4">
+          <button class="btn-logout-clean" (click)="confirmLogout.set(true)">
             <span class="material-symbols-outlined">logout</span>
-            <span>Sign Out of Store</span>
+            <span>LOG OUT OF STORE</span>
           </button>
         </div>
 
-        <p class="footer-note">Khandelwal Cards App • Secured Wholesale Access v2.0</p>
+        <p class="app-version-text">Khandelwal Cards Portal v2.0 • Secured Access</p>
       </div>
 
-      <!-- ─── Change PIN Bottom Sheet ──────── -->
+      <!-- ─── Change PIN Bottom Sheet (Rapido Style) ──────── -->
       <div class="overlay" *ngIf="showChangePinSheet()" (click)="showChangePinSheet.set(false)"></div>
       <div class="bottom-sheet" [class.open]="showChangePinSheet()">
         <div class="sheet-handle"></div>
-        <div class="sheet-header-badge">🔐 Security Update</div>
-        <h3 class="sheet-title mt-1">Change Access PIN</h3>
+        
+        <div class="sheet-top-row">
+          <div>
+            <div class="sheet-header-badge">🔐 Security Settings</div>
+            <h3 class="sheet-title mt-1">Change Access PIN</h3>
+          </div>
+          <button class="btn-close-rapido" (click)="showChangePinSheet.set(false)" title="Close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <p class="sheet-sub">Enter your current 6-digit PIN and set a new security PIN below.</p>
 
-        <div class="form-group">
-          <label class="form-label">Current 6-Digit PIN</label>
+        <div class="form-group mt-2">
+          <label class="form-label">Current PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password" class="pin-box" maxlength="1" inputmode="numeric"
+              type="password" class="pin-box" [class.filled]="currentPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
               [id]="'cur-pin-' + i"
               [(ngModel)]="currentPinDigits[i]"
               (input)="onPinInput($event, i, 'current')"
@@ -149,11 +149,11 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </div>
 
-        <div class="form-group mt-3">
-          <label class="form-label">New 6-Digit PIN</label>
+        <div class="form-group mt-2">
+          <label class="form-label">New PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password" class="pin-box" maxlength="1" inputmode="numeric"
+              type="password" class="pin-box" [class.filled]="newPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
               [id]="'chg-new-pin-' + i"
               [(ngModel)]="newPinDigits[i]"
               (input)="onPinInput($event, i, 'new')"
@@ -161,11 +161,11 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </div>
 
-        <div class="form-group mt-3">
+        <div class="form-group mt-2">
           <label class="form-label">Confirm New PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password" class="pin-box" maxlength="1" inputmode="numeric"
+              type="password" class="pin-box" [class.filled]="confirmNewPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
               [id]="'chg-conf-pin-' + i"
               [(ngModel)]="confirmNewPinDigits[i]"
               (input)="onPinInput($event, i, 'confirm')"
@@ -180,7 +180,7 @@ import { AuthService } from '../../core/services/auth.service';
           <span class="material-symbols-outlined">check_circle</span> PIN changed successfully!
         </div>
 
-        <button class="btn-primary mt-4" (click)="changePin()"
+        <button class="btn-rapido-update mt-3" (click)="changePin()"
                 [disabled]="changePinLoading() || currentPinDigits.join('').length !== 6 || newPinDigits.join('').length !== 6 || confirmNewPinDigits.join('').length !== 6">
           <span *ngIf="!changePinLoading()">Update Security PIN</span>
           <span class="btn-spinner" *ngIf="changePinLoading()"></span>
@@ -209,355 +209,292 @@ import { AuthService } from '../../core/services/auth.service';
   styles: [`
     .account-page {
       min-height: 100%;
-      background: var(--background);
-      padding-bottom: 3rem;
-      overflow-x: hidden;
+      background: #F5F5F6; /* Clean Myntra light gray background */
+      padding-bottom: 4rem;
+      color: #282C3F;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* ─── Profile Banner ───────────────────── */
-    .profile-banner {
-      background: linear-gradient(135deg, #3a0000 0%, #7a0000 50%, #5a0000 100%);
-      padding: 32px var(--space-base) 64px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    /* ─── Profile Header (Myntra Clean Style) ─── */
+    .profile-header {
+      background: #FFFFFF;
+      border-bottom: 1px solid #EAEAEA;
+      padding: 24px var(--space-base) 0;
+      margin-bottom: 16px;
     }
-    .bg-circle {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.04);
-      pointer-events: none;
-    }
-    .circle-1 { width: 220px; height: 220px; top: -60px; right: -60px; }
-    .circle-2 { width: 140px; height: 140px; bottom: 10px; left: -40px; }
-
-    .profile-main {
+    .profile-card-inner {
       display: flex;
       align-items: center;
       gap: 20px;
-      position: relative;
-      z-index: 2;
+      padding-bottom: 24px;
     }
 
-    /* ─── Avatar & Camera ──────────────────── */
-    .avatar-container {
+    /* ─── Avatar ───────────────────────────── */
+    .avatar-wrap {
       position: relative;
       flex-shrink: 0;
     }
     .profile-avatar {
-      width: 82px;
-      height: 82px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #D4AF37, #f0d060);
+      background: #F5F5F6;
+      border: 1.5px solid #D4AF37;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #4a0000;
-      border: 3.5px solid rgba(255,255,255,0.3);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #8B0000;
       overflow: hidden;
       position: relative;
-      transition: transform 0.2s ease;
-      
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+
       &.uploading { opacity: 0.7; }
       .profile-img { width: 100%; height: 100%; object-fit: cover; }
     }
     .spinner-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
+      position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
       .spinner {
-        width: 26px; height: 26px;
-        border: 3px solid rgba(255,255,255,0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+        width: 22px; height: 22px; border: 2.5px solid rgba(255,255,255,0.3);
+        border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
       }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .camera-btn {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      border: 2px solid white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-      transition: transform 0.15s ease, background 0.15s ease;
-      
-      &:hover { background: var(--primary-dark); transform: scale(1.1); }
-      &:active { transform: scale(0.95); }
-      .icon { font-size: 1.1rem; }
+    .camera-badge {
+      position: absolute; bottom: 0; right: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #282C3F; color: #FFFFFF;
+      border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 0.15s ease;
+      &:active { transform: scale(0.9); }
+      .icon { font-size: 0.95rem; }
     }
     .hidden-input { display: none; }
 
-    /* ─── Profile Info ─────────────────────── */
-    .profile-info {
+    /* ─── Profile Details ──────────────────── */
+    .profile-details {
       flex: 1;
-      .verified-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(212, 175, 55, 0.2);
-        color: #F8E08E;
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(212, 175, 55, 0.4);
-        margin-bottom: 6px;
-        letter-spacing: 0.3px;
-
-        .icon-ver { font-size: 0.95rem; color: #D4AF37; }
-      }
-      .profile-name {
-        margin: 0 0 4px;
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: white;
-        letter-spacing: -0.2px;
-      }
-      .profile-phone {
-        margin: 0;
-        font-size: 0.9rem;
-        color: rgba(255,255,255,0.85);
-        font-weight: 600;
-      }
+    }
+    .verified-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      color: #B8860B; font-size: 0.72rem; font-weight: 700;
+      margin-bottom: 4px; letter-spacing: 0.2px;
+      .icon-ver { font-size: 0.9rem; color: #D4AF37; }
+    }
+    .user-name {
+      margin: 0 0 2px; font-size: 1.25rem; font-weight: 700;
+      color: #282C3F; letter-spacing: -0.3px;
+    }
+    .user-phone {
+      margin: 0 0 8px; font-size: 0.85rem; font-weight: 600; color: #686B78;
+    }
+    .status-badge-clean {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #E8F8F5; color: #0E6655; font-size: 0.72rem;
+      font-weight: 700; padding: 3px 10px; border-radius: 4px;
+      border: 1px solid #D1F2EB;
+      .dot-green { width: 6px; height: 6px; border-radius: 50%; background: #117A65; }
     }
 
-    /* ─── Stats Floating Card ──────────────── */
-    .stats-float-card {
-      position: absolute;
-      bottom: 12px;
-      left: var(--space-base);
-      right: var(--space-base);
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      border: 1px solid rgba(255,255,255,0.6);
-      z-index: 3;
+    /* ─── VIP Insider Strip ────────────────── */
+    .insider-strip {
+      background: linear-gradient(90deg, #282C3F 0%, #3E4152 100%);
+      color: #FFFFFF;
+      margin: 0 calc(-1 * var(--space-base));
+      padding: 12px var(--space-base);
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid #3E4152;
     }
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
+    .strip-left {
+      display: flex; align-items: center; gap: 12px;
+      .crown-icon { color: #D4AF37; font-size: 1.6rem; }
     }
-    .stat-label { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
-    .stat-value { font-size: 0.9rem; font-weight: 800; }
-    .text-gold { color: #B8860B; }
-    .text-green { color: #2E7D32; }
-    .flex-align { display: flex; align-items: center; gap: 6px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #2E7D32; box-shadow: 0 0 6px #2E7D32; }
-    .stat-divider { width: 1px; height: 28px; background: rgba(0,0,0,0.08); }
-
-    /* ─── Content Body ─────────────────────── */
-    .content-body {
-      padding: 24px var(--space-base) 0;
-      position: relative;
-      z-index: 2;
-    }
-    .section-title {
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin: 0 0 10px 4px;
-    }
-
-    /* ─── Menu Cards ───────────────────────── */
-    .menu-card {
-      background: var(--surface);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 18px;
-      cursor: pointer;
-      transition: background 0.15s ease;
-      &:active { background: rgba(0,0,0,0.03); }
-    }
-    .menu-icon {
-      width: 44px; height: 44px;
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      .material-symbols-outlined { font-size: 1.4rem; }
-    }
-    .orders-icon { background: rgba(139,0,0,0.08); color: var(--primary); }
-    .shop-icon { background: rgba(46,125,50,0.08); color: #2E7D32; }
-    .pin-icon { background: rgba(212,175,55,0.12); color: #B8860B; }
-    .support-icon { background: rgba(25,118,210,0.08); color: #1976D2; }
-
-    .menu-content {
-      flex: 1;
+    .strip-text {
       display: flex; flex-direction: column; gap: 2px;
+      strong { font-size: 0.82rem; font-weight: 700; color: #F8E08E; letter-spacing: 0.3px; }
+      span { font-size: 0.72rem; color: #C4C6CE; }
     }
-    .menu-label { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
-    .menu-sub { font-size: 0.75rem; color: var(--text-muted); }
-    .menu-arrow { color: #ccc; font-size: 1rem; font-weight: 700; }
-    .divider { height: 1px; background: rgba(0,0,0,0.05); margin: 0 18px; }
+    .arrow-icon { color: #94969F; font-size: 1.2rem; }
 
-    /* ─── Logout ───────────────────────────── */
-    .logout-section { width: 100%; }
-    .logout-btn {
-      width: 100%;
-      height: 52px;
-      border: 1.5px solid rgba(198,40,40,0.25);
-      border-radius: 16px;
-      background: white;
-      color: #C62828;
-      font-size: 0.95rem;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.2s;
-      box-shadow: 0 2px 10px rgba(198,40,40,0.05);
-      
-      .material-symbols-outlined { font-size: 1.3rem; }
-      &:hover { background: #FFEBEE; border-color: #C62828; }
-      &:active { transform: scale(0.98); }
+    /* ─── Menu Container ───────────────────── */
+    .menu-container {
+      padding: 16px var(--space-base) 0;
+    }
+    .section-heading {
+      font-size: 0.75rem; font-weight: 700; color: #535766;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin: 0 0 8px 2px;
     }
 
-    .footer-note {
-      text-align: center;
-      font-size: 0.72rem;
-      color: var(--text-muted);
+    /* ─── Clean Menu Box (Myntra Style) ────── */
+    .menu-box {
+      background: #FFFFFF;
+      border-radius: 8px;
+      border: 1px solid #EAEAEA;
+      overflow: hidden;
+    }
+    .menu-row {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px; cursor: pointer;
+      transition: background 0.15s ease;
+      &:hover { background: #FAFDFC; }
+      &:active { background: #F5F5F6; }
+    }
+    .row-icon {
+      font-size: 1.4rem; color: #535766; flex-shrink: 0;
+    }
+    .icon-orders { color: #8B0000; }
+    .icon-shop { color: #2E7D32; }
+    .icon-pin { color: #B8860B; }
+    .icon-support { color: #1976D2; }
+
+    .row-info {
+      flex: 1; display: flex; flex-direction: column; gap: 2px;
+    }
+    .row-title { font-size: 0.92rem; font-weight: 600; color: #282C3F; }
+    .row-subtitle { font-size: 0.75rem; color: #94969F; }
+    .row-chevron { font-size: 0.9rem; color: #C4C6CE; font-weight: 700; }
+    .row-divider { height: 1px; background: #F5F5F6; margin: 0 16px; }
+
+    /* ─── Sign Out Clean Button ────────────── */
+    .logout-wrap { width: 100%; }
+    .btn-logout-clean {
+      width: 100%; height: 48px;
+      background: #FFFFFF; color: #FF3F6C;
+      border: 1px solid #EAEAEA; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.8px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 8px; transition: all 0.15s ease;
+      &:hover { background: #FFF5F7; border-color: #FF3F6C; }
+      &:active { transform: scale(0.99); }
+      .material-symbols-outlined { font-size: 1.2rem; }
+    }
+
+    .app-version-text {
+      text-align: center; font-size: 0.72rem; color: #94969F;
       margin: 24px 0 0;
-      opacity: 0.7;
     }
 
-    /* ─── PIN Boxes ─────────────────────────── */
-    .pin-boxes { display: flex; gap: 8px; justify-content: center; }
+    /* ─── PIN Boxes (Rapido Compact Style) ──── */
+    .pin-boxes { display: flex; gap: 6px; justify-content: center; }
     .pin-box {
-      width: 44px; height: 52px;
-      border: 2px solid rgba(0,0,0,0.12); border-radius: 12px;
-      text-align: center; font-size: 1.3rem; font-weight: 700;
-      font-family: inherit; color: var(--primary); background: white;
-      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      width: 38px; height: 42px;
+      border: 1.5px solid #D8D8DE; border-radius: 8px;
+      text-align: center; font-size: 1.15rem; font-weight: 700;
+      font-family: inherit; color: #282C3F; background: #FFFFFF;
+      outline: none; transition: all 0.15s ease;
       -webkit-text-security: disc;
-      &:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139,0,0,0.1); }
-      &:not(:placeholder-shown) { border-color: #D4AF37; background: rgba(212,175,55,0.05); }
+      &:focus { border-color: #D4AF37; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25); }
+      &.filled { border-color: #D4AF37; background: #FFFDF0; color: #8B0000; }
     }
 
-    /* ─── Bottom Sheet & Dialog ─────────────── */
+    /* ─── Bottom Sheet & Dialog (Rapido Style) ─ */
     .overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 200;
-      backdrop-filter: blur(3px);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 200; backdrop-filter: blur(3px);
     }
     .bottom-sheet {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
-      width: 100%; max-width: 480px;
-      background: white; border-radius: 28px 28px 0 0;
-      padding: 16px var(--space-base) 2.5rem;
-      z-index: 201;
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%; max-width: 480px; background: white; border-radius: 24px 24px 0 0;
+      padding: 12px var(--space-base) 2rem; z-index: 201;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
       &.open { transform: translateX(-50%) translateY(0); }
     }
-    .sheet-handle { width: 40px; height: 5px; border-radius: 999px; background: rgba(0,0,0,0.12); margin: 0 auto 16px; }
-    .sheet-header-badge {
-      display: inline-block; background: rgba(212,175,55,0.15); color: #8A6D14;
-      font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+    .sheet-handle { width: 36px; height: 4px; border-radius: 999px; background: #EAEAEA; margin: 0 auto 12px; }
+    .sheet-top-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 4px;
     }
-    .sheet-title { font-size: 1.15rem; font-weight: 800; margin: 0 0 20px; color: var(--text-main); }
+    .sheet-header-badge {
+      display: inline-block; background: #F5F5F6; color: #535766;
+      font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+    }
+    .sheet-title { font-size: 1.15rem; font-weight: 700; margin: 4px 0 0; color: #282C3F; }
+    .sheet-sub { font-size: 0.8rem; color: #686B78; margin: 0 0 16px; line-height: 1.3; }
+    
+    .btn-close-rapido {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #F5F5F6; border: none; color: #535766;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s ease;
+      &:hover { background: #EAEAEA; color: #282C3F; }
+      &:active { transform: scale(0.9); }
+      .material-symbols-outlined { font-size: 1.2rem; }
+    }
+
+    .btn-rapido-update {
+      width: 100%; height: 48px; background: #282C3F;
+      color: white; border: none; border-radius: 12px;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(40,44,63,0.2);
+      transition: all 0.15s ease;
+      &:hover { background: #1A1A1A; }
+      &:active { transform: scale(0.98); }
+      &:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    }
 
     .confirm-dialog {
       position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
-      width: 100%; max-width: 480px;
-      background: white; border-radius: 28px 28px 0 0;
-      padding: 24px var(--space-base) 2rem;
-      z-index: 201;
-      transition: transform 0.3s ease;
-      text-align: center;
-      
+      width: 100%; max-width: 480px; background: white; border-radius: 20px 20px 0 0;
+      padding: 24px var(--space-base) 2rem; z-index: 201;
+      transition: transform 0.3s ease; text-align: center;
       .dialog-icon {
-        width: 56px; height: 56px; border-radius: 50%; background: #FFEBEE; color: #C62828;
+        width: 52px; height: 52px; border-radius: 50%; background: #FFF5F7; color: #FF3F6C;
         display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
-        .material-symbols-outlined { font-size: 1.8rem; }
+        .material-symbols-outlined { font-size: 1.6rem; }
       }
-      h3 { margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; }
-      p { margin: 0 0 24px; font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; }
+      h3 { margin: 0 0 8px; font-size: 1.15rem; font-weight: 700; color: #282C3F; }
+      p { margin: 0 0 24px; font-size: 0.88rem; color: #686B78; line-height: 1.4; }
       &.open { transform: translateX(-50%) translateY(0); }
     }
     .dialog-actions { display: flex; gap: 12px; }
     .btn-cancel {
-      flex: 1; height: 50px; border: 1.5px solid rgba(0,0,0,0.12);
-      border-radius: 14px; background: none; font-size: 0.95rem;
-      font-weight: 700; font-family: inherit; cursor: pointer;
+      flex: 1; height: 48px; border: 1px solid #EAEAEA; border-radius: 8px;
+      background: none; font-size: 0.9rem; font-weight: 700; color: #282C3F; cursor: pointer;
     }
     .btn-logout-confirm {
-      flex: 1; height: 50px; background: #C62828;
-      border: none; border-radius: 14px; color: white;
-      font-size: 0.95rem; font-weight: 700; font-family: inherit; cursor: pointer;
+      flex: 1; height: 48px; background: #FF3F6C; border: none; border-radius: 8px;
+      color: white; font-size: 0.9rem; font-weight: 700; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       &:disabled { opacity: 0.6; }
     }
 
     /* ─── Misc ──────────────────────────────── */
     .btn-primary {
-      width: 100%; height: 52px;
-      background: linear-gradient(135deg, #7a0000 0%, #8B0000 100%);
-      color: white; border: none; border-radius: 14px;
-      font-size: 0.95rem; font-weight: 700; font-family: inherit;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 18px rgba(139,0,0,0.25);
+      width: 100%; height: 48px; background: #8B0000;
+      color: white; border: none; border-radius: 8px;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(139,0,0,0.2);
       &:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
     }
     .btn-spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(255,255,255,0.3); border-top-color: white;
-      border-radius: 50%; animation: spin 0.8s linear infinite;
+      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     .btn-spinner-dark {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
-      border-radius: 50%; animation: spin 0.8s linear infinite;
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     .error-msg {
       display: flex; align-items: center; gap: 6px;
-      color: var(--error); font-size: 0.8rem; font-weight: 500; margin-top: 10px;
+      color: #FF3F6C; font-size: 0.8rem; font-weight: 500; margin-top: 10px;
       .material-symbols-outlined { font-size: 1rem; }
     }
     .success-msg {
       display: flex; align-items: center; gap: 6px;
-      color: var(--success); font-size: 0.8rem; font-weight: 500; margin-top: 10px;
+      color: #0E6655; font-size: 0.8rem; font-weight: 500; margin-top: 10px;
       .material-symbols-outlined { font-size: 1rem; }
     }
     .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-label {
-      font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);
+      font-size: 0.72rem; font-weight: 700; color: #535766;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
     .mt-1 { margin-top: 0.25rem; }

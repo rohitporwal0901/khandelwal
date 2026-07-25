@@ -1,6 +1,6 @@
 import { Component, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -9,8 +9,8 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="mobile-app-container">
-      <header class="app-header" [class.scrolled]="isScrolled()">
+    <div class="mobile-app-container" [class.auth-mode]="!canShowNav()">
+      <header class="app-header" [class.scrolled]="isScrolled()" *ngIf="canShowNav() && !isOrdersPage()">
         <div class="logo" routerLink="/shop">
           <div class="logo-mark">
             <img src="assets/images/card1.png" alt="Logo" class="logo-img">
@@ -28,11 +28,11 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </header>
       
-      <main class="app-content" (scroll)="onContentScroll($event)">
+      <main class="app-content" [class.no-nav]="!canShowNav()" (scroll)="onContentScroll($event)">
         <router-outlet></router-outlet>
       </main>
       
-      <nav class="bottom-nav">
+      <nav class="bottom-nav" *ngIf="canShowNav()">
         <a routerLink="/shop" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item" id="nav-home">
           <div class="nav-icon-wrap">
             <span class="material-symbols-outlined">home</span>
@@ -66,6 +66,9 @@ import { AuthService } from '../../core/services/auth.service';
       background: var(--background);
       position: relative;
       box-shadow: 0 0 60px rgba(0,0,0,0.10);
+      &.auth-mode {
+        background: var(--surface) !important;
+      }
     }
 
     /* ─── Header ──────────────────────────────── */
@@ -189,6 +192,12 @@ import { AuthService } from '../../core/services/auth.service';
       -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
       padding-bottom: 68px;
+      &.no-nav {
+        padding-bottom: 0 !important;
+        background: var(--surface) !important;
+        display: flex;
+        flex-direction: column;
+      }
     }
 
     /* ─── Bottom Nav ──────────────────────────── */
@@ -281,9 +290,22 @@ import { AuthService } from '../../core/services/auth.service';
 export class UserLayoutComponent {
   dataService = inject(DataService);
   authService = inject(AuthService);
+  router = inject(Router);
   isScrolled = signal(false);
 
   cartCount = () => this.dataService.cart().length;
+
+  isOrdersPage(): boolean {
+    return this.router.url.includes('/orders');
+  }
+
+  canShowNav(): boolean {
+    if (this.router.url.includes('/login')) return false;
+    if (!this.authService.isAuthenticated()) return false;
+    const profile = this.authService.currentUserProfile();
+    if (profile && (profile.status === 'pending' || profile.status === 'rejected')) return false;
+    return true;
+  }
 
   onContentScroll(event: Event) {
     const el = event.target as HTMLElement;
