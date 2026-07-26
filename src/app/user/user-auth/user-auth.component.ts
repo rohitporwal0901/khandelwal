@@ -33,8 +33,10 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           <span>Verified Wholesale Portal</span>
         </div>
         
-        <h2 class="auth-title mt-2">Welcome to Khandelwal</h2>
-        <p class="auth-subtitle">Enter your mobile number to sign in or apply for exclusive member access.</p>
+        <div class="header-section mt-3">
+          <h2 class="auth-title">Welcome to Khandelwal</h2>
+          <p class="auth-subtitle">Enter your mobile number to sign in or apply for exclusive member access.</p>
+        </div>
 
         <div class="form-group mt-4">
           <label class="form-label">Mobile Number</label>
@@ -52,13 +54,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
               id="phone-input"
               autofocus>
           </div>
-          <div class="error-msg" *ngIf="errorMsg()">
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
             <span class="material-symbols-outlined">error</span>
-            {{ errorMsg() }}
+            <span>{{ errorMsg() }}</span>
           </div>
         </div>
 
-        <button class="btn-primary" (click)="checkPhone()" [disabled]="isLoading() || phoneNumber.length !== 10">
+        <button class="btn-primary mt-4" (click)="checkPhone()" [disabled]="isLoading() || phoneNumber.length !== 10">
           <span *ngIf="!isLoading()">Continue</span>
           <span class="btn-spinner" *ngIf="isLoading()"></span>
         </button>
@@ -72,18 +74,21 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       <!-- Screen 2A: Existing User — PIN     -->
       <!-- ═══════════════════════════════════ -->
       <div class="auth-card" *ngIf="screen() === 'login-pin'">
-        <button class="back-btn" (click)="goBack()">
-          <span class="material-symbols-outlined">arrow_back</span>
-        </button>
-        <div class="user-greeting">
-          <span class="greeting-icon">👋</span>
-          <div>
-            <h2 class="auth-title">Welcome back!</h2>
-            <p class="phone-display">+91 {{ phoneNumber }}</p>
-          </div>
+        <div class="card-header-row">
+          <button class="back-btn-clean" (click)="goBack()" title="Back">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </button>
         </div>
 
-        <p class="auth-subtitle mt-3">Enter your 6-digit security PIN to unlock store</p>
+        <div class="header-section mt-2">
+          <h2 class="auth-title">Welcome Back</h2>
+          <div class="phone-chip mt-1">
+            <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+            <span>+91 {{ phoneNumber }}</span>
+            <button class="change-link" (click)="goBack()">Change</button>
+          </div>
+          <p class="auth-subtitle mt-2">Enter your 6-digit security PIN to unlock store</p>
+        </div>
 
         <div class="pin-boxes mt-3" (keydown)="onPinKeydown($event, 'login')">
           <input *ngFor="let i of [0,1,2,3,4,5]"
@@ -98,9 +103,9 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
             (keydown.backspace)="onPinBackspace($event, i, 'login')">
         </div>
 
-        <div class="error-msg" *ngIf="errorMsg()">
+        <div class="error-msg mt-2" *ngIf="errorMsg()">
           <span class="material-symbols-outlined">error</span>
-          {{ errorMsg() }}
+          <span>{{ errorMsg() }}</span>
         </div>
 
         <button class="btn-primary mt-4" (click)="loginUser()" [disabled]="isLoading() || loginPinDigits.join('').length !== 6">
@@ -115,7 +120,6 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       <!-- Screen 2B: New User — Bottom Sheet  -->
       <!-- ═══════════════════════════════════ -->
       <div class="auth-card muted-bg" *ngIf="screen() === 'register'">
-        <!-- Background decorative view while bottom sheet is active -->
         <div class="bg-placeholder">
           <div class="brand-logo large-logo">
             <img src="assets/images/card1.png" alt="Logo" class="brand-img">
@@ -124,27 +128,30 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           <p>Please complete the registration form below</p>
         </div>
 
-        <!-- Sleek Bottom Sheet for Registration -->
         <div class="reg-bottom-sheet open">
           <div class="sheet-handle"></div>
           
           <div class="sheet-header">
             <div class="sheet-top-row">
               <div>
-                <div class="header-badge">🎉 New Member Application</div>
+                <div class="header-badge">
+                  <span class="material-symbols-outlined badge-icon">badge</span>
+                  <span>NEW MEMBER APPLICATION</span>
+                </div>
                 <h2 class="auth-title mt-1">Create Account</h2>
               </div>
-              <button class="btn-close-rapido" (click)="goBack()" title="Close">
+              <button class="btn-close-clean" (click)="goBack()" title="Close">
                 <span class="material-symbols-outlined">close</span>
               </button>
             </div>
-            <div class="phone-change-wrap">
-              <span class="phone-display">+91 {{ phoneNumber }}</span>
+            <div class="phone-chip mt-2">
+              <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+              <span>+91 {{ phoneNumber }}</span>
               <button class="change-link" (click)="goBack()">Change</button>
             </div>
           </div>
 
-          <div class="form-group mt-2">
+          <div class="form-group mt-3">
             <label class="form-label">Your Full Name / Business Name</label>
             <div class="input-with-icon">
               <span class="material-symbols-outlined icon">storefront</span>
@@ -153,8 +160,8 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
             </div>
           </div>
 
-          <div class="form-group mt-2">
-            <label class="form-label">Set 6-digit Security PIN</label>
+          <div class="form-group mt-3">
+            <label class="form-label">Set 6-Digit Security PIN</label>
             <div class="pin-boxes">
               <input *ngFor="let i of [0,1,2,3,4,5]"
                 type="password"
@@ -169,8 +176,8 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
             </div>
           </div>
 
-          <div class="form-group mt-2">
-            <label class="form-label">Confirm 6-digit PIN</label>
+          <div class="form-group mt-3">
+            <label class="form-label">Confirm 6-Digit PIN</label>
             <div class="pin-boxes">
               <input *ngFor="let i of [0,1,2,3,4,5]"
                 type="password"
@@ -185,14 +192,14 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
             </div>
           </div>
 
-          <div class="error-msg" *ngIf="errorMsg()">
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
             <span class="material-symbols-outlined">error</span>
-            {{ errorMsg() }}
+            <span>{{ errorMsg() }}</span>
           </div>
 
-          <button class="btn-primary btn-gradient mt-4" (click)="registerUser()"
+          <button class="btn-primary mt-4" (click)="registerUser()"
                   [disabled]="isLoading() || !registerName.trim() || registerPinDigits.join('').length !== 6 || confirmPinDigits.join('').length !== 6">
-            <span *ngIf="!isLoading()">Submit Application 🚀</span>
+            <span *ngIf="!isLoading()">Submit Application</span>
             <span class="btn-spinner" *ngIf="isLoading()"></span>
           </button>
         </div>
@@ -202,19 +209,26 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       <!-- Screen 3: Forgot PIN               -->
       <!-- ═══════════════════════════════════ -->
       <div class="auth-card" *ngIf="screen() === 'forgot-pin'">
-        <button class="back-btn" (click)="screen.set('login-pin')">
-          <span class="material-symbols-outlined">arrow_back</span>
-        </button>
-        <div class="user-greeting">
-          <span class="greeting-icon">🔑</span>
-          <div>
-            <h2 class="auth-title">Reset PIN</h2>
-            <p class="phone-display">+91 {{ phoneNumber }}</p>
-          </div>
+        <div class="card-header-row">
+          <button class="back-btn-clean" (click)="screen.set('login-pin')" title="Back">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </button>
         </div>
-        <p class="auth-subtitle mt-2">Set a new 6-digit PIN for your account</p>
 
-        <div class="form-group mt-2">
+        <div class="header-section mt-2">
+          <div class="header-badge mb-1">
+            <span class="material-symbols-outlined badge-icon">lock_reset</span>
+            <span>SECURITY RECOVERY</span>
+          </div>
+          <h2 class="auth-title">Reset Security PIN</h2>
+          <div class="phone-chip mt-1">
+            <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+            <span>+91 {{ phoneNumber }}</span>
+          </div>
+          <p class="auth-subtitle mt-2">Set a new 6-digit PIN for your account</p>
+        </div>
+
+        <div class="form-group mt-3">
           <label class="form-label">New PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
@@ -230,7 +244,7 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           </div>
         </div>
 
-        <div class="form-group mt-2">
+        <div class="form-group mt-3">
           <label class="form-label">Confirm New PIN</label>
           <div class="pin-boxes">
             <input *ngFor="let i of [0,1,2,3,4,5]"
@@ -246,9 +260,9 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           </div>
         </div>
 
-        <div class="error-msg" *ngIf="errorMsg()">
+        <div class="error-msg mt-2" *ngIf="errorMsg()">
           <span class="material-symbols-outlined">error</span>
-          {{ errorMsg() }}
+          <span>{{ errorMsg() }}</span>
         </div>
 
         <button class="btn-primary mt-4" (click)="resetPin()"
@@ -270,12 +284,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
         </div>
 
         <div class="status-tag mt-3">
-          <span class="status-dot"></span> Verification Pending
+          <span class="status-dot"></span>
+          <span>VERIFICATION PENDING</span>
         </div>
 
-        <h2 class="auth-title mt-2 text-center">Application Under Review</h2>
-        <p class="auth-subtitle text-center">
-          Hello <strong>{{ authService.currentUserProfile()?.name || 'Member' }}</strong>! We have received your registration for <strong>+91 {{ authService.currentUserProfile()?.phone || phoneNumber }}</strong>.
+        <h2 class="auth-title mt-3 text-center">Application Under Review</h2>
+        <p class="auth-subtitle text-center mt-1">
+          Hello <strong class="text-main">{{ authService.currentUserProfile()?.name || 'Member' }}</strong>! We have received your registration for <strong class="text-main">+91 {{ authService.currentUserProfile()?.phone || phoneNumber }}</strong>.
         </p>
 
         <div class="info-box mt-4">
@@ -289,12 +304,14 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
         </div>
 
         <div class="error-msg text-center justify-center mt-3" *ngIf="errorMsg()">
-          <span class="material-symbols-outlined">info</span> {{ errorMsg() }}
+          <span class="material-symbols-outlined">info</span>
+          <span>{{ errorMsg() }}</span>
         </div>
 
         <button class="btn-primary mt-4" (click)="refreshApprovalStatus()" [disabled]="isLoading()">
           <span *ngIf="!isLoading()" class="flex-align">
-            <span class="material-symbols-outlined mr-1">refresh</span> Check Approval Status
+            <span class="material-symbols-outlined mr-1">refresh</span>
+            <span>Check Approval Status</span>
           </span>
           <span class="btn-spinner" *ngIf="isLoading()"></span>
         </button>
@@ -332,15 +349,15 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 24px var(--space-base) 28px;
+      padding: 24px var(--space-base) 32px;
       margin-bottom: -24px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
       position: relative;
       z-index: 1;
     }
     .brand-logo {
-      width: 46px;
-      height: 46px;
+      width: 48px;
+      height: 48px;
       border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 4px 14px rgba(0,0,0,0.3);
@@ -351,13 +368,13 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     .brand-text {
       h1 {
         margin: 0;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         font-weight: 800;
         color: white;
-        letter-spacing: -0.2px;
+        letter-spacing: -0.3px;
       }
       span {
-        font-size: 0.68rem;
+        font-size: 0.7rem;
         color: #D4AF37;
         font-weight: 700;
         letter-spacing: 1.2px;
@@ -371,10 +388,10 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       border-radius: 28px 28px 0 0;
       width: 100%;
       flex: 1;
-      padding: 32px var(--space-base) 2rem;
+      padding: 28px var(--space-base) 2.5rem;
       position: relative;
       z-index: 2;
-      box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
       
@@ -384,68 +401,114 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       }
     }
 
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .back-btn-clean, .btn-close-clean {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: none;
+      color: #334155;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      &:hover { background: #e2e8f0; color: #0f172a; }
+      &:active { transform: scale(0.92); }
+      .material-symbols-outlined { font-size: 1.35rem; }
+    }
+
     .vip-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: linear-gradient(135deg, #FFF9E6 0%, #FFF2CC 100%);
+      background: #FFFDF0;
       color: #8A6D14;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 700;
       padding: 6px 14px;
       border-radius: 999px;
       border: 1px solid #E6C875;
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+      box-shadow: 0 2px 6px rgba(212, 175, 55, 0.12);
       width: fit-content;
+      letter-spacing: 0.3px;
       
-      .icon-small { font-size: 1.05rem; color: #D4AF37; }
+      .icon-small { font-size: 1rem; color: #D4AF37; }
     }
 
-    .back-btn {
-      position: absolute;
-      top: 20px;
-      left: var(--space-base);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-secondary);
-      display: flex;
+    .header-badge {
+      display: inline-flex;
       align-items: center;
-      padding: 6px;
-      border-radius: 8px;
-      transition: background 0.2s;
-      &:hover { background: rgba(0,0,0,0.05); }
-      .material-symbols-outlined { font-size: 1.3rem; }
+      gap: 5px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      color: #475569;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      
+      .badge-icon { font-size: 0.95rem; color: var(--primary); }
     }
 
     /* ─── Typography ────────────────────────── */
+    .header-section {
+      display: flex;
+      flex-direction: column;
+    }
     .auth-title {
-      font-size: 1.35rem;
+      font-size: 1.45rem;
       font-weight: 800;
       color: var(--text-main);
-      margin: 0 0 4px;
+      margin: 0;
+      letter-spacing: -0.4px;
+      line-height: 1.25;
     }
     .auth-subtitle {
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
       margin: 0;
-      line-height: 1.4;
+      line-height: 1.45;
+      font-weight: 400;
     }
     .text-center { text-align: center; }
     .justify-center { justify-content: center; }
+    .text-main { color: var(--text-main); }
     
-    .user-greeting {
-      display: flex;
+    .phone-chip {
+      display: inline-flex;
       align-items: center;
-      gap: 14px;
-      padding-left: 4px;
-      .greeting-icon { font-size: 2rem; }
+      gap: 6px;
+      background: #F1F5F9;
+      color: #1E293B;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      width: fit-content;
+      border: 1px solid #E2E8F0;
+      
+      .icon-xs { font-size: 1rem; color: var(--primary); }
     }
-    .phone-display {
-      font-size: 0.88rem;
+    .change-link {
+      background: none;
+      border: none;
       color: var(--primary);
+      font-size: 0.78rem;
       font-weight: 700;
-      margin: 2px 0 0;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 4px;
+      &:hover { color: #600000; }
     }
 
     /* ─── Phone Input ───────────────────────── */
@@ -457,16 +520,16 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       overflow: hidden;
       transition: all 0.2s ease;
       background: #FFFFFF;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-      height: 56px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      height: 54px;
       &:focus-within {
-        border-color: #8B0000;
-        box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.08);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.08);
       }
     }
     .country-code {
       padding: 0 16px;
-      font-size: 0.98rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #1E293B;
       border-right: 1.5px solid #E2E8F0;
@@ -481,9 +544,9 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       border: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
       color: #0F172A;
       padding: 0 16px;
       height: 100%;
@@ -495,10 +558,10 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     /* ─── Generic Input ─────────────────────── */
     .form-input {
       width: 100%;
-      border: 1.5px solid rgba(0,0,0,0.12);
-      border-radius: 14px;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 16px;
       padding: 0 16px;
-      height: 50px;
+      height: 52px;
       font-size: 0.95rem;
       font-family: inherit;
       color: var(--text-main);
@@ -510,7 +573,7 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
         border-color: var(--primary);
         box-shadow: 0 0 0 3px rgba(139,0,0,0.08);
       }
-      &::placeholder { color: var(--text-muted); }
+      &::placeholder { color: #94A3B8; }
     }
 
     .input-with-icon {
@@ -521,42 +584,42 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       .icon {
         position: absolute;
         left: 14px;
-        color: var(--text-muted);
-        font-size: 1.3rem;
+        color: #64748B;
+        font-size: 1.25rem;
       }
       .with-icon {
         padding-left: 44px;
       }
     }
 
-    /* ─── PIN Boxes (Rapido Compact Style) ──── */
+    /* ─── PIN Boxes (Clean & Premium) ───────── */
     .pin-boxes {
       display: flex;
-      gap: 6px;
-      justify-content: center;
+      gap: 8px;
+      justify-content: flex-start;
     }
     .pin-box {
-      width: 38px;
-      height: 42px;
-      border: 1.5px solid #D8D8DE;
-      border-radius: 8px;
+      width: 44px;
+      height: 50px;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 12px;
       text-align: center;
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: inherit;
-      color: #282C3F;
+      color: #1E293B;
       background: #FFFFFF;
       outline: none;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
       -webkit-text-security: disc;
       &:focus {
-        border-color: #D4AF37;
-        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
       }
       &.filled {
-        border-color: #D4AF37;
+        border-color: var(--primary);
         background: #FFFDF0;
-        color: #8B0000;
+        color: var(--primary);
       }
     }
 
@@ -581,9 +644,9 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       left: 0;
       width: 100%;
       background: white;
-      border-radius: 24px 24px 0 0;
-      padding: 12px var(--space-base) 2rem;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+      border-radius: 28px 28px 0 0;
+      padding: 16px var(--space-base) 2.5rem;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
       animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
     }
@@ -594,60 +657,18 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     .sheet-handle {
       width: 40px;
       height: 5px;
-      background: rgba(0,0,0,0.12);
+      background: #E2E8F0;
       border-radius: 999px;
-      margin: 0 auto 12px;
+      margin: 0 auto 16px;
     }
     .sheet-header {
-      border-bottom: 1px solid rgba(0,0,0,0.06);
-      padding-bottom: 12px;
+      border-bottom: 1px solid #F1F5F9;
+      padding-bottom: 14px;
     }
     .sheet-top-row {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-    }
-    .btn-close-rapido {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #F5F5F6;
-      border: none;
-      color: #535766;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      &:hover { background: #EAEAEA; color: #282C3F; }
-      &:active { transform: scale(0.9); }
-      .material-symbols-outlined { font-size: 1.2rem; }
-    }
-    .header-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.25));
-      color: #8A6D14;
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .phone-change-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 4px;
-    }
-    .change-link {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 0.78rem;
-      text-decoration: underline;
-      cursor: pointer;
-      padding: 0;
     }
 
     /* ─── Approval Screen UI ────────────────── */
@@ -691,16 +712,17 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       .material-symbols-outlined { font-size: 2.2rem; }
     }
     .status-tag {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #FFF9E6;
-      color: #B8860B;
-      font-size: 0.82rem;
+      background: #FFFDF0;
+      color: #8A6D14;
+      font-size: 0.78rem;
       font-weight: 700;
       padding: 6px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
+      border: 1px solid #E6C875;
+      letter-spacing: 0.5px;
     }
     .status-dot {
       width: 8px;
@@ -711,8 +733,8 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     }
     .info-box {
       width: 100%;
-      background: rgba(0,0,0,0.025);
-      border: 1px solid rgba(0,0,0,0.06);
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
       border-radius: 16px;
       padding: 16px;
       display: flex;
@@ -721,37 +743,36 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
 
       .info-icon {
         color: var(--primary);
-        .material-symbols-outlined { font-size: 1.6rem; }
+        .material-symbols-outlined { font-size: 1.5rem; }
       }
       .info-text {
         flex: 1;
         strong { font-size: 0.88rem; color: var(--text-main); display: block; margin-bottom: 4px; }
-        p { margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+        p { margin: 0; font-size: 0.82rem; color: #475569; line-height: 1.45; }
       }
     }
 
     /* ─── Buttons ───────────────────────────── */
     .btn-primary {
       width: 100%;
-      height: 56px;
+      height: 54px;
       background: linear-gradient(135deg, #8B0000 0%, #600000 100%);
       color: white;
       border: none;
       border-radius: 16px;
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       cursor: pointer;
       font-family: inherit;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
-      box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
-      margin-top: 1.5rem;
+      box-shadow: 0 6px 20px rgba(139, 0, 0, 0.22);
       &:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(139, 0, 0, 0.35);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(139, 0, 0, 0.3);
       }
       &:active:not(:disabled) { transform: scale(0.98); }
       &:disabled {
@@ -759,12 +780,7 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
         color: #94A3B8 !important;
         cursor: not-allowed;
         box-shadow: none !important;
-        opacity: 1 !important;
       }
-    }
-    .btn-gradient {
-      background: linear-gradient(135deg, #7a0000 0%, #a00000 50%, #7a0000 100%);
-      box-shadow: 0 6px 22px rgba(139,0,0,0.35);
     }
     .btn-spinner {
       width: 20px;
@@ -779,15 +795,16 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     .link-btn {
       background: none;
       border: none;
-      color: #D4AF37;
+      color: #64748B;
       font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
       display: block;
       margin: 0 auto;
-      padding: 6px;
-      &:hover { text-decoration: underline; }
+      padding: 8px 12px;
+      transition: color 0.15s ease;
+      &:hover { color: var(--text-main); }
     }
 
     /* ─── Error ─────────────────────────────── */
@@ -795,19 +812,18 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       display: flex;
       align-items: center;
       gap: 6px;
-      color: var(--error);
-      font-size: 0.8rem;
+      color: #DC2626;
+      font-size: 0.82rem;
       font-weight: 500;
-      margin-top: 8px;
-      .material-symbols-outlined { font-size: 1rem; }
+      .material-symbols-outlined { font-size: 1.1rem; }
     }
 
     /* ─── Form ──────────────────────────────── */
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-label {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 700;
-      color: var(--text-secondary);
+      color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -818,13 +834,15 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       font-size: 0.78rem;
       color: #64748B;
       margin-top: auto;
-      padding-top: 2.5rem;
-      padding-bottom: 1rem;
+      padding-top: 2rem;
+      padding-bottom: 0.5rem;
       line-height: 1.5;
     }
     .link-text { color: var(--primary); font-weight: 600; cursor: pointer; }
     .flex-align { display: flex; align-items: center; justify-content: center; }
     .mr-1 { margin-right: 6px; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
     .mt-1 { margin-top: 0.25rem; }
     .mt-2 { margin-top: 0.5rem; }
     .mt-3 { margin-top: 1rem; }
@@ -983,10 +1001,10 @@ export class UserAuthComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMsg.set('');
     try {
-      await this.authService.loginUser(this.phoneNumber, newPin);
+      await this.authService.setNewPin(this.phoneNumber, newPin);
       this.navigateAfterLogin();
     } catch(e: any) {
-      this.errorMsg.set('Unable to reset PIN. Please try again.');
+      this.errorMsg.set(e.message || 'Unable to reset PIN. Please try again.');
     } finally {
       this.isLoading.set(false);
     }
