@@ -36,6 +36,9 @@ import { DataService } from '../../core/services/data.service';
           <a routerLink="/admin/billing" routerLinkActive="active" class="nav-item" style="color: var(--primary); font-weight: 700;">
             <span class="material-symbols-outlined">point_of_sale</span> Generate Bill
           </a>
+          <a routerLink="/admin/receipts" routerLinkActive="active" class="nav-item" style="color: #047857; font-weight: 700;">
+            <span class="material-symbols-outlined">receipt_long</span> Generate Receipt
+          </a>
 
           <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
             <span class="material-symbols-outlined">group</span> Customers

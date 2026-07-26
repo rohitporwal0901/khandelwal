@@ -849,8 +849,9 @@ export class AdminBillingComponent implements OnInit {
 
   filteredProducts = computed(() => {
     const term = this.productSearchTerm().trim().toLowerCase();
-    if (!term) return this.products().slice(0, 50);
-    return this.products().filter(p => 
+    const available = this.products().filter(p => (p.stock || 0) > 0 && p.status === 'active');
+    if (!term) return available.slice(0, 50);
+    return available.filter(p => 
       p.name.toLowerCase().includes(term) || 
       p.sku.toLowerCase().includes(term)
     ).slice(0, 50);
@@ -895,6 +896,9 @@ export class AdminBillingComponent implements OnInit {
   }
 
   addProductToBill(prod: Product) {
+    if (!prod || (prod.stock || 0) <= 0 || prod.status !== 'active') {
+      return;
+    }
     const current = [...this.billItems()];
     const existingIndex = current.findIndex(item => item.product.id === prod.id);
 

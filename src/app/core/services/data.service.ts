@@ -70,6 +70,21 @@ export interface Order {
   netPayable?: number; // Total due after this bill
 }
 
+export interface Receipt {
+  id?: string;
+  receiptNumber: string; // e.g. REC001
+  customerUid?: string;
+  customerName: string;
+  phone: string;
+  date: string; // ISO string
+  previousBalance: number;
+  receivedAmount: number;
+  newBalance: number;
+  paymentMode: 'Cash' | 'Online / UPI' | 'Bank Transfer' | 'Cheque';
+  referenceNumber?: string;
+  notes?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -80,6 +95,7 @@ export class DataService {
   categories = signal<Category[]>([]);
   products = signal<Product[]>([]);
   orders = signal<Order[]>([]);
+  receipts = signal<Receipt[]>([]);
   cart = signal<OrderItem[]>([]);
   isProductsLoaded = signal<boolean>(false);
   homeSlides = signal<HomeSlide[]>([]);
@@ -121,6 +137,12 @@ export class DataService {
     collectionData(homeSlidesRef, { idField: 'id' }).subscribe((data: any[]) => {
       const sortedSlides = (data as HomeSlide[]).sort((a, b) => a.order - b.order);
       this.homeSlides.set(sortedSlides);
+    });
+
+    const receiptsRef = collection(this.firestore, 'receipts-kh');
+    collectionData(receiptsRef, { idField: 'id' }).subscribe((data: any[]) => {
+      const sortedReceipts = (data as Receipt[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      this.receipts.set(sortedReceipts);
     });
 
     // Initialize cart from localStorage if exists
@@ -334,6 +356,50 @@ export class DataService {
     }
 
     return completeOrder;
+  }
+
+  async getNextReceiptNumber(): Promise<string> {
+    try {
+      const counterRef = doc(this.firestore, 'counters-kh/receipts');
+      const counterSnap = await getDoc(counterRef);
+      let count = 1;
+      if (counterSnap.exists()) {
+        count = (counterSnap.data()['count'] || 0) + 1;
+      }
+      await setDoc(counterRef, { count }, { merge: true });
+      return `REC${count.toString().padStart(3, '0')}`;
+    } catch (error) {
+      console.error('Error getting sequential receipt number, falling back to timestamp:', error);
+      const rand = Math.floor(Math.random() * 900) + 100;
+      return `REC${rand}`;
+    }
+  }
+
+  async createReceipt(
+    receiptData: Omit<Receipt, 'id' | 'receiptNumber' | 'date'>
+  ): Promise<Receipt> {
+    const receiptNumber = await this.getNextReceiptNumber();
+    const newReceipt: Omit<Receipt, 'id'> = {
+      ...receiptData,
+      receiptNumber,
+      date: new Date().toISOString()
+    };
+
+    const receiptsRef = collection(this.firestore, 'receipts-kh');
+    const docRef = await addDoc(receiptsRef, newReceipt);
+    const completeReceipt: Receipt = { ...newReceipt, id: docRef.id } as Receipt;
+
+    // Update customer balance in users-kh if customerUid exists
+    if (receiptData.customerUid) {
+      try {
+        const userRef = doc(this.firestore, `users-kh/${receiptData.customerUid}`);
+        await updateDoc(userRef, { balance: receiptData.newBalance });
+      } catch (e) {
+        console.error(`Failed to update user balance for ${receiptData.customerUid}:`, e);
+      }
+    }
+
+    return completeReceipt;
   }
 
   // Generic CRUD for Admin

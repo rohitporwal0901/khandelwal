@@ -89,6 +89,10 @@ import { SnackbarService } from '../../core/services/snackbar.service';
             <span class="label">Stock:</span>
             <span class="value font-weight-bold" [class.text-error]="prod.stock < 1000">{{ prod.stock }}</span>
           </div>
+          <div class="rate-info mt-1" style="display: flex; gap: 8px; font-size: 0.78rem; margin-bottom: 12px;">
+            <span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 600; border: 1px solid #e2e8f0;">Buy ₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
+            <span style="background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #6ee7b7;">Sell ₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
+          </div>
           <div class="card-actions">
             <button class="btn btn-outline edit-btn" (click)="openEditDrawer(prod)">
               <span class="material-symbols-outlined">edit</span> Edit
@@ -187,6 +191,37 @@ import { SnackbarService } from '../../core/services/snackbar.service';
           </div>
         </div>
         
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label">Purchase Price / Cost Rate (₹)</label>
+            <input type="text" class="form-control" 
+                   [class.is-invalid]="buyField.invalid && (buyField.dirty || buyField.touched || prodForm.submitted)" 
+                   [(ngModel)]="newProduct.purchaseRate" 
+                   name="purchaseRate" 
+                   #buyField="ngModel" 
+                   required 
+                   pattern="^[0-9]+(\.[0-9]{1,2})?$">
+            <div class="validation-error" *ngIf="buyField.invalid && (buyField.dirty || buyField.touched || prodForm.submitted)">
+              <small *ngIf="buyField.errors?.['required']">Purchase price is required.</small>
+              <small *ngIf="buyField.errors?.['pattern']">Enter a valid positive number (up to 2 decimals).</small>
+            </div>
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label">Selling Price / Sell Rate (₹)</label>
+            <input type="text" class="form-control" 
+                   [class.is-invalid]="sellField.invalid && (sellField.dirty || sellField.touched || prodForm.submitted)" 
+                   [(ngModel)]="newProduct.sellingRate" 
+                   name="sellingRate" 
+                   #sellField="ngModel" 
+                   required 
+                   pattern="^[0-9]+(\.[0-9]{1,2})?$">
+            <div class="validation-error" *ngIf="sellField.invalid && (sellField.dirty || sellField.touched || prodForm.submitted)">
+              <small *ngIf="sellField.errors?.['required']">Selling price is required.</small>
+              <small *ngIf="sellField.errors?.['pattern']">Enter a valid positive number (up to 2 decimals).</small>
+            </div>
+          </div>
+        </div>
+        
         <div class="form-group">
           <label class="form-label">Description</label>
           <textarea class="form-control" rows="4" [(ngModel)]="newProduct.description" name="description"></textarea>
@@ -257,6 +292,14 @@ import { SnackbarService } from '../../core/services/snackbar.service';
           <div class="detail-row">
             <span class="label">Stock Available:</span>
             <span class="value font-weight-bold" [class.text-error]="prod.stock < 1000">{{ prod.stock }} units</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Purchase Price (Cost):</span>
+            <span class="value">₹{{ prod.purchaseRate || 0 | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Selling Price (Default):</span>
+            <span class="value font-weight-bold" style="color: #047857;">₹{{ prod.sellingRate || 0 | number:'1.2-2' }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Status:</span>
@@ -883,7 +926,9 @@ export class AdminProductsComponent implements OnInit {
     description: '',
     stock: 0,
     status: 'active',
-    images: []
+    images: [],
+    purchaseRate: 0,
+    sellingRate: 0
   };
 
   getCategoryName(id: string): string {
@@ -921,7 +966,8 @@ export class AdminProductsComponent implements OnInit {
     this.duplicateSkuError.set('');
     this.newProduct = {
       name: '', sku: '', categoryId: '', description: '',
-      stock: 0, status: 'active', images: []
+      stock: 0, status: 'active', images: [],
+      purchaseRate: 0, sellingRate: 0
     };
   }
 
@@ -929,7 +975,12 @@ export class AdminProductsComponent implements OnInit {
     this.isEditing.set(true);
     this.duplicateSkuError.set('');
     // clone the product so we don't mutate the UI immediately before save
-    this.newProduct = JSON.parse(JSON.stringify(prod));
+    const cloned = JSON.parse(JSON.stringify(prod));
+    this.newProduct = {
+      ...cloned,
+      purchaseRate: cloned.purchaseRate || 0,
+      sellingRate: cloned.sellingRate || 0
+    };
     this.isAddDrawerOpen.set(true);
   }
 
@@ -1039,7 +1090,9 @@ export class AdminProductsComponent implements OnInit {
       // Ensure stock is saved as a number since input type is text now
       const productToSave = {
         ...this.newProduct,
-        stock: Number(this.newProduct.stock)
+        stock: Number(this.newProduct.stock),
+        purchaseRate: Number(this.newProduct.purchaseRate || 0),
+        sellingRate: Number(this.newProduct.sellingRate || 0)
       };
 
       if (this.isEditing() && 'id' in productToSave) {

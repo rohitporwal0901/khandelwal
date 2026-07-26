@@ -660,7 +660,7 @@ import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.compon
 export class AdminOrdersComponent implements OnInit {
   dataService = inject(DataService);
   invoiceService = inject(InvoiceService);
-  orders = this.dataService.orders;
+  orders = computed(() => this.dataService.orders().filter(o => o.billType !== 'admin_pos'));
   products = this.dataService.products;
   
   isDrawerOpen = signal(false);

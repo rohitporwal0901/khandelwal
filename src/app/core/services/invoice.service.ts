@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Order, Product } from './data.service';
+import { Order, Product, Receipt } from './data.service';
 
 @Injectable({
   providedIn: 'root'
@@ -188,5 +188,122 @@ export class InvoiceService {
     // 6. Save / Download PDF
     const safeBillNum = order.billNumber || order.id;
     doc.save(`Estimate_Khandelwal_${safeBillNum}.pdf`);
+  }
+
+  generateReceipt(receipt: Receipt) {
+    const doc = new jsPDF();
+    const primaryMaroon = [128, 0, 0] as [number, number, number];
+    const textDark = [30, 41, 59] as [number, number, number];
+    const textMuted = [100, 116, 139] as [number, number, number];
+
+    // 1. Top Title Section
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...primaryMaroon);
+    doc.text('|| SHRI ||', 105, 14, { align: 'center' });
+
+    doc.setFontSize(22);
+    doc.text('PAYMENT RECEIPT VOUCHER', 105, 24, { align: 'center' });
+
+    doc.setFontSize(13);
+    doc.setTextColor(...textDark);
+    doc.text('Khandelwal Cards & Stationery', 105, 32, { align: 'center' });
+
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...textMuted);
+    doc.text('121, Ram Sahay Marg Nagda / Indore, MP', 105, 38, { align: 'center' });
+    doc.text('Phone: 7089731034 | 9826474254', 105, 43, { align: 'center' });
+
+    // Divider Line
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.5);
+    doc.line(14, 48, 196, 48);
+
+    // 2. Receipt Metadata
+    doc.setFontSize(11);
+    doc.setTextColor(...textDark);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Receipt No: ${receipt.receiptNumber}`, 14, 56);
+    doc.setFontSize(11.5);
+    doc.text(`Received From: M/S ${receipt.customerName}`, 14, 63);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...textMuted);
+    doc.text(`Phone: +91 ${receipt.phone}`, 14, 69);
+    if (receipt.referenceNumber) {
+      doc.text(`Txn Ref / Cheque No: ${receipt.referenceNumber}`, 14, 75);
+    }
+
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(100, 116, 139);
+    doc.text('ORIGINAL FOR RECIPIENT', 196, 56, { align: 'right' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...textDark);
+    const recDate = new Date(receipt.date).toLocaleDateString('en-IN', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    doc.text(`Date: ${recDate}`, 196, 63, { align: 'right' });
+    doc.text(`Mode: ${receipt.paymentMode.toUpperCase()}`, 196, 69, { align: 'right' });
+
+    // 3. Settlement Breakdown Table
+    const prevBalStr = receipt.previousBalance > 0 
+      ? `Rs ${receipt.previousBalance.toFixed(2)} (Due / बकाया)` 
+      : `Rs ${Math.abs(receipt.previousBalance).toFixed(2)} (Advance / अग्रिम)`;
+
+    const newBalStr = receipt.newBalance > 0 
+      ? `Rs ${receipt.newBalance.toFixed(2)} (Remaining Due / शेष बकाया)` 
+      : (receipt.newBalance < 0 
+        ? `Rs ${Math.abs(receipt.newBalance).toFixed(2)} (Advance Credit / अग्रिम जमा)` 
+        : `Rs 0.00 (Settled / चुकता)`);
+
+    const tableData = [
+      ['Old Ledger Balance', prevBalStr],
+      ['Amount Received (जमा राशि)', `Rs ${receipt.receivedAmount.toFixed(2)} (${receipt.paymentMode})`],
+      ['New Ledger Balance', newBalStr]
+    ];
+
+    const startYPos = receipt.referenceNumber ? 83 : 78;
+
+    autoTable(doc, {
+      startY: startYPos,
+      head: [['Description / Particulars', 'Amount / Status (Rs)']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: primaryMaroon, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10.5, cellPadding: 7 },
+      bodyStyles: { fontSize: 10, cellPadding: 8, textColor: textDark },
+      columnStyles: {
+        0: { cellWidth: 100, fontStyle: 'bold' },
+        1: { cellWidth: 'auto', halign: 'right', fontStyle: 'bold' }
+      }
+    });
+
+    // 4. Footer Section
+    const finalY = (doc as any).lastAutoTable.finalY || 140;
+    let summaryY = finalY + 15;
+
+    if (receipt.notes) {
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...textDark);
+      doc.text(`Remarks / Notes: ${receipt.notes}`, 14, summaryY);
+      summaryY += 12;
+    }
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...textMuted);
+    doc.text('Thank you for your payment! This is a computer-generated receipt voucher.', 14, summaryY);
+
+    summaryY += 25;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...textDark);
+    doc.text('Customer Signature', 14, summaryY);
+    doc.text('For - Khandelwal Cards (Auth Signatory)', 120, summaryY);
+
+    doc.save(`Receipt_Khandelwal_${receipt.receiptNumber}.pdf`);
   }
 }
