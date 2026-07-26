@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc, writeBatch, query, where, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, doc, updateDoc, getDoc, setDoc, writeBatch, query, where, getDocs } from '@angular/fire/firestore';
 
 export interface Category {
   id: string;
@@ -19,12 +19,17 @@ export interface Product {
   stock: number;
   status: 'active' | 'disabled';
   images: string[];
+  purchaseRate?: number;
+  sellingRate?: number;
   createdAt?: string;
 }
 
 export interface OrderItem {
   productId: string;
   quantity: number;
+  purchaseRate?: number;
+  sellingRate?: number;
+  total?: number;
 }
 
 export interface StockCheckResult {
@@ -49,12 +54,20 @@ export interface Order {
   phone: string;
   email: string;
   address: string;
+  pincode?: string;
   notes: string;
   items: OrderItem[];
   status: 'pending' | 'completed' | 'cancelled';
   cancellationReason?: string;
   date: string;
   uid?: string; // Firebase Auth UID — stored at order time
+  billNumber?: string; // e.g. KH001
+  billType?: 'app' | 'admin_pos';
+  subTotal?: number;
+  badha?: number;
+  totalAmount?: number;
+  previousBalance?: number; // Balance before this bill
+  netPayable?: number; // Total due after this bill
 }
 
 @Injectable({
@@ -244,6 +257,83 @@ export class DataService {
     } catch (error) {
       console.error("Error generating bill and updating stock:", error);
     }
+  }
+
+  // ─── POS Billing Methods (Sequential Bill No & Instant Stock Reduction) ───
+  async getNextBillNumber(): Promise<string> {
+    try {
+      const counterRef = doc(this.firestore, 'counters-kh/invoices');
+      const counterSnap = await getDoc(counterRef);
+      let count = 1;
+      if (counterSnap.exists()) {
+        count = (counterSnap.data()['count'] || 0) + 1;
+      }
+      await setDoc(counterRef, { count }, { merge: true });
+      return `KH${count.toString().padStart(3, '0')}`;
+    } catch (error) {
+      console.error('Error getting sequential bill number, falling back to timestamp:', error);
+      const rand = Math.floor(Math.random() * 900) + 100;
+      return `KH${rand}`;
+    }
+  }
+
+  async createAdminBill(
+    customerData: { name: string; phone: string; email?: string; address: string; pincode?: string; uid?: string },
+    items: OrderItem[],
+    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number },
+    notes: string = ''
+  ): Promise<Order> {
+    const billNumber = await this.getNextBillNumber();
+    const newOrder: Omit<Order, 'id'> = {
+      customerName: customerData.name,
+      phone: customerData.phone,
+      email: customerData.email || `${customerData.phone}@khandelwal.app`,
+      address: customerData.address,
+      pincode: customerData.pincode || '',
+      notes: notes || `POS Billing - ${billNumber}`,
+      items: items,
+      status: 'pending',
+      date: new Date().toISOString(),
+      uid: customerData.uid,
+      billNumber: billNumber,
+      billType: 'admin_pos',
+      subTotal: billingSummary.subTotal,
+      badha: billingSummary.badha,
+      totalAmount: billingSummary.totalAmount,
+      previousBalance: billingSummary.previousBalance,
+      netPayable: billingSummary.netPayable
+    };
+
+    const ordersRef = collection(this.firestore, 'orders-kh');
+    const docRef = await addDoc(ordersRef, newOrder);
+    const completeOrder: Order = { ...newOrder, id: docRef.id } as Order;
+
+    // Immediate stock reduction as per user requirement
+    for (const item of items) {
+      try {
+        const productRef = doc(this.firestore, `products-kh/${item.productId}`);
+        const productDoc = await getDoc(productRef);
+        if (productDoc.exists()) {
+          const currentStock = productDoc.data()['stock'] || 0;
+          const newStock = Math.max(0, currentStock - item.quantity);
+          await updateDoc(productRef, { stock: newStock });
+        }
+      } catch (e) {
+        console.error(`Failed to reduce stock for product ${item.productId}:`, e);
+      }
+    }
+
+    // Update customer balance if uid exists
+    if (customerData.uid) {
+      try {
+        const userRef = doc(this.firestore, `users-kh/${customerData.uid}`);
+        await updateDoc(userRef, { balance: billingSummary.netPayable });
+      } catch (e) {
+        console.error(`Failed to update user balance for ${customerData.uid}:`, e);
+      }
+    }
+
+    return completeOrder;
   }
 
   // Generic CRUD for Admin

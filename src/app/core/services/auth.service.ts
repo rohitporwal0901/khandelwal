@@ -28,10 +28,12 @@ export interface UserProfile {
   name: string;
   phone: string;
   pin?: string;
+  pincode?: string;
   email?: string;
   address?: string;
   photoUrl?: string;
   status?: 'pending' | 'approved' | 'rejected';
+  balance?: number; // Positive = Due/Unpaid, Negative = Advance
   createdAt: string;
 }
 
@@ -260,6 +262,29 @@ export class AuthService {
     if (current) {
       this.currentUserProfile.set({ ...current, pin: newPin.trim() });
     }
+  }
+
+  // ─── Admin POS Customer Methods ─────────────────────────
+  async createCustomerFromAdmin(data: { name: string; phone: string; address?: string; pincode?: string; balance?: number }): Promise<UserProfile> {
+    const usersRef = collection(this.firestore, 'users-kh');
+    const newDocRef = doc(usersRef);
+    const newProfile: UserProfile = {
+      uid: newDocRef.id,
+      name: data.name.trim(),
+      phone: data.phone.trim(),
+      address: data.address?.trim() || '',
+      pincode: data.pincode?.trim() || '',
+      status: 'approved',
+      balance: data.balance || 0,
+      createdAt: new Date().toISOString()
+    };
+    await setDoc(newDocRef, newProfile);
+    return newProfile;
+  }
+
+  async updateCustomerBalance(uid: string, newBalance: number): Promise<void> {
+    const userRef = doc(this.firestore, `users-kh/${uid}`);
+    await updateDoc(userRef, { balance: newBalance });
   }
 
   // ─── Admin methods (existing) ─────────────────────────────

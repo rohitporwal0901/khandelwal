@@ -11,6 +11,7 @@ import { AdminCategoriesComponent } from './admin/admin-categories/admin-categor
 import { AdminProductsComponent } from './admin/admin-products/admin-products.component';
 import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
 import { AdminCustomersComponent } from './admin/admin-customers/admin-customers.component';
+import { AdminBillingComponent } from './admin/admin-billing/admin-billing.component';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { adminGuard } from './core/guards/admin.guard';
 
@@ -40,6 +41,7 @@ export const routes: Routes = [
       { path: 'categories', component: AdminCategoriesComponent },
       { path: 'products', component: AdminProductsComponent },
       { path: 'orders', component: AdminOrdersComponent },
+      { path: 'billing', component: AdminBillingComponent },
       { path: 'customers', component: AdminCustomersComponent },
       { path: 'settings', component: AdminSettingsComponent }
     ]
