@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -23,6 +23,17 @@ export class AdminLayoutComponent {
   pendingOrdersCount = computed(() => 
     this.dataService.orders().filter(o => o.status === 'pending').length
   );
+
+  isBillingMenuOpen = signal(true);
+
+  toggleBillingMenu() {
+    this.isBillingMenuOpen.update(v => !v);
+  }
+
+  isBillingRoute(): boolean {
+    const url = this.router.url;
+    return url.includes('/admin/billing') || url.includes('/admin/receipts');
+  }
 
   promptLogout() {
     this.isLogoutModalOpen = true;

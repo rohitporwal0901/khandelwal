@@ -21,12 +21,24 @@
       <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item">
         <span class="material-symbols-outlined">shopping_cart</span> Orders
       </a>
-      <a routerLink="/admin/billing" routerLinkActive="active" class="nav-item" style="color: var(--primary); font-weight: 700;">
-        <span class="material-symbols-outlined">point_of_sale</span> Generate Bill
-      </a>
-      <a routerLink="/admin/receipts" routerLinkActive="active" class="nav-item" style="color: #047857; font-weight: 700;">
-        <span class="material-symbols-outlined">receipt_long</span> Generate Receipt
-      </a>
+
+      <!-- Parent Menu: Billing & Receipts -->
+      <div class="nav-parent-group">
+        <div class="nav-item nav-parent" (click)="toggleBillingMenu()" [class.active]="isBillingRoute()">
+          <div class="flex-align gap-2">
+            <span class="material-symbols-outlined">payments</span> Billing & Receipts
+          </div>
+          <span class="material-symbols-outlined toggle-icon" [class.rotated]="!isBillingMenuOpen()">expand_more</span>
+        </div>
+        <div class="sub-nav-menu" *ngIf="isBillingMenuOpen()">
+          <a routerLink="/admin/billing" routerLinkActive="active" class="nav-item sub-nav-item">
+            <span class="material-symbols-outlined">point_of_sale</span> Generate Bill
+          </a>
+          <a routerLink="/admin/receipts" routerLinkActive="active" class="nav-item sub-nav-item">
+            <span class="material-symbols-outlined">receipt_long</span> Generate Receipt
+          </a>
+        </div>
+      </div>
 
       <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
         <span class="material-symbols-outlined">group</span> Customers
