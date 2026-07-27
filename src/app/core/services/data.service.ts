@@ -55,6 +55,7 @@ export interface Order {
   email: string;
   address: string;
   pincode?: string;
+  city?: string;
   notes: string;
   items: OrderItem[];
   status: 'pending' | 'completed' | 'cancelled';

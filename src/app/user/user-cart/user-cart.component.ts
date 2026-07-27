@@ -151,6 +151,19 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label class="form-label">City <span class="optional">(Optional)</span></label>
+            <input type="text" class="form-control" [(ngModel)]="customerDetails.city"
+                   name="city" placeholder="e.g. Ujjain">
+          </div>
+          <div class="form-group half-width">
+            <label class="form-label">Pincode <span class="optional">(Optional)</span></label>
+            <input type="text" class="form-control" [(ngModel)]="customerDetails.pincode"
+                   name="pincode" placeholder="e.g. 456001">
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Notes <span class="optional">(Optional)</span></label>
           <textarea class="form-control" rows="2" [(ngModel)]="customerDetails.notes"
@@ -409,6 +422,8 @@ import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.com
     .checkout-form { padding-bottom: 0.5rem; }
     .form-hint { font-size: 0.83rem; color: var(--text-muted); margin-bottom: 16px; }
     .form-group { margin-bottom: 14px; }
+    .form-row { display: flex; gap: 12px; }
+    .half-width { flex: 1; }
     .req { color: var(--error); }
     .optional { font-size: 0.78rem; color: var(--text-muted); font-weight: 400; }
     .field-error {
@@ -469,7 +484,7 @@ export class UserCartComponent {
   productToRemove = signal<string | null>(null);
 
   customerDetails: Omit<Order, 'id' | 'items' | 'status' | 'date'> = {
-    customerName: '', phone: '', email: '', address: '', notes: ''
+    customerName: '', phone: '', email: '', address: '', notes: '', city: '', pincode: ''
   };
 
   totalQuantity() {
@@ -512,6 +527,8 @@ export class UserCartComponent {
       phone: profile?.phone || '',
       email: profile?.email || '',
       address: profile?.address || '',
+      city: '',
+      pincode: '',
       notes: ''
     };
     this.isCheckoutOpen.set(true);
