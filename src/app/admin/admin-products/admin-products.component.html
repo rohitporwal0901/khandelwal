@@ -1,1 +1,312 @@
-<p>admin-products works!</p>
+<div class="page-header">
+  <div>
+    <h2>Products</h2>
+    <p class="text-muted">Manage inventory and product details</p>
+  </div>
+  <div class="header-actions">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" placeholder="Search by SKU"
+             [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+      <button class="search-clear" *ngIf="searchQuery()" (click)="onSearch('')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <button class="btn btn-primary" (click)="openAddDrawer()">
+      <span class="material-symbols-outlined">add</span> Add Product
+    </button>
+  </div>
+</div>
+
+<div class="products-grid-container">
+  <!-- Loading Overlay for Pagination -->
+  <div class="pagination-overlay" *ngIf="isPaginating()">
+    <span class="spinner-large"></span>
+    <p>Loading products...</p>
+  </div>
+  
+  <div class="products-grid" *ngIf="isLoading()">
+    <div class="product-card glass-panel" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
+      <div class="card-img-wrapper" style="background: #f0f0f0;">
+         <div class="skeleton-text" style="width: 100%; height: 100%; border-radius: 0;"></div>
+      </div>
+      <div class="card-info">
+        <div class="skeleton-text" style="height: 18px; width: 80%; margin-bottom: 8px;"></div>
+        <div class="skeleton-text" style="height: 12px; width: 60%; margin-bottom: 12px;"></div>
+        <div class="skeleton-text" style="height: 14px; width: 40%; margin-bottom: 16px;"></div>
+        <div class="card-actions" style="display: flex; gap: 10px;">
+          <div class="skeleton-text" style="height: 36px; width: 50%; border-radius: 4px;"></div>
+          <div class="skeleton-text" style="height: 36px; width: 50%; border-radius: 4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="products-grid" [class.blur-content]="isPaginating()" *ngIf="!isLoading()">
+    <div class="product-card glass-panel" *ngFor="let prod of paginatedProducts()">
+    <div class="card-img-wrapper" (click)="openDetailsDrawer(prod)">
+      <div class="skeleton-loader" *ngIf="!loadedImages()[prod.id]"></div>
+      
+      <div class="img-carousel">
+        <!-- Auto swiper up to 3 images -->
+        <img *ngFor="let img of (prod.images.length > 2 ? prod.images.slice(0,3) : prod.images.length === 2 ? [prod.images[0], prod.images[1], prod.images[0]] : prod.images)" 
+             [src]="img" 
+             [alt]="prod.name" 
+             class="thumbnail-img carousel-img" 
+             [class.loaded]="loadedImages()[prod.id]" 
+             (load)="onImageLoad(prod.id)">
+      </div>
+      
+      <div class="status-badge" [ngClass]="prod.status === 'active' ? 'badge-success' : 'badge-error'">
+        {{ prod.status | titlecase }}
+      </div>
+      <div class="stock-badge out-of-stock" *ngIf="prod.stock === 0">
+        Out of Stock
+      </div>
+      <div class="stock-badge low-stock" *ngIf="prod.stock > 0 && prod.stock < 1500">
+        Low Stock
+      </div>
+    </div>
+    <div class="card-info">
+      <h4 (click)="openDetailsDrawer(prod)">{{ prod.name }}</h4>
+      <p class="sku text-muted">SKU: {{ prod.sku }} | {{ getCategoryName(prod.categoryId) }}</p>
+      <div class="stock-info">
+        <span class="label">Stock:</span>
+        <span class="value font-weight-bold" [class.text-error]="prod.stock < 1000">{{ prod.stock }}</span>
+      </div>
+      <div class="rate-info mt-1" style="display: flex; gap: 8px; font-size: 0.78rem; margin-bottom: 12px;">
+        <span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 600; border: 1px solid #e2e8f0;">Buy ₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
+        <span style="background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #6ee7b7;">Sell ₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-outline edit-btn" (click)="openEditDrawer(prod)">
+          <span class="material-symbols-outlined">edit</span> Edit
+        </button>
+        <button class="btn btn-outline delete-btn" (click)="promptDeleteProduct(prod.id)">
+          <span class="material-symbols-outlined">delete</span> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="empty-state" *ngIf="!isLoading() && filteredProducts().length === 0">
+    <span class="material-symbols-outlined">inventory_2</span>
+    <p>No products found.</p>
+  </div>
+</div>
+</div>
+
+<div class="pagination-bar" *ngIf="!isLoading() && filteredProducts().length > 0">
+  <button class="btn btn-outline" [disabled]="currentPage() === 1" (click)="prevPage()">
+    <span class="material-symbols-outlined">chevron_left</span> Previous
+  </button>
+  <div class="page-info">
+    Page {{ currentPage() }} of {{ totalPages() || 1 }}
+  </div>
+  <button class="btn btn-outline" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">
+    Next <span class="material-symbols-outlined">chevron_right</span>
+  </button>
+</div>
+
+<app-side-drawer 
+  [isOpen]="isAddDrawerOpen()" 
+  [title]="isEditing() ? 'Edit Product' : 'Add New Product'" 
+  width="500px"
+  (close)="closeAddDrawer()">
+  
+  <form (ngSubmit)="saveProduct(prodForm)" #prodForm="ngForm">
+    <div class="form-group">
+      <label class="form-label">Product Name</label>
+      <input type="text" class="form-control" [class.is-invalid]="nameField.invalid && (nameField.dirty || nameField.touched)" [(ngModel)]="newProduct.name" name="name" #nameField="ngModel" required>
+      <div class="validation-error" *ngIf="nameField.invalid && (nameField.dirty || nameField.touched)">
+        <small>Product name is required.</small>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label class="form-label">Product Code (SKU)</label>
+        <input type="text" class="form-control" 
+               [class.is-invalid]="(skuField.invalid && (skuField.dirty || skuField.touched)) || duplicateSkuError()" 
+               [(ngModel)]="newProduct.sku" 
+               (ngModelChange)="checkDuplicateSku($event)"
+               (input)="checkDuplicateSku()"
+               name="sku" 
+               #skuField="ngModel" 
+               required>
+        <div class="validation-error" *ngIf="skuField.invalid && (skuField.dirty || skuField.touched)">
+          <small>SKU is required.</small>
+        </div>
+        <div class="validation-error" *ngIf="duplicateSkuError()">
+          <small>{{ duplicateSkuError() }}</small>
+        </div>
+      </div>
+      <div class="form-group flex-1">
+        <label class="form-label">Category</label>
+        <select class="form-control" [class.is-invalid]="catField.invalid && (catField.dirty || catField.touched)" [(ngModel)]="newProduct.categoryId" name="categoryId" #catField="ngModel" required>
+          <option value="" disabled selected>Select Category</option>
+          <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+        <div class="validation-error" *ngIf="catField.invalid && (catField.dirty || catField.touched)">
+          <small>Category is required.</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label class="form-label">Stock Quantity</label>
+        <input type="text" class="form-control" 
+               [class.is-invalid]="stockField.invalid && (stockField.dirty || stockField.touched || prodForm.submitted)" 
+               [(ngModel)]="newProduct.stock" 
+               name="stock" 
+               #stockField="ngModel" 
+               required 
+               pattern="^[1-9][0-9]*$">
+        <div class="validation-error" *ngIf="stockField.invalid && (stockField.dirty || stockField.touched || prodForm.submitted)">
+          <small *ngIf="stockField.errors?.['required']">Stock is required.</small>
+          <small *ngIf="stockField.errors?.['pattern']">Only positive numbers allowed (no zero, decimals, or leading zeros).</small>
+        </div>
+      </div>
+      <div class="form-group flex-1">
+        <label class="form-label">Status</label>
+        <select class="form-control" [(ngModel)]="newProduct.status" name="status" required>
+          <option value="active">Active</option>
+          <option value="disabled">Disabled</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group flex-1">
+        <label class="form-label">Purchase Price / Cost Rate (₹)</label>
+        <input type="text" class="form-control" 
+               [class.is-invalid]="buyField.invalid && (buyField.dirty || buyField.touched || prodForm.submitted)" 
+               [(ngModel)]="newProduct.purchaseRate" 
+               name="purchaseRate" 
+               #buyField="ngModel" 
+               required 
+               pattern="^[0-9]+(\.[0-9]{1,2})?$">
+        <div class="validation-error" *ngIf="buyField.invalid && (buyField.dirty || buyField.touched || prodForm.submitted)">
+          <small *ngIf="buyField.errors?.['required']">Purchase price is required.</small>
+          <small *ngIf="buyField.errors?.['pattern']">Enter a valid positive number (up to 2 decimals).</small>
+        </div>
+      </div>
+      <div class="form-group flex-1">
+        <label class="form-label">Selling Price / Sell Rate (₹)</label>
+        <input type="text" class="form-control" 
+               [class.is-invalid]="sellField.invalid && (sellField.dirty || sellField.touched || prodForm.submitted)" 
+               [(ngModel)]="newProduct.sellingRate" 
+               name="sellingRate" 
+               #sellField="ngModel" 
+               required 
+               pattern="^[0-9]+(\.[0-9]{1,2})?$">
+        <div class="validation-error" *ngIf="sellField.invalid && (sellField.dirty || sellField.touched || prodForm.submitted)">
+          <small *ngIf="sellField.errors?.['required']">Selling price is required.</small>
+          <small *ngIf="sellField.errors?.['pattern']">Enter a valid positive number (up to 2 decimals).</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" rows="4" [(ngModel)]="newProduct.description" name="description"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Product Images</label>
+      
+      <div class="image-upload-area" (click)="fileInput.click()">
+        <span class="material-symbols-outlined">cloud_upload</span>
+        <p>Click to select images</p>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" multiple style="display: none;">
+      </div>
+      
+      <div class="upload-progress mt-2" *ngIf="isUploading()">
+        <p class="text-muted mb-1 text-sm">Uploading... {{ uploadProgress() }}%</p>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" [style.width.%]="uploadProgress()"></div>
+        </div>
+      </div>
+      
+      <div class="image-previews mt-3" *ngIf="newProduct.images.length > 0">
+        <div class="preview-item" *ngFor="let img of newProduct.images; let i = index">
+          <img [src]="img" alt="Preview">
+          <button type="button" class="remove-btn" (click)="removeImage(i)">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="preview-item add-more" (click)="fileInput.click()">
+          <span class="material-symbols-outlined">add</span>
+        </div>
+      </div>
+      
+      <div class="validation-error mt-2" *ngIf="newProduct.images.length === 0">
+        <small>At least one product image is required.</small>
+      </div>
+    </div>
+    
+    <div class="drawer-actions mt-4">
+      <button type="button" class="btn btn-outline" (click)="closeAddDrawer()" [disabled]="isSaving()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isUploading() || isSaving() || !!duplicateSkuError()">
+        <span *ngIf="isSaving()" class="loader-sm"></span>
+        <span *ngIf="!isSaving()">{{ isUploading() ? 'Uploading...' : (isEditing() ? 'Update Product' : 'Save Product') }}</span>
+      </button>
+    </div>
+  </form>
+</app-side-drawer>
+
+<!-- Right Drawer for Product Details Preview -->
+<app-side-drawer 
+  [isOpen]="isDetailsDrawerOpen()" 
+  [title]="selectedProduct()?.name || 'Product Details'" 
+  width="600px"
+  (close)="closeDetailsDrawer()">
+  
+  <div class="product-details-content" *ngIf="selectedProduct() as prod">
+    <app-image-gallery [images]="prod.images"></app-image-gallery>
+    
+    <div class="details-section mt-4">
+      <div class="detail-row">
+        <span class="label">SKU:</span>
+        <span class="value">{{ prod.sku }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Category:</span>
+        <span class="value">{{ getCategoryName(prod.categoryId) }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Stock Available:</span>
+        <span class="value font-weight-bold" [class.text-error]="prod.stock < 1000">{{ prod.stock }} units</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Purchase Price (Cost):</span>
+        <span class="value">₹{{ prod.purchaseRate || 0 | number:'1.2-2' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Selling Price (Default):</span>
+        <span class="value font-weight-bold" style="color: #047857;">₹{{ prod.sellingRate || 0 | number:'1.2-2' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Status:</span>
+        <span class="value badge" [ngClass]="prod.status === 'active' ? 'badge-success' : 'badge-error'">
+          {{ prod.status | titlecase }}
+        </span>
+      </div>
+    </div>
+    
+    <div class="details-section mt-4">
+      <h4>Description</h4>
+      <p class="text-muted">{{ prod.description }}</p>
+    </div>
+  </div>
+</app-side-drawer>
+
+<!-- Custom Confirmation Modal for Deletion -->
+<app-confirmation-modal
+  [isOpen]="isDeleteModalOpen()"
+  title="Delete Product"
+  message="Are you sure you want to delete this product? This action cannot be undone."
+  confirmText="Delete"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()">
+</app-confirmation-modal>

@@ -1,0 +1,106 @@
+<div class="page-header">
+  <div>
+    <h2>Member Applications & Customers</h2>
+    <p class="text-muted">Review, verify, and manage store access for all registered wholesale users</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline flex-align" (click)="loadUsers()" [disabled]="loading()">
+      <span class="material-symbols-outlined mr-1">refresh</span> Refresh List
+    </button>
+  </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs mb-4">
+  <button class="tab-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">
+    All Members <span class="tab-count">{{ users().length }}</span>
+  </button>
+  <button class="tab-btn tab-pending" [class.active]="filterStatus() === 'pending'" (click)="filterStatus.set('pending')">
+    ⏳ Pending Verification <span class="tab-count count-pending">{{ getCount('pending') }}</span>
+  </button>
+  <button class="tab-btn" [class.active]="filterStatus() === 'approved'" (click)="filterStatus.set('approved')">
+    ✅ Approved Access <span class="tab-count">{{ getCount('approved') }}</span>
+  </button>
+  <button class="tab-btn" [class.active]="filterStatus() === 'rejected'" (click)="filterStatus.set('rejected')">
+    ❌ Declined <span class="tab-count">{{ getCount('rejected') }}</span>
+  </button>
+</div>
+
+<div class="glass-panel" style="padding: 0;">
+  <div class="loading-wrap" *ngIf="loading()">
+    <div class="spinner"></div>
+    <span>Loading members from database...</span>
+  </div>
+
+  <table class="table w-100" *ngIf="!loading()">
+    <thead>
+      <tr>
+        <th>Member / Business</th>
+        <th>Contact Number</th>
+        <th>Status</th>
+        <th>Registration Date</th>
+        <th class="text-right">Access Verification</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of filteredUsers()">
+        <td>
+          <div class="customer-info">
+            <div class="avatar">
+              <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Avatar" class="avatar-img">
+              <span *ngIf="!user.photoUrl">{{ user.name.charAt(0).toUpperCase() }}</span>
+            </div>
+            <div>
+              <strong>{{ user.name }}</strong>
+              <span class="uid-tag">UID: {{ user.uid.slice(0, 8) }}...</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="phone-tag">+91 {{ user.phone }}</span>
+        </td>
+        <td>
+          <span class="badge" [ngClass]="{
+            'badge-warning': user.status === 'pending',
+            'badge-success': user.status === 'approved',
+            'badge-danger': user.status === 'rejected'
+          }">
+            <span class="dot"></span>
+            {{ (user.status || 'approved') | uppercase }}
+          </span>
+        </td>
+        <td>
+          <span class="date-text">{{ user.createdAt | date:'medium' }}</span>
+        </td>
+        <td class="text-right">
+          <div class="action-buttons justify-end">
+            <button *ngIf="user.status !== 'approved'" 
+                    class="btn-action btn-approve"
+                    (click)="changeStatus(user, 'approved')"
+                    [disabled]="updatingUid() === user.uid"
+                    title="Approve access to wholesale store">
+              <span class="material-symbols-outlined icon">check_circle</span>
+              <span>Approve Access</span>
+            </button>
+
+            <button *ngIf="user.status !== 'rejected'" 
+                    class="btn-action btn-reject"
+                    (click)="changeStatus(user, 'rejected')"
+                    [disabled]="updatingUid() === user.uid"
+                    title="Decline access">
+              <span class="material-symbols-outlined icon">cancel</span>
+              <span>Decline</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="filteredUsers().length === 0">
+        <td colspan="5" class="text-center empty-state">
+          <span class="material-symbols-outlined empty-icon">group_off</span>
+          <p>No members found matching the selected status filter.</p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

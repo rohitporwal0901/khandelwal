@@ -1,1 +1,223 @@
-<p>admin-orders works!</p>
+<div class="page-header">
+  <div>
+    <h2>Orders</h2>
+    <p class="text-muted">Manage customer orders and inventory</p>
+  </div>
+</div>
+
+<div class="card p-0">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Items</th>
+        <th>Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody *ngIf="isLoading()">
+      <tr *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
+        <td><div class="skeleton-text" style="width: 80px; height: 16px;"></div></td>
+        <td>
+          <div class="skeleton-text" style="width: 120px; height: 16px; margin-bottom: 4px;"></div>
+          <div class="skeleton-text" style="width: 80px; height: 12px;"></div>
+        </td>
+        <td><div class="skeleton-text" style="width: 60px; height: 16px;"></div></td>
+        <td><div class="skeleton-text" style="width: 80px; height: 16px;"></div></td>
+        <td><div class="skeleton-text" style="width: 80px; height: 24px; border-radius: 12px;"></div></td>
+      </tr>
+    </tbody>
+    <tbody *ngIf="!isLoading()">
+      <tr *ngFor="let order of paginatedOrders()" (click)="openOrderDetails(order)" class="clickable-row">
+        <td><strong>{{ order.id }}</strong></td>
+        <td>
+          <div class="customer-info">
+            <strong>{{ order.customerName }}</strong>
+            <span class="text-muted text-sm">{{ order.phone }}</span>
+          </div>
+        </td>
+        <td>{{ getTotalItems(order) }} items</td>
+        <td>{{ order.date | date:'mediumDate' }}</td>
+        <td>
+          <span class="badge" 
+            [ngClass]="order.status === 'pending' ? 'badge-warning' : order.status === 'cancelled' ? 'badge-error' : 'badge-success'">
+            {{ order.status | titlecase }}
+          </span>
+        </td>
+      </tr>
+      <tr *ngIf="orders().length === 0">
+        <td colspan="5" class="text-center text-muted py-4">No orders found.</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <!-- Pagination Footer -->
+  <div class="pagination-footer" *ngIf="!isLoading() && totalPages() > 1">
+    <button class="btn btn-outline" (click)="prevPage()" [disabled]="currentPage() === 1">Previous</button>
+    <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+    <button class="btn btn-outline" (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+  </div>
+</div>
+
+<!-- Right Drawer for Order Details -->
+<app-side-drawer 
+  [isOpen]="isDrawerOpen()" 
+  [title]="'Order ' + selectedOrder()?.id" 
+  width="500px"
+  (close)="closeDrawer()">
+  
+  <div class="order-details-content" *ngIf="selectedOrder() as order">
+    <div class="status-banner" [ngClass]="order.status === 'pending' ? 'bg-warning-light' : 'bg-success-light'">
+      <span class="material-symbols-outlined" 
+            [class.text-warning]="order.status === 'pending'"
+            [class.text-success]="order.status === 'completed'">
+        {{ order.status === 'pending' ? 'pending_actions' : 'check_circle' }}
+      </span>
+      <div class="status-text">
+        <strong>{{ order.status | titlecase }} Order</strong>
+        <span>{{ order.date | date:'medium' }}</span>
+      </div>
+    </div>
+    
+    <div class="id-card-wrapper mt-4">
+      <div class="id-card">
+        <div class="id-card-header">
+          <span class="material-symbols-outlined">badge</span>
+          <h5>Customer Identity</h5>
+        </div>
+        <div class="id-card-body">
+          <div class="id-card-photo">
+            <div class="avatar">{{ order.customerName.charAt(0) | uppercase }}</div>
+          </div>
+          <div class="id-card-details">
+            <div class="id-field">
+              <small>FULL NAME</small>
+              <strong>{{ order.customerName }}</strong>
+            </div>
+            <div class="id-field-group">
+              <div class="id-field">
+                <small>PHONE NUMBER</small>
+                <strong>{{ order.phone }}</strong>
+              </div>
+              <div class="id-field" *ngIf="order.email">
+                <small>EMAIL ADDRESS</small>
+                <strong>{{ order.email }}</strong>
+              </div>
+            </div>
+            <div class="id-field">
+              <small>DELIVERY ADDRESS</small>
+              <strong>{{ order.address }}</strong>
+            </div>
+            <div class="id-field" *ngIf="order.notes">
+              <small>ADDITIONAL NOTES</small>
+              <strong>{{ order.notes }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="details-section mt-4">
+      <h4>Ordered Items</h4>
+      <div class="order-items-list">
+        <div class="order-item" *ngFor="let item of order.items">
+          <img [src]="getProductImage(item.productId)" alt="Product">
+          <div class="item-info">
+            <strong>{{ getProductName(item.productId) }}</strong>
+            <span class="text-muted text-sm d-block mt-1">Code: <strong>{{ getProductSku(item.productId) }}</strong></span>
+          </div>
+          <div class="item-actions">
+            <span class="badge badge-warning">Qty: {{ item.quantity }}</span>
+            <button class="btn-delete" *ngIf="order.status === 'pending'" (click)="initRemoveItem(order, item)" title="Remove Item">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="drawer-actions mt-4" *ngIf="order.status === 'pending'">
+      <button type="button" class="btn btn-primary w-100 generate-btn" 
+              *ngIf="order.items.length > 0"
+              [disabled]="isGenerating()"
+              (click)="onGenerateBillClick(order)">
+        <span *ngIf="!isGenerating()">
+          <span class="material-symbols-outlined">receipt_long</span> Generate Bill & Update Stock
+        </span>
+        <span *ngIf="isGenerating()" class="loader"></span>
+      </button>
+
+      <button type="button" class="btn w-100 generate-btn" style="background: var(--error); color: white;"
+              *ngIf="order.items.length === 0"
+              [disabled]="isCancelling()"
+              (click)="confirmCancelEmptyOrder(order)">
+        <span *ngIf="!isCancelling()">
+          <span class="material-symbols-outlined">cancel</span> No Items Left - Cancel Order
+        </span>
+        <span *ngIf="isCancelling()" class="loader"></span>
+      </button>
+    </div>
+
+    <div class="cancelled-banner mt-4" *ngIf="order.status === 'cancelled'">
+      <span class="material-symbols-outlined" style="color: var(--error); font-size: 2rem;">cancel</span>
+      <h4 style="color: var(--error);">Order Cancelled</h4>
+      <p class="text-muted" *ngIf="order.cancellationReason">Reason: {{ order.cancellationReason }}</p>
+    </div>
+    
+    <div class="success-message mt-4" *ngIf="showSuccessAnim()">
+      <span class="material-symbols-outlined text-success" style="font-size: 3rem;">check_circle</span>
+      <h4>Bill Generated Successfully</h4>
+      <p class="text-muted">Inventory has been updated automatically.</p>
+    </div>
+  </div>
+</app-side-drawer>
+
+<!-- Stock Warning Modal -->
+<div class="modal-overlay" *ngIf="showStockWarning()" (click)="closeStockWarning()">
+  <div class="stock-warning-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="material-symbols-outlined" style="color: var(--warning); font-size: 2.5rem;">warning</span>
+      <h3>Insufficient Stock!</h3>
+      <p class="text-muted">The following items don't have enough stock to fulfill this order:</p>
+    </div>
+    <div class="modal-body">
+      <div class="stock-issue-row" *ngFor="let issue of stockIssues()">
+        <div>
+          <strong>{{ issue.productName }}</strong>
+        </div>
+        <div class="stock-numbers">
+          <span class="badge badge-error">Ordered: {{ issue.ordered }}</span>
+          <span class="badge badge-warning">Available: {{ issue.available }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeStockWarning()">Go Back</button>
+      <button class="btn" style="background: var(--error); color: white;" 
+              [disabled]="isCancelling()" (click)="confirmCancelOrder()">
+        <span *ngIf="!isCancelling()">Cancel This Order</span>
+        <span *ngIf="isCancelling()" class="loader"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Item Modal -->
+<div class="modal-overlay" *ngIf="itemToRemove()" (click)="cancelRemoveItem()">
+  <div class="stock-warning-modal confirm-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="material-symbols-outlined" style="color: var(--error); font-size: 2.5rem;">delete</span>
+      <h3>Remove Item?</h3>
+      <p class="text-muted">Are you sure you want to remove this item from the order?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cancelRemoveItem()">No, Keep it</button>
+      <button class="btn" style="background: var(--error); color: white;" 
+              [disabled]="isRemovingItem()" (click)="confirmRemoveItemAction()">
+        <span *ngIf="!isRemovingItem()">Yes, Delete</span>
+        <span *ngIf="isRemovingItem()" class="loader"></span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,1 +1,78 @@
-<p>admin-layout works!</p>
+<div class="admin-container">
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="favicon.ico" alt="Logo" class="sidebar-logo">
+      <div class="logo-text">
+        <h2>Khandelwal Cards</h2>
+        <span class="badge badge-warning">Admin Panel</span>
+      </div>
+    </div>
+    
+    <nav class="nav-menu">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">category</span> Categories
+      </a>
+      <a routerLink="/admin/products" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">inventory_2</span> Products
+      </a>
+      <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">shopping_cart</span> Orders
+      </a>
+      <a routerLink="/admin/billing" routerLinkActive="active" class="nav-item" style="color: var(--primary); font-weight: 700;">
+        <span class="material-symbols-outlined">point_of_sale</span> Generate Bill
+      </a>
+      <a routerLink="/admin/receipts" routerLinkActive="active" class="nav-item" style="color: #047857; font-weight: 700;">
+        <span class="material-symbols-outlined">receipt_long</span> Generate Receipt
+      </a>
+
+      <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">group</span> Customers
+      </a>
+
+      <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">settings</span> Settings
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <button class="btn btn-outline" (click)="promptLogout()" style="width: 100%">
+        <span class="material-symbols-outlined">logout</span> Logout
+      </button>
+    </div>
+  </aside>
+  
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-actions">
+        <span class="date">{{ currentDate | date:'mediumDate' }}</span>
+        <button class="btn-icon" routerLink="/admin/orders">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="notification-badge" *ngIf="pendingOrdersCount() > 0">{{ pendingOrdersCount() }}</span>
+        </button>
+        <div class="admin-profile">
+          <img src="https://ui-avatars.com/api/?name=Admin&background=800000&color=fff" alt="Admin">
+          <div class="profile-info">
+            <strong>Admin User</strong>
+            <span>Administrator</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
+
+<app-confirmation-modal
+  [isOpen]="isLogoutModalOpen"
+  title="Confirm Logout"
+  message="Are you sure you want to log out of the admin panel?"
+  confirmText="Logout"
+  (confirm)="confirmLogout()"
+  (cancel)="cancelLogout()">
+</app-confirmation-modal>
