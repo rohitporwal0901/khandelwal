@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed, HostListener, ElementRef }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService, Order, Receipt } from '../../core/services/data.service';
-import { InvoiceService } from '../../core/services/invoice.service';
+import { InvoiceService, LedgerReportEntry } from '../../core/services/invoice.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 
 @Component({
@@ -40,6 +40,23 @@ export class AdminReceiptsComponent implements OnInit {
   selectedCustId = signal<string>('');
   selectedCustomer = signal<UserProfile | null>(null);
   orderTypeFilter = signal<'all' | 'admin_pos' | 'app'>('all');
+
+  // Customer Ledger Modal State
+  isLedgerModalOpen = signal<boolean>(false);
+  ledgerStartDate = signal<string>(this.getDefaultStartDate());
+  ledgerEndDate = signal<string>(this.getDefaultEndDate());
+  maxDate = computed(() => this.getDefaultEndDate());
+
+  getDefaultEndDate(): string {
+    const d = new Date();
+    return d.toISOString().split('T')[0];
+  }
+
+  getDefaultStartDate(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return d.toISOString().split('T')[0];
+  }
 
   // Form State
   receivedAmount = signal<number | null>(null);
@@ -244,5 +261,117 @@ export class AdminReceiptsComponent implements OnInit {
 
   downloadReceiptPDF(rec: Receipt) {
     this.invoiceService.generateReceipt(rec);
+  }
+
+  customerLedgerEntries = computed(() => {
+    const cust = this.selectedCustomer();
+    if (!cust) return { entries: [], openingBalance: 0, closingBalance: 0 };
+
+    const startStr = this.ledgerStartDate();
+    const endStr = this.ledgerEndDate();
+    const startMs = startStr ? new Date(startStr + 'T00:00:00').getTime() : 0;
+    const endMs = endStr ? new Date(endStr + 'T23:59:59.999').getTime() : Date.now();
+
+    // 1. Gather all transactions for this customer
+    const rawTxns: { dateStr: string; timestamp: number; narration: string; debit: number; credit: number }[] = [];
+
+    // Add Invoices (Debits)
+    this.orders().forEach(o => {
+      const matchUid = o.uid && o.uid === cust.uid;
+      const matchPhone = o.phone && o.phone === cust.phone;
+      if (matchUid || matchPhone) {
+        const time = new Date(o.date).getTime();
+        const amt = o.totalAmount !== undefined ? o.totalAmount : ((o.subTotal || 0) + (o.badha || 0));
+        rawTxns.push({
+          dateStr: new Date(o.date).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }),
+          timestamp: time,
+          narration: `Bill No ${o.billNumber || o.id.slice(0, 6).toUpperCase()}`,
+          debit: amt,
+          credit: 0
+        });
+      }
+    });
+
+    // Add Receipts (Credits)
+    this.receipts().forEach(r => {
+      const matchUid = r.customerUid && r.customerUid === cust.uid;
+      const matchPhone = r.phone && r.phone === cust.phone;
+      if (matchUid || matchPhone) {
+        const time = new Date(r.date).getTime();
+        rawTxns.push({
+          dateStr: new Date(r.date).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }),
+          timestamp: time,
+          narration: `Receipt No. ${r.receiptNumber} (${r.paymentMode})`,
+          debit: 0,
+          credit: r.receivedAmount
+        });
+      }
+    });
+
+    // Sort chronologically (oldest first)
+    rawTxns.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Calculate opening balance (all transactions before startMs)
+    let runningBalance = 0;
+    rawTxns.forEach(tx => {
+      if (tx.timestamp < startMs) {
+        runningBalance += (tx.debit - tx.credit);
+      }
+    });
+    const openingBalance = runningBalance;
+
+    // Build ledger entries within range [startMs, endMs]
+    const entries: LedgerReportEntry[] = [];
+    rawTxns.forEach(tx => {
+      if (tx.timestamp >= startMs && tx.timestamp <= endMs) {
+        runningBalance += (tx.debit - tx.credit);
+        const bType = runningBalance > 0 ? 'Dr' : (runningBalance < 0 ? 'Cr' : '');
+        entries.push({
+          date: tx.dateStr,
+          timestamp: tx.timestamp,
+          narration: tx.narration,
+          debit: tx.debit,
+          credit: tx.credit,
+          balance: Math.abs(runningBalance),
+          balanceType: bType
+        });
+      }
+    });
+
+    return {
+      entries,
+      openingBalance,
+      closingBalance: runningBalance
+    };
+  });
+
+  openLedgerModal() {
+    if (!this.selectedCustomer()) return;
+    this.ledgerStartDate.set(this.getDefaultStartDate());
+    this.ledgerEndDate.set(this.getDefaultEndDate());
+    this.isLedgerModalOpen.set(true);
+  }
+
+  closeLedgerModal() {
+    this.isLedgerModalOpen.set(false);
+  }
+
+  resetLedgerDates() {
+    this.ledgerStartDate.set(this.getDefaultStartDate());
+    this.ledgerEndDate.set(this.getDefaultEndDate());
+  }
+
+  printLedgerPDF() {
+    const cust = this.selectedCustomer();
+    if (!cust) return;
+    const { entries, openingBalance, closingBalance } = this.customerLedgerEntries();
+    this.invoiceService.generateLedgerReport(
+      cust,
+      entries,
+      this.ledgerStartDate(),
+      this.ledgerEndDate(),
+      openingBalance,
+      closingBalance
+    );
   }
 }

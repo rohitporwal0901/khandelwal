@@ -280,3 +280,256 @@
   &:hover:not([disabled]) { background: #065f46; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(4, 120, 87, 0.35); }
   &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 }
+
+/* ─── CUSTOMER LEDGER MODAL POPUP DIALOG STYLES ─── */
+.modal-backdrop-sharp {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modal-dialog-sharp {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 95%;
+  max-width: 1100px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header-sharp {
+  background: #fafbfc;
+  padding: 1.5rem 2rem !important;
+}
+
+.date-filter-toolbar {
+  background: #f8fafc;
+  padding: 1.25rem 2rem !important;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.filter-field-group {
+  display: flex;
+  align-items: center;
+  margin-right: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 4px 14px;
+  height: 46px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #475569;
+  margin-right: 0.75rem;
+  margin-bottom: 0;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.filter-date-input {
+  width: auto;
+  height: 36px !important;
+  padding: 0 0.5rem !important;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #0f172a;
+  line-height: normal;
+  outline: none;
+  cursor: pointer;
+}
+.filter-date-input:focus {
+  outline: none;
+}
+
+/* ─── ULTRA-CLEAN EXECUTIVE MODAL TABLE STYLES ─── */
+.ledger-modal-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-family: inherit;
+}
+
+.ledger-modal-table th {
+  background: #f1f5f9;
+  padding: 16px 24px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #334155;
+  border-bottom: 2px solid #cbd5e1;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.ledger-modal-table td {
+  padding: 16px 24px;
+  vertical-align: middle;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.92rem;
+  color: #0f172a;
+  line-height: 1.5;
+  transition: background-color 0.15s ease;
+}
+
+.ledger-modal-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.ledger-modal-table tr.row-opening td {
+  background-color: #fafbfc;
+  border-bottom: 2px solid #cbd5e1;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ledger-modal-table tr.row-closing td {
+  background-color: #f1f5f9;
+  border-top: 2px solid #0f172a;
+  border-bottom: none;
+  padding: 20px 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ledger-modal-table .col-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ledger-modal-table .col-balance {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 0.96rem;
+}
+
+.balance-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #e2e8f0;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.modal-footer-sharp {
+  background: #fafbfc;
+  padding: 1.25rem 2rem !important;
+  border-top: 2px solid #e2e8f0;
+}
+
+.badge-xxs {
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* ─── MODAL & REPORT BUTTONS (Sharp, Clean Contrast) ─── */
+.btn-primary-sharp {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 8px;
+  padding: 8px 16px !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.15s ease;
+  line-height: normal;
+  text-decoration: none;
+}
+.btn-primary-sharp:hover {
+  background: #1e293b !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
+}
+
+.btn-ledger-report {
+  background: #881337 !important; /* Rich Burgundy / Maroon */
+  color: #ffffff !important;
+  border: 1px solid #9f1239 !important;
+  border-radius: 8px;
+  padding: 6px 14px !important;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s ease;
+  line-height: normal;
+}
+.btn-ledger-report:hover {
+  background: #9f1239 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-cancel-sharp {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px;
+  padding: 8px 16px !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: normal;
+}
+.btn-cancel-sharp:hover {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-color: #94a3b8 !important;
+}
+
+

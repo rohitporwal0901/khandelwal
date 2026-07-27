@@ -277,7 +277,13 @@
             <span class="step-pill mr-2" style="background: #fef3c7; color: #b45309; border-color: #fde68a;">STEP 2</span>
             <h3 class="card-title mb-0">Unpaid & Ledger Bills — {{ selectedCustomer()?.name }}</h3>
           </div>
-          <span class="badge-sharp badge-neutral">{{ filteredOrders().length }} Bills Found</span>
+          <div class="flex-align gap-3">
+            <button class="btn-ledger-report" (click)="openLedgerModal()" title="View & Print A5 Account Report Statement">
+              <span class="material-symbols-outlined mr-1" style="font-size: 18px;">menu_book</span>
+              Customer Ledger Account Report
+            </button>
+            <span class="badge-sharp badge-neutral">{{ filteredOrders().length }} Bills Found</span>
+          </div>
         </div>
 
         <div class="table-container-sharp">
@@ -401,3 +407,137 @@
     </ng-template>
   </div>
 </div>
+
+<!-- ─── CUSTOMER LEDGER MODAL POPUP DIALOG (A5 Printable Preview & Date Filtering) ─── -->
+<div class="modal-backdrop-sharp" *ngIf="isLedgerModalOpen()" (click)="closeLedgerModal()">
+  <div class="modal-dialog-sharp" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="modal-header-sharp p-4 border-bottom-sharp flex-align justify-between" style="background: #fafbfc;">
+      <div class="flex-align">
+        <div class="icon-wrap mr-3" style="width: 40px; height: 40px; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #991b1b;">
+          <span class="material-symbols-outlined" style="font-size: 22px;">menu_book</span>
+        </div>
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900 m-0 leading-tight">Customer Account Ledger Report</h2>
+          <span class="text-xxs text-slate-500 font-medium">Wholesale Statement of Account • {{ selectedCustomer()?.name }} ({{ selectedCustomer()?.phone || 'No Phone' }})</span>
+        </div>
+      </div>
+      <button class="btn-icon-close text-slate-400 hover:text-slate-600 p-1" (click)="closeLedgerModal()" style="background: transparent; border: none; cursor: pointer;">
+        <span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+      </button>
+    </div>
+
+    <!-- Date Filtering Toolbar -->
+    <div class="date-filter-toolbar flex-align justify-between flex-wrap gap-3">
+      <div class="flex-align flex-wrap gap-3">
+        <div class="filter-field-group">
+          <label class="filter-label">Start Date:</label>
+          <input type="date" class="filter-date-input" 
+                 [ngModel]="ledgerStartDate()" (ngModelChange)="ledgerStartDate.set($event)" [max]="maxDate()">
+        </div>
+        <div class="filter-field-group">
+          <label class="filter-label">End Date:</label>
+          <input type="date" class="filter-date-input" 
+                 [ngModel]="ledgerEndDate()" (ngModelChange)="ledgerEndDate.set($event)" [max]="maxDate()">
+        </div>
+        <button class="btn-cancel-sharp text-xs px-3 py-1.5" (click)="resetLedgerDates()" style="height: 46px; border-radius: 8px;" title="Reset date range to 1 year ago and today">
+          <span class="material-symbols-outlined mr-1" style="font-size: 18px;">history</span> Default (1 Year)
+        </button>
+      </div>
+      <div class="flex-align gap-2 py-1 px-3 bg-white rounded-lg border border-slate-300 shadow-sm" style="height: 46px;">
+        <span class="text-xs font-extrabold uppercase text-slate-700 tracking-wider">Total Entries:</span>
+        <span class="badge-sharp badge-neutral text-xs px-2.5 py-1 font-black text-slate-900 bg-slate-100 border-slate-300">{{ customerLedgerEntries().entries.length }} Txns</span>
+      </div>
+    </div>
+
+    <!-- Live Ledger Table Preview -->
+    <div class="modal-body-sharp p-0 overflow-y-auto" style="max-height: 56vh; background: #ffffff;">
+      <table class="ledger-modal-table">
+        <thead>
+          <tr>
+            <th style="min-width: 110px;">Date</th>
+            <th style="min-width: 280px;">Narration / Particulars</th>
+            <th class="text-right" style="min-width: 130px;">Dr (Bills)</th>
+            <th class="text-right" style="min-width: 130px;">Cr (Receipts)</th>
+            <th class="text-right" style="min-width: 170px;">Running Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Opening Balance Row -->
+          <tr class="row-opening">
+            <td class="font-bold text-slate-700">{{ ledgerStartDate() | date:'dd/MM/yy' }}</td>
+            <td class="font-extrabold text-slate-900">
+              <div class="flex-align gap-2">
+                <span class="material-symbols-outlined text-slate-400" style="font-size: 18px;">account_balance</span>
+                <span>Opening Ledger Balance (Purana Bakaya)</span>
+              </div>
+            </td>
+            <td class="text-right col-amount">{{ customerLedgerEntries().openingBalance > 0 ? ('₹' + customerLedgerEntries().openingBalance.toFixed(2)) : '-' }}</td>
+            <td class="text-right col-amount">{{ customerLedgerEntries().openingBalance < 0 ? ('₹' + Math.abs(customerLedgerEntries().openingBalance).toFixed(2)) : '-' }}</td>
+            <td class="text-right col-balance">
+              <span>₹{{ Math.abs(customerLedgerEntries().openingBalance).toFixed(2) }}</span>
+              <span class="balance-tag" *ngIf="customerLedgerEntries().openingBalance !== 0">{{ customerLedgerEntries().openingBalance > 0 ? 'Dr' : 'Cr' }}</span>
+            </td>
+          </tr>
+
+          <!-- Empty Txns State -->
+          <tr *ngIf="customerLedgerEntries().entries.length === 0">
+            <td colspan="5" class="text-center py-6" style="padding: 3.5rem !important;">
+              <span class="material-symbols-outlined text-slate-300 d-block mb-2 mx-auto" style="font-size: 42px;">receipt_long</span>
+              <div class="font-extrabold text-slate-800 text-base mb-1">No Transactions in Selected Range</div>
+              <p class="text-xs text-slate-500 m-0">Try adjusting the start date or end date in the toolbar above.</p>
+            </td>
+          </tr>
+
+          <!-- Ledger Transactions -->
+          <tr *ngFor="let tx of customerLedgerEntries().entries">
+            <td class="font-bold text-slate-700">{{ tx.date }}</td>
+            <td class="font-bold text-slate-900">
+              <div class="flex-align gap-2">
+                <span class="material-symbols-outlined text-slate-400" style="font-size: 18px;">{{ tx.debit > 0 ? 'description' : 'payments' }}</span>
+                <span>{{ tx.narration }}</span>
+              </div>
+            </td>
+            <td class="text-right col-amount">{{ tx.debit > 0 ? ('₹' + tx.debit.toFixed(2)) : '-' }}</td>
+            <td class="text-right col-amount">{{ tx.credit > 0 ? ('₹' + tx.credit.toFixed(2)) : '-' }}</td>
+            <td class="text-right col-balance">
+              <span>₹{{ tx.balance.toFixed(2) }}</span>
+              <span class="balance-tag" *ngIf="tx.balanceType">{{ tx.balanceType }}</span>
+            </td>
+          </tr>
+
+          <!-- Closing Balance Summary Row -->
+          <tr class="row-closing">
+            <td colspan="4" class="text-right uppercase tracking-wider font-extrabold text-slate-900">
+              Closing Ledger Balance as on {{ ledgerEndDate() | date:'dd/MM/yy' }}:
+            </td>
+            <td class="text-right font-black text-slate-900" style="font-size: 1.15rem;">
+              <span>₹{{ Math.abs(customerLedgerEntries().closingBalance).toFixed(2) }}</span>
+              <span class="balance-tag" style="background: #0f172a; color: #ffffff; border-color: #0f172a; font-size: 0.75rem; padding: 3px 8px;">
+                {{ customerLedgerEntries().closingBalance > 0 ? 'Dr (Due)' : (customerLedgerEntries().closingBalance < 0 ? 'Cr (Adv)' : 'Settled') }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer-sharp flex-align justify-between flex-wrap gap-3">
+      <div class="flex-align text-xs text-slate-600 font-medium">
+        <span class="material-symbols-outlined mr-1.5 text-slate-400" style="font-size: 18px;">info</span>
+        <span>Formatted for <strong>A5 Paper Size</strong> (148mm × 210mm) wholesale stationery printing.</span>
+      </div>
+      <div class="flex-align gap-3">
+        <button class="btn-cancel-sharp" (click)="closeLedgerModal()" style="height: 42px; padding: 0 1.25rem;">Close Preview</button>
+        <button class="btn-primary-sharp" (click)="printLedgerPDF()" style="height: 42px; padding: 0 1.5rem; font-size: 0.88rem;">
+          <span class="material-symbols-outlined mr-1.5" style="font-size: 20px;">print</span>
+          Print Official A5 Ledger Report
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
