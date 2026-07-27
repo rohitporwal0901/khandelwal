@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService, Order, Receipt } from '../../core/services/data.service';
@@ -16,14 +16,24 @@ export class AdminReceiptsComponent implements OnInit {
   dataService = inject(DataService);
   invoiceService = inject(InvoiceService);
   authService = inject(AuthService);
+  elementRef = inject(ElementRef);
 
   Math = Math; // Make Math available in template
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.showCustomerDropdown.set(false);
+    }
+  }
 
   users = signal<UserProfile[]>([]);
   orders = this.dataService.orders;
   receipts = this.dataService.receipts;
 
-  // Filter Bar State
+  // Filter & Search State
+  customerSearchTerm = signal('');
+  showCustomerDropdown = signal(false);
   dateFilter = signal<'today' | 'yesterday' | 'week' | 'month' | 'last_month' | 'custom'>('month');
   customStartDate = signal<string>(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10));
   customEndDate = signal<string>(new Date().toISOString().slice(0, 10));
@@ -44,13 +54,32 @@ export class AdminReceiptsComponent implements OnInit {
 
   async loadUsers() {
     try {
-      const list = await this.authService.getAllUsers();
-      // Sort alphabetically by name
-      const sorted = list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      const all = await this.authService.getAllUsers();
+      const sorted = [...all].sort((a, b) => a.name.localeCompare(b.name));
       this.users.set(sorted);
     } catch (err) {
       console.error('Failed to load customers for receipt settlement:', err);
     }
+  }
+
+  filteredCustomers = computed(() => {
+    const term = this.customerSearchTerm().toLowerCase().trim();
+    if (!term) return this.users().slice(0, 30);
+    return this.users().filter(u => 
+      u.name.toLowerCase().includes(term) ||
+      (u.phone && u.phone.includes(term)) ||
+      (u.address && u.address.toLowerCase().includes(term)) ||
+      (u.pincode && u.pincode.includes(term))
+    ).slice(0, 30);
+  });
+
+  selectCustomer(cust: UserProfile) {
+    this.selectedCustomer.set(cust);
+    this.selectedCustId.set(cust.uid);
+    this.showCustomerDropdown.set(false);
+    this.customerSearchTerm.set('');
+    const dueBal = cust.balance || 0;
+    this.receivedAmount.set(dueBal > 0 ? dueBal : null);
   }
 
   setDateFilter(filter: 'today' | 'yesterday' | 'week' | 'month' | 'last_month' | 'custom') {
@@ -58,9 +87,11 @@ export class AdminReceiptsComponent implements OnInit {
   }
 
   clearFilters() {
-    this.dateFilter.set('month');
     this.selectedCustId.set('');
     this.selectedCustomer.set(null);
+    this.customerSearchTerm.set('');
+    this.showCustomerDropdown.set(false);
+    this.dateFilter.set('month');
     this.orderTypeFilter.set('all');
     this.receivedAmount.set(null);
   }
@@ -74,10 +105,7 @@ export class AdminReceiptsComponent implements OnInit {
     }
     const cust = this.users().find(u => u.uid === uid);
     if (cust) {
-      this.selectedCustomer.set(cust);
-      // Auto-suggest due balance as received amount (if > 0)
-      const dueBal = cust.balance || 0;
-      this.receivedAmount.set(dueBal > 0 ? dueBal : null);
+      this.selectCustomer(cust);
     } else {
       this.selectedCustomer.set(null);
       this.receivedAmount.set(null);
@@ -133,15 +161,10 @@ export class AdminReceiptsComponent implements OnInit {
   });
 
   filteredOrders = computed(() => {
-    const { startMs, endMs } = this.dateBoundsMs();
     const cust = this.selectedCustomer();
     const type = this.orderTypeFilter();
 
     return this.orders().filter(o => {
-      // Date check
-      const oMs = new Date(o.date).getTime();
-      if (oMs < startMs || oMs > endMs) return false;
-
       // Customer check
       if (cust) {
         const matchUid = o.uid && o.uid === cust.uid;

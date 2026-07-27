@@ -14,13 +14,20 @@
 }
 
 .receipts-page { padding: 0.5rem 0; }
+.flex { display: flex; }
 .flex-align { display: flex; align-items: center; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
 .flex-wrap { flex-wrap: wrap; }
+.flex-col { flex-direction: column; }
 .gap-2 { gap: 0.5rem; }
 .gap-3 { gap: 0.75rem; }
 .gap-4 { gap: 1rem; }
+.gap-5 { gap: 1.5rem; }
+.gap-6 { gap: 2rem; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-left { text-align: left !important; }
 .d-block { display: block; }
 .d-inline-block { display: inline-block; }
 .w-100 { width: 100%; }
@@ -51,6 +58,7 @@
 .rounded { border-radius: 6px; }
 .overflow-hidden { overflow: hidden; }
 
+.text-xxs { font-size: 0.68rem; }
 .text-xs { font-size: 0.75rem; }
 .text-sm { font-size: 0.85rem; }
 .text-base { font-size: 0.95rem; }
@@ -124,28 +132,107 @@
   &:focus { border-color: #047857; background: #ffffff; box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.08); outline: none; }
 }
 
-/* Main Workspace Layout (2-Column Proportional Grid) */
-.grid-workspace-2col {
-  display: grid; grid-template-columns: 1.25fr 450px; gap: 2rem; align-items: start;
-}
-@media (max-width: 1150px) {
-  .grid-workspace-2col { grid-template-columns: 1fr; }
+/* Search Input Boxes (Sharp & Sleek) */
+.search-box-sharp {
+  position: relative; display: flex; align-items: center;
+  .search-icon { position: absolute; left: 14px; color: var(--slate-400); font-size: 1.25rem; }
+  .search-input {
+    width: 100%; height: 44px; padding-left: 42px; padding-right: 38px; border-radius: 8px; border: 1px solid var(--slate-300); background: var(--slate-50); font-size: 0.88rem; font-weight: 500; color: var(--slate-900); transition: all 0.15s ease;
+    &:focus { border-color: #047857; background: #ffffff; box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.08); outline: none; }
+  }
+  .btn-clear {
+    position: absolute; right: 10px; background: none; border: none; color: var(--slate-400); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center;
+    &:hover { background: var(--slate-200); color: var(--slate-700); }
+  }
 }
 
-/* Table Container & Sharp Tables */
-.table-container-sharp {
-  border-radius: 0; overflow-x: auto; background: white;
+/* Dropdown Menus (Floating over layout) */
+.dropdown-menu-sharp {
+  position: absolute; top: calc(100% + 6px); left: 0; width: 100%; background: white; border: 1px solid var(--slate-300); border-radius: 10px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); z-index: 500; max-height: 380px; display: flex; flex-direction: column; overflow: hidden;
+  .dropdown-header {
+    padding: 0.65rem 1rem; background: var(--slate-50); border-bottom: 1px solid var(--slate-200); font-size: 0.72rem; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.05em;
+    .btn-close-mini { background: none; border: 1px solid var(--slate-300); border-radius: 4px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; color: var(--slate-600); cursor: pointer; &:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; } }
+  }
+  .dropdown-list {
+    overflow-y: auto; padding: 6px;
+    .dropdown-item-row {
+      display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.85rem; margin-bottom: 4px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all 0.12s ease;
+      &:hover { background: #fdfafb; border-color: rgba(4, 120, 87, 0.2); }
+      .phone-badge { background: var(--slate-100); color: var(--slate-700); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    }
+    .empty-list-msg { padding: 1.5rem 1rem; text-align: center; color: var(--slate-500); font-size: 0.85rem; }
+  }
 }
+
+/* Selected Customer Banner */
+.selected-customer-banner {
+  display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #047857; border-radius: 8px; padding: 0.85rem 1rem; box-shadow: 0 2px 6px rgba(4, 120, 87, 0.06);
+  .avatar-box { width: 46px; height: 46px; border-radius: 8px; background: #047857; color: white; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .phone-badge { background: var(--slate-100); color: var(--slate-800); padding: 1px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; }
+  .pin-badge { background: #fef3c7; color: #92400e; padding: 1px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; border: 1px solid #fde68a; }
+  .btn-change-sharp { background: var(--slate-50); border: 1px solid var(--slate-300); color: var(--slate-700); border-radius: 6px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.15s; &:hover { background: var(--slate-200); color: var(--slate-900); } }
+}
+
+/* Grid Layouts (2-Equal Columns) */
+.grid-6-6 {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; position: relative; z-index: 100; width: 100%;
+}
+@media (max-width: 1150px) {
+  .grid-6-6 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Main Workspace Full Width Container (100% Width for Tables with generous vertical spacing) */
+.workspace-full-width {
+  width: 100%; 
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Table Container & Sharp Tables (Expanded height for full-width spreadsheet view) */
+.table-container-sharp {
+  border-radius: 0; 
+  overflow-y: auto; 
+  overflow-x: auto; 
+  max-height: 420px; 
+  background: white;
+  border-bottom: 1px solid var(--slate-100);
+}
+/* Custom slim scrollbar for tables */
+.table-container-sharp::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.table-container-sharp::-webkit-scrollbar-track {
+  background: var(--slate-50);
+}
+.table-container-sharp::-webkit-scrollbar-thumb {
+  background: var(--slate-300);
+  border-radius: 3px;
+}
+.table-container-sharp::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-400);
+}
+
 .table-sharp {
   width: 100%; border-collapse: collapse; text-align: left;
-  th { background: #f8fafc; padding: 14px 18px; font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate-500); border-bottom: 2px solid var(--slate-200); position: sticky; top: 0; z-index: 5; }
-  td { padding: 16px 18px; vertical-align: middle; border-bottom: 1px solid var(--slate-100); font-size: 0.92rem; color: var(--slate-800); }
+  th { 
+    background: #f8fafc; padding: 12px 14px; font-size: 0.74rem; font-weight: 700; 
+    text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); 
+    border-bottom: 2px solid var(--slate-200); position: sticky; top: 0; z-index: 5; 
+    white-space: nowrap;
+  }
+  td { 
+    padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid var(--slate-100); 
+    font-size: 0.88rem; color: var(--slate-800); 
+  }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #fafbfc; }
 }
 .empty-table-state {
-  padding: 4.5rem 1.5rem !important; text-align: center; background: #fafbfc;
-  .empty-icon-wrap { width: 72px; height: 72px; border-radius: 50%; background: var(--slate-100); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+  padding: 3.5rem 1.5rem !important; text-align: center; background: #fafbfc;
+  .empty-icon-wrap { width: 64px; height: 64px; border-radius: 50%; background: var(--slate-100); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; }
 }
 .btn-change-sharp {
   background: var(--slate-50); border: 1px solid var(--slate-300); color: var(--slate-700); border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.15s;
@@ -155,6 +242,9 @@
 /* Right Settlement Card & Form */
 .settlement-card-sharp {
   position: sticky; top: 20px;
+}
+@media (max-width: 1250px) {
+  .settlement-card-sharp { position: static; }
 }
 .summary-panel-sharp {
   background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: space-between;

@@ -7,10 +7,10 @@ import { InvoiceService } from '../../core/services/invoice.service';
 
 interface BillGridItem {
   product: Product;
-  quantity: number;
+  quantity: number | string | any;
   availableStock: number;
   purchaseRate: number;
-  sellingRate: number;
+  sellingRate: number | string | any;
 }
 
 @Component({
@@ -40,12 +40,29 @@ export class AdminBillingComponent implements OnInit {
   showProductDropdown = signal<boolean>(false);
 
   billItems = signal<BillGridItem[]>([]);
-  badha = signal<number>(0);
+  badha = signal<number | string | any>('' as any);
   billNotes = signal<string>('');
 
   isGenerating = signal<boolean>(false);
   showSuccessModal = signal<boolean>(false);
   lastGeneratedBillNumber = signal<string>('');
+
+  // Toast Notification Signal (Top Sliding UI)
+  toastMessage = signal<{ text: string; type: 'error' | 'warning' | 'success' | 'info' } | null>(null);
+  private toastTimeout?: any;
+
+  showToast(text: string, type: 'error' | 'warning' | 'success' | 'info' = 'warning') {
+    this.toastMessage.set({ text, type });
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      this.toastMessage.set(null);
+    }, 4500); // 4.5 seconds auto-dismiss
+  }
+
+  closeToast() {
+    this.toastMessage.set(null);
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+  }
 
   // Modal New Customer State
   isAddCustomerModalOpen = signal<boolean>(false);
@@ -111,20 +128,24 @@ export class AdminBillingComponent implements OnInit {
 
   // Financial Calculations
   totalItemCount = computed(() => {
-    return this.billItems().reduce((sum, item) => sum + item.quantity, 0);
+    return this.billItems().reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
   });
 
   subTotal = computed(() => {
-    return this.billItems().reduce((sum, item) => sum + (item.quantity * item.sellingRate), 0);
+    return this.billItems().reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.sellingRate) || 0)), 0);
   });
 
   currentBillTotal = computed(() => {
-    return this.subTotal() + (this.badha() || 0);
+    return this.subTotal() + (Number(this.badha()) || 0);
   });
 
   netPayable = computed(() => {
     const prev = this.selectedCustomer()?.balance || 0;
     return this.currentBillTotal() + prev;
+  });
+
+  hasInvalidItems = computed(() => {
+    return this.billItems().some(item => !item.quantity || Number(item.quantity) <= 0 || item.sellingRate === '' || item.sellingRate === null || item.sellingRate === undefined || Number(item.sellingRate) < 0);
   });
 
   // Actions
@@ -139,7 +160,7 @@ export class AdminBillingComponent implements OnInit {
   resetBill() {
     this.selectedCustomer.set(null);
     this.billItems.set([]);
-    this.badha.set(0);
+    this.badha.set('' as any);
     this.billNotes.set('');
     this.customerSearchTerm.set('');
     this.productSearchTerm.set('');
@@ -156,16 +177,20 @@ export class AdminBillingComponent implements OnInit {
 
     if (existingIndex > -1) {
       const existing = current[existingIndex];
-      if (existing.quantity < existing.availableStock) {
-        existing.quantity += 1;
+      const currentQty = Number(existing.quantity) || 0;
+      if (currentQty < existing.availableStock) {
+        existing.quantity = currentQty + 1;
+      } else {
+        this.showToast(`Stock Limit Reached! Only ${existing.availableStock} units available for "${prod.name}". Cannot add more.`, 'warning');
+        return;
       }
     } else {
       current.push({
         product: prod,
-        quantity: 1,
+        quantity: '' as any, // Default empty so user directly enters value without backspacing
         availableStock: prod.stock,
         purchaseRate: prod.purchaseRate || 0,
-        sellingRate: prod.sellingRate || 0
+        sellingRate: (prod.sellingRate !== null && prod.sellingRate !== undefined && prod.sellingRate > 0) ? prod.sellingRate : ('' as any)
       });
     }
 
@@ -181,18 +206,98 @@ export class AdminBillingComponent implements OnInit {
   }
 
   updateQty(index: number, val: any) {
-    const num = parseInt(val, 10) || 1;
+    const strVal = String(val !== null && val !== undefined ? val : '');
+    if (strVal.includes('-') || Number(strVal) < 0) {
+      this.showToast('Negative numbers (-) are not allowed! Please enter a valid positive quantity.', 'error');
+      const current = [...this.billItems()];
+      current[index].quantity = '' as any;
+      this.billItems.set(current);
+      return;
+    }
+
+    if (strVal === '') {
+      const current = [...this.billItems()];
+      current[index].quantity = '' as any;
+      this.billItems.set(current);
+      return;
+    }
+
+    const num = parseInt(strVal, 10);
+    if (isNaN(num) || num <= 0) {
+      const current = [...this.billItems()];
+      current[index].quantity = '' as any;
+      this.billItems.set(current);
+      return;
+    }
+
     const current = [...this.billItems()];
     const max = current[index].availableStock;
-    current[index].quantity = Math.min(Math.max(1, num), max > 0 ? max : 1);
+    if (num > max) {
+      this.showToast(`Stock Exceeded! Only ${max} units are available in stock for "${current[index].product.name}". Cannot add more than available stock.`, 'warning');
+      current[index].quantity = max;
+    } else {
+      current[index].quantity = num;
+    }
     this.billItems.set(current);
   }
 
   updateSellingRate(index: number, val: any) {
-    const num = parseFloat(val) || 0;
+    const strVal = String(val !== null && val !== undefined ? val : '');
+    if (strVal.includes('-') || Number(strVal) < 0) {
+      this.showToast('Negative values (-) are not allowed! Please enter a valid positive selling rate.', 'error');
+      const current = [...this.billItems()];
+      current[index].sellingRate = '' as any;
+      this.billItems.set(current);
+      return;
+    }
+
+    if (strVal === '') {
+      const current = [...this.billItems()];
+      current[index].sellingRate = '' as any;
+      this.billItems.set(current);
+      return;
+    }
+
+    const num = parseFloat(strVal);
+    if (isNaN(num) || num < 0) {
+      const current = [...this.billItems()];
+      current[index].sellingRate = '' as any;
+      this.billItems.set(current);
+      return;
+    }
+
     const current = [...this.billItems()];
-    current[index].sellingRate = Math.max(0, num);
+    current[index].sellingRate = num;
     this.billItems.set(current);
+  }
+
+  updateBadha(val: any) {
+    const strVal = String(val !== null && val !== undefined ? val : '');
+    if (strVal.includes('-') || Number(strVal) < 0) {
+      this.showToast('Negative values (-) are not allowed in Freight / Badha charges! Please enter a valid positive amount.', 'error');
+      this.badha.set('' as any);
+      return;
+    }
+
+    if (strVal === '') {
+      this.badha.set('' as any);
+      return;
+    }
+
+    const num = parseFloat(strVal);
+    if (isNaN(num) || num < 0) {
+      this.badha.set('' as any);
+      return;
+    }
+
+    this.badha.set(num);
+  }
+
+  preventNegativeInput(event: KeyboardEvent) {
+    if (event.key === '-' || event.key === 'e' || event.key === 'E' || event.key === '+') {
+      event.preventDefault();
+      this.showToast('Negative symbols (-) and exponent notation are disabled. Please enter a positive number.', 'error');
+    }
   }
 
   // Modal Handlers
@@ -218,7 +323,7 @@ export class AdminBillingComponent implements OnInit {
     // Check for duplicate phone number!
     const duplicate = this.users().find(u => u.phone === cleanPhone);
     if (duplicate) {
-      alert(`⚠️ Restriction: Mobile number +91-${cleanPhone} is already registered as "${duplicate.name}".\n\nPlease select them directly from the customer dropdown list!`);
+      this.showToast(`Restriction: Mobile number +91-${cleanPhone} is already registered as "${duplicate.name}". Please select them directly from the customer dropdown list!`, 'warning');
       return;
     }
 
@@ -254,14 +359,19 @@ export class AdminBillingComponent implements OnInit {
     const cust = this.selectedCustomer();
     if (!cust || this.billItems().length === 0) return;
 
+    if (this.hasInvalidItems()) {
+      this.showToast('Invalid Line Items! Please ensure every item in the table has a valid positive Quantity and Selling Rate.', 'error');
+      return;
+    }
+
     this.isGenerating.set(true);
     try {
       const orderItems: OrderItem[] = this.billItems().map(item => ({
         productId: item.product.id,
-        quantity: item.quantity,
-        purchaseRate: item.purchaseRate,
-        sellingRate: item.sellingRate,
-        total: item.quantity * item.sellingRate
+        quantity: Number(item.quantity) || 0,
+        purchaseRate: Number(item.purchaseRate) || 0,
+        sellingRate: Number(item.sellingRate) || 0,
+        total: (Number(item.quantity) || 0) * (Number(item.sellingRate) || 0)
       }));
 
       const createdOrder = await this.dataService.createAdminBill(

@@ -266,19 +266,58 @@ export class AuthService {
 
   // ─── Admin POS Customer Methods ─────────────────────────
   async createCustomerFromAdmin(data: { name: string; phone: string; address?: string; pincode?: string; balance?: number }): Promise<UserProfile> {
+    const cleanPhone = data.phone.trim();
+    const email = this.phoneToEmail(cleanPhone);
+    const defaultPin = '000000';
+    let uid = '';
+
     const usersRef = collection(this.firestore, 'users-kh');
-    const newDocRef = doc(usersRef);
+    const q = query(usersRef, where('phone', '==', cleanPhone));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      const existingDoc = snap.docs[0];
+      uid = existingDoc.id;
+      const existingData = existingDoc.data() as UserProfile;
+      const updatedProfile: UserProfile = {
+        ...existingData,
+        name: data.name.trim() || existingData.name,
+        address: data.address?.trim() || existingData.address || '',
+        pincode: data.pincode?.trim() || existingData.pincode || '',
+        status: 'approved',
+        pin: existingData.pin || defaultPin,
+        balance: (existingData.balance || 0) + (data.balance || 0)
+      };
+      await setDoc(doc(this.firestore, `users-kh/${uid}`), updatedProfile);
+      return updatedProfile;
+    }
+
+    try {
+      const userCred = await createUserWithEmailAndPassword(this.auth, email, defaultPin);
+      uid = userCred.user.uid;
+    } catch (err: any) {
+      console.warn('Note: Auth account creation fallback (may already exist in Auth):', err?.message || err);
+      const newDocRef = doc(usersRef);
+      uid = newDocRef.id;
+    }
+
+    if (!uid) {
+      const newDocRef = doc(usersRef);
+      uid = newDocRef.id;
+    }
+
     const newProfile: UserProfile = {
-      uid: newDocRef.id,
+      uid,
       name: data.name.trim(),
-      phone: data.phone.trim(),
+      phone: cleanPhone,
       address: data.address?.trim() || '',
       pincode: data.pincode?.trim() || '',
+      pin: defaultPin,
       status: 'approved',
       balance: data.balance || 0,
       createdAt: new Date().toISOString()
     };
-    await setDoc(newDocRef, newProfile);
+    await setDoc(doc(this.firestore, `users-kh/${uid}`), newProfile);
     return newProfile;
   }
 

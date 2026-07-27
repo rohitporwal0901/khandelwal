@@ -63,6 +63,7 @@ export class AdminProductsComponent implements OnInit {
   });
 
   loadedImages = signal<Record<string, boolean>>({});
+  imageErrors = signal<Record<string, boolean>>({});
 
   isAddDrawerOpen = signal(false);
   isDetailsDrawerOpen = signal(false);
@@ -98,6 +99,11 @@ export class AdminProductsComponent implements OnInit {
 
   onImageLoad(productId: string) {
     this.loadedImages.update(state => ({ ...state, [productId]: true }));
+  }
+
+  onImageError(productId: string, event: Event) {
+    this.loadedImages.update(state => ({ ...state, [productId]: true })); // Dismiss skeleton
+    this.imageErrors.update(state => ({ ...state, [productId]: true })); // Show fallback
   }
 
   nextPage() {

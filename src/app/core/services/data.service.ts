@@ -448,9 +448,9 @@ export class DataService {
     const productsRef = collection(this.firestore, 'products-kh');
     const categoryId = "m15O9WnOtpBSyhD4yGG5";
     const images = [
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=1500",
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=1500",
-      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&q=80&w=1500"
+      "https://picsum.photos/seed/weddingcard1/600/400",
+      "https://picsum.photos/seed/weddingcard2/600/400",
+      "https://picsum.photos/seed/weddingcard3/600/400"
     ];
 
     for (let i = 1; i <= 100; i++) {

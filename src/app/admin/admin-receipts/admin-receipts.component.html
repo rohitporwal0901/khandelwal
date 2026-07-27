@@ -17,233 +17,161 @@
     </div>
   </div>
 
-  <!-- STEP 1: Date Range & Ledger Customer Selector Card -->
-  <div class="card-sharp mb-4">
-    <div class="card-header flex-align justify-between mb-3 pb-3 border-bottom-sharp">
-      <div class="flex-align">
-        <span class="step-pill mr-2" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">STEP 1</span>
-        <h3 class="card-title mb-0">Select Date Range & Ledger Customer</h3>
-      </div>
-      <div class="flex-align gap-2">
-        <span *ngIf="selectedCustomer()" class="badge-sharp badge-success">Active Member Ledger</span>
-        <button class="btn-secondary flex-align" (click)="clearFilters()" style="height: 34px; padding: 0 12px; font-size: 0.78rem;">
-          <span class="material-symbols-outlined mr-1" style="font-size: 16px;">close</span> Clear
-        </button>
-      </div>
-    </div>
-
-    <!-- Row 1: Date Range Pills & Custom Picker -->
-    <div class="filter-row-top mb-3 pb-3 border-bottom-sharp flex-align justify-between flex-wrap gap-3">
-      <div class="flex-align gap-2 flex-wrap">
-        <span class="label-sharp mr-1 text-xs uppercase text-slate-500">Date Filter:</span>
-        <button class="date-pill-sharp" [class.active]="dateFilter() === 'today'" (click)="setDateFilter('today')">Today</button>
-        <button class="date-pill-sharp" [class.active]="dateFilter() === 'yesterday'" (click)="setDateFilter('yesterday')">Yesterday</button>
-        <button class="date-pill-sharp" [class.active]="dateFilter() === 'week'" (click)="setDateFilter('week')">This Week</button>
-        <button class="date-pill-sharp" [class.active]="dateFilter() === 'month'" (click)="setDateFilter('month')">This Month</button>
-        <button class="date-pill-sharp" [class.active]="dateFilter() === 'last_month'" (click)="setDateFilter('last_month')">Last Month</button>
-        <button class="date-pill-sharp custom-pill" [class.active]="dateFilter() === 'custom'" (click)="setDateFilter('custom')">
-          Custom <span class="material-symbols-outlined ml-1" style="font-size: 14px;">calendar_today</span>
-        </button>
-      </div>
-
-      <!-- Inline Custom Date Range Boxes -->
-      <div class="custom-date-box flex-align gap-2 px-3 py-1 rounded" *ngIf="dateFilter() === 'custom'" style="background: #f8fafc; border: 1px solid #cbd5e1;">
-        <label class="text-xs font-bold text-slate-600">From:</label>
-        <input type="date" class="input-sharp" style="height: 32px; padding: 0 8px; font-size: 0.8rem;" [ngModel]="customStartDate()" (ngModelChange)="customStartDate.set($event)">
-        <label class="text-xs font-bold text-slate-600 ml-1">To:</label>
-        <input type="date" class="input-sharp" style="height: 32px; padding: 0 8px; font-size: 0.8rem;" [ngModel]="customEndDate()" (ngModelChange)="customEndDate.set($event)">
-      </div>
-    </div>
-
-    <!-- Row 2: Customer Selector & Bill Type Dropdowns -->
-    <div class="filter-row-bottom flex-align gap-4 flex-wrap">
-      <div class="dropdown-group flex-1" style="min-width: 360px;">
-        <label class="label-sharp text-xs uppercase text-slate-500 d-block mb-1">Select Customer to Inspect & Settle Ledger:</label>
-        <div class="select-box-sharp">
-          <span class="material-symbols-outlined select-icon" style="color: #047857;">person_search</span>
-          <select class="custom-select-sharp w-100" [ngModel]="selectedCustId()" (ngModelChange)="onSelectCustomer($event)">
-            <option value="">All Customers (Choose a wholesale member to settle ledger balance)</option>
-            <option *ngFor="let u of users()" [value]="u.uid">
-              {{ u.name }} (+91-{{ u.phone }}) — [{{ u.balance || 0 > 0 ? 'Due: ₹' + (u.balance | number:'1.2-2') : ((u.balance || 0) < 0 ? 'Adv Credit: ₹' + (Math.abs(u.balance!) | number:'1.2-2') : '₹0') }}]
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="dropdown-group" style="min-width: 260px;">
-        <label class="label-sharp text-xs uppercase text-slate-500 d-block mb-1">Filter by Bill Type:</label>
-        <div class="select-box-sharp">
-          <span class="material-symbols-outlined select-icon" style="color: #64748b;">filter_list</span>
-          <select class="custom-select-sharp w-100" [ngModel]="orderTypeFilter()" (ngModelChange)="orderTypeFilter.set($event)">
-            <option value="all">All Bill Types</option>
-            <option value="admin_pos">POS / Store Estimate Only</option>
-            <option value="app">Online App Order Only</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filter Applied Subtitle Bar -->
-    <div class="filter-applied-bar mt-3 pt-2 flex-align justify-between border-top-sharp">
-      <div class="flex-align gap-2 text-xs text-slate-500 font-medium">
-        <span class="material-symbols-outlined text-sm" style="color: #64748b;">event</span>
-        <span>Active Date Bounds: <strong class="text-slate-800">{{ filterSubtitle() }}</strong></span>
-      </div>
-      <div *ngIf="selectedCustomer()" class="badge-sharp badge-success font-bold text-xs">
-        <span class="material-symbols-outlined mr-1" style="font-size: 14px;">verified_user</span>
-        Ledger Active: {{ selectedCustomer()?.name }} (+91 {{ selectedCustomer()?.phone }})
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Workspace 2-Column Grid (Proportional & Spacious like POS Invoicing) -->
-  <div class="grid-workspace-2col">
-    <!-- Left Column: Step 2 Unpaid Bills Table & Step 3 Receipts History -->
-    <div class="workspace-left">
-      <!-- STEP 2: Customer Bills in Date Range -->
-      <div class="card-sharp p-0 mb-4 overflow-hidden">
-        <div class="card-header p-4 border-bottom-sharp flex-align justify-between" style="background: #fafbfc;">
+  <!-- Top Section: 2-Equal Columns Grid (50% Left for Member Selection & Ledger Detail, 50% Right for Payment Settlement Voucher) -->
+  <div class="grid-6-6 mb-4">
+    <!-- Column 1 (Left): Search Box, Dropdown List & Member Ledger Detail -->
+    <div class="flex flex-col gap-5">
+      <!-- Step 1: Search & Select Customer -->
+      <div class="card-sharp" (click)="$event.stopPropagation()">
+        <div class="card-header flex-align justify-between mb-3 pb-3 border-bottom-sharp">
           <div class="flex-align">
-            <span class="step-pill mr-2" style="background: #fef3c7; color: #b45309; border-color: #fde68a;">STEP 2</span>
-            <h3 class="card-title mb-0">Unpaid & Ledger Bills {{ selectedCustomer() ? 'for ' + selectedCustomer()?.name : 'in Date Range' }}</h3>
+            <span class="step-pill mr-2">STEP 1</span>
+            <h3 class="card-title mb-0">Search & Select Customer</h3>
           </div>
-          <span class="badge-sharp badge-neutral">{{ filteredOrders().length }} Bills Found</span>
+          <span *ngIf="selectedCustomer()" class="badge-sharp badge-success">Active Member</span>
         </div>
 
-        <div class="table-container-sharp">
-          <table class="table-sharp m-0">
-            <thead>
-              <tr>
-                <th style="width: 120px;">Bill / Order #</th>
-                <th style="width: 140px;">Timestamp</th>
-                <th *ngIf="!selectedCustomer()">Wholesale Customer</th>
-                <th style="width: 130px;">Type</th>
-                <th class="text-right" style="width: 130px;">Bill Total (₹)</th>
-                <th class="text-center" style="width: 110px;">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let order of filteredOrders()">
-                <td>
-                  <strong class="text-slate-900 font-bold">{{ order.billNumber || order.id.slice(0, 8).toUpperCase() }}</strong>
-                </td>
-                <td class="text-slate-500 text-xs font-medium">{{ order.date | date:'dd/MM/yy hh:mm a' }}</td>
-                <td *ngIf="!selectedCustomer()">
-                  <div class="cust-info-block">
-                    <div class="font-bold text-slate-800 text-sm">{{ order.customerName }}</div>
-                    <div class="text-slate-500 text-xs font-medium mt-1">+91 {{ order.phone }}</div>
-                  </div>
-                </td>
-                <td>
-                  <span class="badge-sharp" [ngClass]="order.billType === 'admin_pos' ? 'badge-warning' : 'badge-primary'">
-                    {{ order.billType === 'admin_pos' ? 'POS Estimate' : 'Online App' }}
+        <!-- Search Input Box -->
+        <div class="search-box-sharp mb-2">
+          <span class="material-symbols-outlined search-icon">person_search</span>
+          <input type="text" 
+                 placeholder="Search member by mobile, business name, or city..." 
+                 [ngModel]="customerSearchTerm()" 
+                 (ngModelChange)="customerSearchTerm.set($event)"
+                 (focus)="showCustomerDropdown.set(true)"
+                 class="search-input">
+          <button class="btn-clear" *ngIf="customerSearchTerm()" (click)="customerSearchTerm.set(''); showCustomerDropdown.set(true)">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Floating Customer Dropdown Menu -->
+        <div class="dropdown-menu-sharp" *ngIf="showCustomerDropdown() && !selectedCustomer()">
+          <div class="dropdown-header flex-align justify-between">
+            <span>Wholesale Members ({{ filteredCustomers().length }})</span>
+            <button class="btn-close-mini" (click)="showCustomerDropdown.set(false)">Close</button>
+          </div>
+          <div class="dropdown-list">
+            <div class="dropdown-item-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust)">
+              <div class="item-info">
+                <strong class="text-slate-800 d-block">{{ cust.name }}</strong>
+                <div class="flex-align gap-2 mt-1">
+                  <span class="phone-badge">+91 {{ cust.phone }}</span>
+                  <span class="text-xs text-slate-500" *ngIf="cust.address || cust.pincode">
+                    {{ cust.address }} {{ cust.pincode ? '(Pin: ' + cust.pincode + ')' : '' }}
                   </span>
-                </td>
-                <td class="text-right font-extrabold text-slate-900 text-sm">₹{{ (order.netPayable || order.totalAmount || 0) | number:'1.2-2' }}</td>
-                <td class="text-center">
-                  <span class="badge-sharp" [ngClass]="order.status === 'completed' ? 'badge-success' : (order.status === 'pending' ? 'badge-warning' : 'badge-danger')">
-                    {{ order.status | titlecase }}
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="filteredOrders().length === 0">
-                <td [attr.colspan]="selectedCustomer() ? 5 : 6" class="empty-table-state">
-                  <div class="empty-icon-wrap">
-                    <span class="material-symbols-outlined text-4xl text-slate-300">receipt</span>
-                  </div>
-                  <div class="font-bold text-slate-700 text-base mb-1">No Invoices Found</div>
-                  <p class="text-xs text-slate-400 m-0">No wholesale estimate bills or app orders match the selected date bounds.</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+              <div class="item-badge">
+                <span *ngIf="(cust.balance || 0) > 0" class="badge-sharp badge-danger">Due: ₹{{ cust.balance }}</span>
+                <span *ngIf="(cust.balance || 0) < 0" class="badge-sharp badge-success">Adv: ₹{{ Math.abs(cust.balance || 0) }} CR</span>
+                <span *ngIf="!(cust.balance)" class="badge-sharp badge-neutral">No Balance</span>
+              </div>
+            </div>
+            <div class="empty-list-msg" *ngIf="filteredCustomers().length === 0">
+              No wholesale member found for "{{ customerSearchTerm() }}".
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Tips when no customer selected or dropdown closed -->
+        <div class="info-banner-sharp mt-3" *ngIf="!selectedCustomer() && !showCustomerDropdown()">
+          <div class="flex-align gap-2 text-xs text-slate-600">
+            <span class="material-symbols-outlined text-base" style="color: #047857;">info</span>
+            <span>Click the search box above to browse or filter wholesale members by phone or city.</span>
+          </div>
+        </div>
+
+        <!-- Compact Selection Confirmed Alert -->
+        <div class="info-banner-sharp mt-3" *ngIf="selectedCustomer() as cust" style="background: #f0fdf4; border-color: #bbf7d0;">
+          <div class="flex-align justify-between">
+            <div class="flex-align gap-2 text-xs text-slate-700">
+              <span class="material-symbols-outlined text-base text-success">check_circle</span>
+              <span>Selected: <strong class="text-slate-900">{{ cust.name }}</strong></span>
+            </div>
+            <button class="btn-change-sharp" (click)="clearFilters()">
+              <span class="material-symbols-outlined mr-1 text-xs">swap_horiz</span> Change
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- STEP 3: Recent Receipts History Table -->
-      <div class="card-sharp p-0 overflow-hidden">
-        <div class="card-header p-4 border-bottom-sharp flex-align justify-between" style="background: #fafbfc;">
-          <div class="flex-align">
-            <span class="step-pill mr-2" style="background: #f0fdf4; color: #16a34a; border-color: #bbf7d0;">STEP 3</span>
+      <!-- Selected Customer Detail & Ledger Summary Box (Moved directly below Step 1 Dropdown) -->
+      <div class="card-sharp flex flex-col justify-between">
+        <div>
+          <div class="card-header flex-align justify-between mb-3 pb-3 border-bottom-sharp">
             <h3 class="card-title mb-0 flex-align">
-              <span class="material-symbols-outlined mr-2" style="font-size: 20px; color: #047857;">history</span>
-              Recent Receipt Vouchers {{ selectedCustomer() ? 'for ' + selectedCustomer()?.name : 'Log' }}
+              <span class="material-symbols-outlined mr-2" style="color: #047857;">manage_accounts</span>
+              Wholesale Member Ledger Detail
             </h3>
+            <span class="badge-sharp badge-neutral" *ngIf="!selectedCustomer()">Waiting for Selection</span>
+            <span class="badge-sharp badge-success" *ngIf="selectedCustomer()">Ledger Loaded</span>
           </div>
-          <span class="badge-sharp badge-success">{{ filteredReceipts().length }} Receipts Logged</span>
-        </div>
 
-        <div class="table-container-sharp">
-          <table class="table-sharp m-0">
-            <thead>
-              <tr>
-                <th style="width: 110px;">Receipt #</th>
-                <th style="width: 135px;">Timestamp</th>
-                <th>Wholesale Member</th>
-                <th class="text-right" style="width: 125px;">Paid Amount</th>
-                <th style="width: 150px;">Mode & Ref</th>
-                <th style="width: 185px;">Ledger Impact (Old ➔ New)</th>
-                <th class="text-center" style="width: 95px;">Voucher</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rec of filteredReceipts()">
-                <td>
-                  <strong style="color: #047857; font-size: 0.92rem;">{{ rec.receiptNumber }}</strong>
-                </td>
-                <td class="text-slate-500 text-xs font-medium">{{ rec.date | date:'dd/MM/yy hh:mm a' }}</td>
-                <td>
-                  <div class="cust-info-block">
-                    <div class="font-bold text-slate-800 text-sm">{{ rec.customerName }}</div>
-                    <div class="text-slate-500 text-xs font-medium mt-1">+91 {{ rec.phone }}</div>
-                  </div>
-                </td>
-                <td class="text-right font-extrabold text-sm" style="color: #047857;">
-                  ₹{{ rec.receivedAmount | number:'1.2-2' }}
-                </td>
-                <td>
-                  <span class="badge-sharp badge-success mb-1">{{ rec.paymentMode }}</span>
-                  <div class="text-xs text-slate-500 font-medium truncate" *ngIf="rec.referenceNumber" title="Ref: {{ rec.referenceNumber }}">Ref: {{ rec.referenceNumber }}</div>
-                </td>
-                <td style="font-size: 0.82rem;">
-                  <span [style.color]="rec.previousBalance > 0 ? '#dc2626' : '#047857'" class="font-bold">₹{{ Math.abs(rec.previousBalance) | number:'1.0-0' }} {{ rec.previousBalance > 0 ? 'Due' : 'Adv' }}</span>
-                  <span class="mx-1 text-slate-400">➔</span>
-                  <strong [style.color]="rec.newBalance > 0 ? '#dc2626' : '#047857'">₹{{ Math.abs(rec.newBalance) | number:'1.0-0' }} {{ rec.newBalance > 0 ? 'Due' : (rec.newBalance < 0 ? 'Adv Credit' : 'Cleared') }}</strong>
-                </td>
-                <td class="text-center">
-                  <button class="btn-change-sharp flex-align justify-center mx-auto" (click)="downloadReceiptPDF(rec)" title="Download Official PDF Receipt Voucher">
-                    <span class="material-symbols-outlined mr-1" style="font-size: 15px;">download</span> PDF
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="filteredReceipts().length === 0">
-                <td colspan="7" class="empty-table-state">
-                  <div class="empty-icon-wrap">
-                    <span class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
-                  </div>
-                  <div class="font-bold text-slate-700 text-base mb-1">No Receipts Recorded Yet</div>
-                  <p class="text-xs text-slate-400 m-0">When you settle ledger due or record advance payments, voucher logs will appear here.</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Selected Customer Summary Content -->
+          <div *ngIf="selectedCustomer() as cust; else noCustDetail">
+            <div class="flex-align gap-3 mb-4">
+              <div class="avatar-box" style="width: 54px; height: 54px; font-size: 1.5rem;">{{ cust.name.charAt(0) | uppercase }}</div>
+              <div>
+                <h3 class="text-slate-900 font-extrabold mb-1 text-lg">{{ cust.name }}</h3>
+                <div class="flex-align gap-2 flex-wrap">
+                  <span class="phone-badge">+91 {{ cust.phone }}</span>
+                  <span class="pin-badge" *ngIf="cust.pincode">PIN: {{ cust.pincode }}</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-0 mt-1" *ngIf="cust.address">{{ cust.address }}</p>
+              </div>
+            </div>
+
+            <div class="grid-2-col mb-4">
+              <div class="info-banner-sharp p-3 text-center" style="background: #f0f9ff; border-color: #bae6fd;">
+                <span class="text-xxs font-bold uppercase text-slate-500 d-block mb-1">Unpaid / Ledger Bills</span>
+                <strong class="text-lg font-extrabold text-slate-900">📦 {{ filteredOrders().length }} Invoices</strong>
+              </div>
+              <div class="info-banner-sharp p-3 text-center" style="background: #f0fdf4; border-color: #bbf7d0;">
+                <span class="text-xxs font-bold uppercase text-slate-500 d-block mb-1">Receipt Vouchers Log</span>
+                <strong class="text-lg font-extrabold" style="color: #047857;">🧾 {{ filteredReceipts().length }} Vouchers</strong>
+              </div>
+            </div>
+
+            <div class="summary-panel-sharp p-3" [ngClass]="(cust.balance || 0) > 0 ? 'due-panel' : ((cust.balance || 0) < 0 ? 'adv-panel' : 'zero-panel')">
+              <div class="flex-align justify-between mb-1">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Current Account Balance:</span>
+                <span class="text-xs font-bold" [style.color]="(cust.balance || 0) > 0 ? '#dc2626' : ((cust.balance || 0) < 0 ? '#047857' : '#64748b')">
+                  {{ (cust.balance || 0) > 0 ? 'Old Due (पुराना बकाया)' : ((cust.balance || 0) < 0 ? 'Advance Credit (अग्रिम राशि)' : 'Clear Account') }}
+                </span>
+              </div>
+              <div class="balance-amount font-extrabold">
+                ₹{{ Math.abs(cust.balance || 0) | number:'1.2-2' }} {{ (cust.balance || 0) < 0 ? 'CR' : '' }}
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noCustDetail>
+            <div class="empty-table-state py-4 my-2 rounded text-center" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+              <div class="empty-icon-wrap mb-2 mx-auto" style="width: 56px; height: 56px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="material-symbols-outlined text-3xl text-slate-400">person</span>
+              </div>
+              <h4 class="font-bold text-slate-700 text-base mb-1">No Member Selected</h4>
+              <p class="text-xs text-slate-400 m-0 px-3" style="line-height: 1.5;">Use the search box above in Step 1 to select a wholesale customer and view their live ledger details here.</p>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Settle & Generate Payment Receipt Card -->
-    <div class="workspace-right">
-      <div class="card-sharp settlement-card-sharp" [class.disabled-section]="!selectedCustomer()">
+    <!-- Column 2 (Right): Payment Receipt Voucher (Moved up from bottom right!) -->
+    <div>
+      <div class="card-sharp settlement-card-sharp">
         <div class="card-header pb-3 mb-4 border-bottom-sharp flex-align justify-between">
-          <div class="flex-align">
-            <span class="step-pill mr-2" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">SETTLE</span>
-            <div>
+          <div>
+            <div class="flex-align mb-1">
+              <span class="step-pill mr-2" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">SETTLE</span>
               <h3 class="card-title mb-0 flex-align" style="color: #047857;">
                 <span class="material-symbols-outlined mr-2" style="font-size: 22px;">payments</span>
                 Payment Receipt Voucher
               </h3>
-              <p class="text-xs text-slate-500 m-0 mt-1">Settle outstanding due or record advance payment</p>
             </div>
+            <p class="text-xs text-slate-500 m-0">Settle outstanding due or record advance payment</p>
           </div>
           <span class="badge-sharp badge-success" *ngIf="selectedCustomer()">Ready</span>
         </div>
@@ -325,17 +253,151 @@
         </div>
 
         <ng-template #noCustSelected>
-          <div class="empty-table-state py-5 my-3 rounded">
-            <div class="empty-icon-wrap" style="background: #ecfdf5; width: 80px; height: 80px;">
-              <span class="material-symbols-outlined text-5xl" style="color: #047857;">person_search</span>
+          <div class="empty-table-state py-4 my-2 rounded text-center" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+            <div class="empty-icon-wrap mx-auto mb-2" style="background: #ecfdf5; width: 56px; height: 56px; border: 1px solid #a7f3d0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <span class="material-symbols-outlined text-3xl" style="color: #047857;">person_search</span>
             </div>
-            <h4 class="font-bold text-slate-800 text-lg mb-2">Select a Customer in Step 1</h4>
-            <p class="text-xs text-slate-500 m-0 px-3" style="line-height: 1.6;">
-              Choose a wholesale member from the dropdown selector in STEP 1 to inspect their ledger, view unpaid bills, and record payment receipts.
+            <h4 class="font-bold text-slate-800 text-base mb-1">Select Customer in Step 1</h4>
+            <p class="text-xs text-slate-500 m-0 px-3" style="line-height: 1.5;">
+              Choose a wholesale member from the search box in Step 1 to inspect their ledger, view unpaid bills, and record payment receipts.
             </p>
           </div>
         </ng-template>
       </div>
     </div>
+  </div>
+
+  <!-- Main Workspace Full-Width Section (100% Full Width at Bottom for Both Tables) -->
+  <div class="workspace-full-width flex flex-col gap-4">
+    <ng-container *ngIf="selectedCustomer(); else noCustomerSelectedForTables">
+      <!-- STEP 2: Customer Bills Table (Full Width 100%) -->
+      <div class="card-sharp p-0 overflow-hidden" style="margin-bottom: 2rem;">
+        <div class="card-header p-4 border-bottom-sharp flex-align justify-between" style="background: #fafbfc;">
+          <div class="flex-align">
+            <span class="step-pill mr-2" style="background: #fef3c7; color: #b45309; border-color: #fde68a;">STEP 2</span>
+            <h3 class="card-title mb-0">Unpaid & Ledger Bills — {{ selectedCustomer()?.name }}</h3>
+          </div>
+          <span class="badge-sharp badge-neutral">{{ filteredOrders().length }} Bills Found</span>
+        </div>
+
+        <div class="table-container-sharp">
+          <table class="table-sharp m-0">
+            <thead>
+              <tr>
+                <th style="min-width: 120px;">Invoice #</th>
+                <th style="min-width: 140px;">Date</th>
+                <th style="min-width: 130px;">Type</th>
+                <th class="text-right" style="min-width: 140px;">Amount (₹)</th>
+                <th class="text-center" style="min-width: 110px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of filteredOrders()">
+                <td>
+                  <strong class="text-slate-900 font-bold">{{ order.billNumber || order.id.slice(0, 8).toUpperCase() }}</strong>
+                </td>
+                <td class="text-slate-500 text-xs font-medium">{{ order.date | date:'dd/MM/yy hh:mm a' }}</td>
+                <td>
+                  <span class="badge-sharp" [ngClass]="order.billType === 'admin_pos' ? 'badge-warning' : 'badge-primary'">
+                    {{ order.billType === 'admin_pos' ? 'POS Estimate' : 'Online App' }}
+                  </span>
+                </td>
+                <td class="text-right font-extrabold text-slate-900 text-sm">₹{{ (order.netPayable || order.totalAmount || 0) | number:'1.2-2' }}</td>
+                <td class="text-center">
+                  <span class="badge-sharp" [ngClass]="order.status === 'completed' ? 'badge-success' : (order.status === 'pending' ? 'badge-warning' : 'badge-danger')">
+                    {{ order.status | titlecase }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredOrders().length === 0">
+                <td colspan="5" class="empty-table-state">
+                  <div class="empty-icon-wrap">
+                    <span class="material-symbols-outlined text-4xl text-slate-300">receipt</span>
+                  </div>
+                  <div class="font-bold text-slate-700 text-base mb-1">No Invoices Found</div>
+                  <p class="text-xs text-slate-400 m-0">No unpaid or ledger bills found for {{ selectedCustomer()?.name }}.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STEP 3: Recent Receipts History Table (Full Width 100%) -->
+      <div class="card-sharp p-0 overflow-hidden">
+        <div class="card-header p-4 border-bottom-sharp flex-align justify-between" style="background: #fafbfc;">
+          <div class="flex-align">
+            <span class="step-pill mr-2" style="background: #f0fdf4; color: #16a34a; border-color: #bbf7d0;">STEP 3</span>
+            <h3 class="card-title mb-0 flex-align">
+              <span class="material-symbols-outlined mr-2" style="font-size: 20px; color: #047857;">history</span>
+              Receipt Vouchers Log — {{ selectedCustomer()?.name }}
+            </h3>
+          </div>
+          <span class="badge-sharp badge-success">{{ filteredReceipts().length }} Receipts Logged</span>
+        </div>
+
+        <div class="table-container-sharp">
+          <table class="table-sharp m-0">
+            <thead>
+              <tr>
+                <th style="min-width: 120px;">Receipt #</th>
+                <th style="min-width: 140px;">Date</th>
+                <th class="text-right" style="min-width: 140px;">Received (₹)</th>
+                <th style="min-width: 160px;">Payment Mode</th>
+                <th style="min-width: 200px;">Balance Impact</th>
+                <th class="text-center" style="min-width: 110px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rec of filteredReceipts()">
+                <td>
+                  <strong style="color: #047857; font-size: 0.92rem;">{{ rec.receiptNumber }}</strong>
+                </td>
+                <td class="text-slate-500 text-xs font-medium">{{ rec.date | date:'dd/MM/yy hh:mm a' }}</td>
+                <td class="text-right font-extrabold text-sm" style="color: #047857;">
+                  ₹{{ rec.receivedAmount | number:'1.2-2' }}
+                </td>
+                <td>
+                  <span class="badge-sharp badge-success mb-1">{{ rec.paymentMode }}</span>
+                  <div class="text-xs text-slate-500 font-medium truncate" *ngIf="rec.referenceNumber" title="Ref: {{ rec.referenceNumber }}">Ref: {{ rec.referenceNumber }}</div>
+                </td>
+                <td style="font-size: 0.82rem;">
+                  <span [style.color]="rec.previousBalance > 0 ? '#dc2626' : '#047857'" class="font-bold">₹{{ Math.abs(rec.previousBalance) | number:'1.0-0' }} {{ rec.previousBalance > 0 ? 'Due' : 'Adv' }}</span>
+                  <span class="mx-1 text-slate-400">➔</span>
+                  <strong [style.color]="rec.newBalance > 0 ? '#dc2626' : '#047857'">₹{{ Math.abs(rec.newBalance) | number:'1.0-0' }} {{ rec.newBalance > 0 ? 'Due' : (rec.newBalance < 0 ? 'Adv Credit' : 'Cleared') }}</strong>
+                </td>
+                <td class="text-center">
+                  <button class="btn-change-sharp flex-align justify-center mx-auto" (click)="downloadReceiptPDF(rec)" title="Download Official PDF Receipt Voucher">
+                    <span class="material-symbols-outlined mr-1" style="font-size: 15px;">print</span> Print
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredReceipts().length === 0">
+                <td colspan="6" class="empty-table-state">
+                  <div class="empty-icon-wrap">
+                    <span class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
+                  </div>
+                  <div class="font-bold text-slate-700 text-base mb-1">No Receipts Recorded Yet</div>
+                  <p class="text-xs text-slate-400 m-0">When you settle ledger due or record advance payments for {{ selectedCustomer()?.name }}, voucher logs will appear here.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Clean Placeholder State when No Customer is Selected -->
+    <ng-template #noCustomerSelectedForTables>
+      <div class="card-sharp text-center" style="background: #fafbfc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 3.5rem 2rem; margin: 1.5rem 0 2.5rem 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
+        <div class="empty-icon-wrap mx-auto mb-3" style="width: 76px; height: 76px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);">
+          <span class="material-symbols-outlined text-slate-400" style="font-size: 38px;">table_view</span>
+        </div>
+        <h3 class="font-extrabold text-slate-800 text-lg mb-2">Select Customer to View Ledger Bills & Receipt Log</h3>
+        <p class="text-xs text-slate-500 m-0 mx-auto" style="line-height: 1.6; max-width: 500px;">
+          Please search and choose a wholesale member in <strong>Step 1</strong> above to inspect their unpaid invoices, historical payment vouchers, and settle outstanding balances.
+        </p>
+      </div>
+    </ng-template>
   </div>
 </div>

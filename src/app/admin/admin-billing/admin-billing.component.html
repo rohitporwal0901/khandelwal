@@ -1,4 +1,22 @@
 <div class="billing-page">
+  <!-- Top Sliding Premium Toast Notification -->
+  <div class="toast-popup-sharp" *ngIf="toastMessage() as toast" [ngClass]="'toast-' + toast.type">
+    <div class="toast-icon-wrap">
+      <span class="material-symbols-outlined text-2xl" *ngIf="toast.type === 'warning' || toast.type === 'error'">error</span>
+      <span class="material-symbols-outlined text-2xl" *ngIf="toast.type === 'success'">check_circle</span>
+      <span class="material-symbols-outlined text-2xl" *ngIf="toast.type === 'info'">info</span>
+    </div>
+    <div class="toast-content">
+      <h4 class="toast-title mb-1">
+        {{ toast.type === 'error' ? 'Validation Error' : (toast.type === 'warning' ? 'Stock / Input Limit Alert' : (toast.type === 'success' ? 'Success' : 'Notice')) }}
+      </h4>
+      <p class="toast-text m-0">{{ toast.text }}</p>
+    </div>
+    <button class="btn-toast-close" (click)="closeToast()" title="Dismiss">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
   <!-- Top Header -->
   <div class="page-header flex-align justify-between mb-4 pb-3 border-bottom-sharp">
     <div class="header-title flex-align">
@@ -238,7 +256,9 @@
                        class="input-table-qty" 
                        [ngModel]="item.quantity" 
                        (ngModelChange)="updateQty(i, $event)"
-                       min="1" [max]="item.availableStock">
+                       (keydown)="preventNegativeInput($event)"
+                       min="1" [max]="item.availableStock"
+                       placeholder="0">
                 <span class="text-xs font-bold text-slate-500">Pcs</span>
               </div>
             </td>
@@ -249,11 +269,13 @@
                        class="input-table-rate" 
                        [ngModel]="item.sellingRate" 
                        (ngModelChange)="updateSellingRate(i, $event)"
-                       step="0.01" min="0">
+                       (keydown)="preventNegativeInput($event)"
+                       step="0.01" min="0"
+                       placeholder="0.00">
               </div>
             </td>
             <td class="text-right font-bold text-slate-900 text-base">
-              ₹{{ (item.quantity * item.sellingRate) | number:'1.2-2' }}
+              ₹{{ ((item.quantity || 0) * (item.sellingRate || 0)) | number:'1.2-2' }}
             </td>
             <td class="text-center">
               <button class="btn-delete-sharp" (click)="removeItem(i)" title="Remove Item">
@@ -296,7 +318,7 @@
         </div>
 
         <button class="btn-generate-sharp w-100" 
-                [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating()" 
+                [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()" 
                 (click)="onGenerateBill()">
           <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
             <span class="material-symbols-outlined">print</span> 
@@ -342,7 +364,8 @@
               <input type="number" 
                      class="badha-input" 
                      [ngModel]="badha()" 
-                     (ngModelChange)="badha.set($event || 0)"
+                     (ngModelChange)="updateBadha($event)"
+                     (keydown)="preventNegativeInput($event)"
                      placeholder="0.00" step="1" min="0">
             </div>
           </div>
