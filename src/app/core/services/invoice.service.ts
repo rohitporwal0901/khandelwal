@@ -206,8 +206,10 @@ export class InvoiceService {
     doc.text('Signature Purchaser', leftX, leftSigY + 22);
 
     // 6. Save / Download PDF
-    const safeBillNum = order.billNumber || order.id;
-    doc.save(`Estimate_Khandelwal_${safeBillNum}.pdf`);
+    doc.autoPrint();
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   }
 
   /**
@@ -329,9 +331,11 @@ export class InvoiceService {
     doc.setTextColor(...textMuted);
     doc.text('Note: This is a computer-generated wholesale account ledger statement from Khandelwal Stationery Nagda.', leftX, summaryY);
 
-    // Save PDF
-    const cleanPhone = customer.phone || customer.uid.slice(0, 6);
-    doc.save(`Ledger_Report_${customer.name.replace(/\s+/g, '_')}_${cleanPhone}.pdf`);
+    // Save PDF / Open in Print Dialog
+    doc.autoPrint();
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   }
 
   /**
@@ -456,6 +460,9 @@ export class InvoiceService {
     doc.text('Customer Signature', leftX, summaryY);
     doc.text('For - Khandelwal Stationery', 85, summaryY);
 
-    doc.save(`Receipt_Khandelwal_${receipt.receiptNumber}.pdf`);
+    doc.autoPrint();
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   }
 }

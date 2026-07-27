@@ -47,18 +47,14 @@ import { DataService, Order } from '../../core/services/data.service';
       <!-- ─── Orders List ──────────────── -->
       <div class="orders-list" *ngIf="!isLoading() && orders().length > 0">
         <div class="order-card" *ngFor="let order of orders()" (click)="toggleExpand(order.id)">
-          <div class="order-card-top">
-            <div class="order-status-row">
-              <div class="status-dot" [ngClass]="getStatusClass(order.status)"></div>
-              <span class="status-label" [ngClass]="getStatusClass(order.status)">
-                {{ getStatusLabel(order.status) }}
-              </span>
-            </div>
+          <div class="order-card-top" style="margin-bottom: 4px;">
+            <span class="order-id" style="font-size: 1rem; color: var(--primary);">
+              {{ order.billNumber ? 'Bill ' + order.billNumber : 'Order #' + order.id.slice(-6).toUpperCase() }}
+            </span>
             <span class="order-date">{{ formatDate(order.date) }}</span>
           </div>
 
           <div class="order-meta">
-            <span class="order-id">Order #{{ order.id.slice(-6).toUpperCase() }}</span>
             <span class="items-count">{{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'items' }}</span>
           </div>
 

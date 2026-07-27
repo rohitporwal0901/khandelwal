@@ -47,17 +47,37 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Sleek VIP Insider Strip (Myntra Style) -->
-        <div class="insider-strip">
-          <div class="strip-left">
-            <span class="material-symbols-outlined crown-icon">workspace_premium</span>
-            <div class="strip-text">
-              <strong>Khandelwal Gold Partner</strong>
-              <span>Wholesale pricing & priority printing active</span>
+      <!-- Account Ledger Balance Card -->
+      <div class="balance-card-container">
+        <div class="balance-card" [class.is-due]="(profile()?.balance || 0) > 0" [class.is-advance]="(profile()?.balance || 0) < 0">
+          <div class="bc-left">
+            <div class="bc-icon-wrap">
+              <span class="material-symbols-outlined bc-icon">
+                {{ (profile()?.balance || 0) > 0 ? 'account_balance_wallet' : 'account_balance_wallet' }}
+              </span>
+            </div>
+            <div class="bc-info">
+              <span class="bc-title">Account Ledger Balance</span>
+              
+              <!-- Due State -->
+              <span *ngIf="(profile()?.balance || 0) > 0" class="bc-amount text-danger">
+                ₹{{ profile()?.balance | number:'1.2-2' }} <span class="bc-sub">(Due / बकाया)</span>
+              </span>
+              
+              <!-- Advance State -->
+              <span *ngIf="(profile()?.balance || 0) < 0" class="bc-amount text-success">
+                ₹{{ ((profile()?.balance || 0) * -1) | number:'1.2-2' }} <span class="bc-sub">(Advance / जमा)</span>
+              </span>
+              
+              <!-- Settled State -->
+              <span *ngIf="(profile()?.balance || 0) === 0" class="bc-amount text-success">
+                ₹0.00 <span class="bc-sub">(Settled)</span>
+              </span>
             </div>
           </div>
-          <span class="material-symbols-outlined arrow-icon">chevron_right</span>
+          <span class="material-symbols-outlined bc-arrow">chevron_right</span>
         </div>
       </div>
 
@@ -100,14 +120,14 @@ import { AuthService } from '../../core/services/auth.service';
 
           <div class="row-divider"></div>
 
-          <div class="menu-row" (click)="contactSupport()">
+          <!-- <div class="menu-row" (click)="contactSupport()">
             <span class="material-symbols-outlined row-icon icon-support">support_agent</span>
             <div class="row-info">
               <span class="row-title">Wholesale Support Desk</span>
               <span class="row-subtitle">Contact admin for custom bulk printing</span>
             </div>
             <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
-          </div>
+          </div> -->
         </div>
 
         <!-- ─── Sign Out ──────────────────────── -->
@@ -300,25 +320,58 @@ import { AuthService } from '../../core/services/auth.service';
       .dot-green { width: 6px; height: 6px; border-radius: 50%; background: #117A65; }
     }
 
-    /* ─── VIP Insider Strip ────────────────── */
-    .insider-strip {
-      background: linear-gradient(90deg, #282C3F 0%, #3E4152 100%);
-      color: #FFFFFF;
-      margin: 0 calc(-1 * var(--space-base));
-      padding: 12px var(--space-base);
+    /* ─── Ledger Balance Card ────────────────── */
+    .balance-card-container {
+      padding: 0 var(--space-base);
+      margin-bottom: 16px;
+    }
+    .balance-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      padding: 16px;
       display: flex; align-items: center; justify-content: space-between;
-      border-top: 1px solid #3E4152;
+      border: 1px solid #EAEAEA;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      transition: transform 0.2s;
+      
+      &:active { transform: scale(0.98); }
+      
+      &.is-due {
+        border-color: rgba(220,38,38,0.2);
+        background: linear-gradient(145deg, #FFF5F5 0%, #FFFFFF 100%);
+        .bc-icon-wrap { background: rgba(220,38,38,0.1); color: var(--error); }
+      }
+      &.is-advance {
+        border-color: rgba(22,163,74,0.2);
+        background: linear-gradient(145deg, #F0FDF4 0%, #FFFFFF 100%);
+        .bc-icon-wrap { background: rgba(22,163,74,0.1); color: var(--success); }
+      }
     }
-    .strip-left {
-      display: flex; align-items: center; gap: 12px;
-      .crown-icon { color: #D4AF37; font-size: 1.6rem; }
+    .bc-left {
+      display: flex; align-items: center; gap: 14px;
     }
-    .strip-text {
+    .bc-icon-wrap {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: rgba(0,0,0,0.04); color: #535766;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bc-icon { font-size: 1.6rem; }
+    
+    .bc-info {
       display: flex; flex-direction: column; gap: 2px;
-      strong { font-size: 0.82rem; font-weight: 700; color: #F8E08E; letter-spacing: 0.3px; }
-      span { font-size: 0.72rem; color: #C4C6CE; }
     }
-    .arrow-icon { color: #94969F; font-size: 1.2rem; }
+    .bc-title {
+      font-size: 0.75rem; font-weight: 600; color: #686B78; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .bc-amount {
+      font-size: 1.15rem; font-weight: 800; color: #282C3F; letter-spacing: -0.3px; display: flex; align-items: baseline; gap: 4px;
+    }
+    .bc-sub { font-size: 0.75rem; font-weight: 600; opacity: 0.8; }
+    
+    .text-danger { color: var(--error) !important; }
+    .text-success { color: var(--success) !important; }
+    
+    .bc-arrow { color: #C4C6CE; font-size: 1.4rem; }
 
     /* ─── Menu Container ───────────────────── */
     .menu-container {
@@ -531,7 +584,7 @@ export class UserAccountComponent {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       this.photoUploading.set(true);
-      
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const img = new Image();
@@ -557,7 +610,7 @@ export class UserAccountComponent {
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0, width, height);
           const base64 = canvas.toDataURL('image/jpeg', 0.85);
-          
+
           try {
             const uid = this.profile()?.uid;
             if (uid) {
@@ -583,7 +636,7 @@ export class UserAccountComponent {
     try {
       await this.authService.logoutUser();
       this.router.navigate(['/shop/login']);
-    } catch(e) {
+    } catch (e) {
       console.error(e);
     } finally {
       this.logoutLoading.set(false);
@@ -643,7 +696,7 @@ export class UserAccountComponent {
   }
 
   private getPinArr(type: string): string[] {
-    switch(type) {
+    switch (type) {
       case 'current': return this.currentPinDigits;
       case 'new': return this.newPinDigits;
       case 'confirm': return this.confirmNewPinDigits;
@@ -651,7 +704,7 @@ export class UserAccountComponent {
     }
   }
   private getPinId(type: string, index: number): string {
-    switch(type) {
+    switch (type) {
       case 'current': return `cur-pin-${index}`;
       case 'new': return `chg-new-pin-${index}`;
       case 'confirm': return `chg-conf-pin-${index}`;

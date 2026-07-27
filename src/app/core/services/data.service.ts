@@ -271,13 +271,19 @@ export class DataService {
       // 1. Update order status, items, totals, and billNumber
       const updatedOrderData = { 
         status: 'completed' as const,
-        items: updatedItems,
-        billNumber: billNumber,
-        subTotal: billingSummary.subTotal,
-        badha: billingSummary.badha,
-        totalAmount: billingSummary.totalAmount,
-        previousBalance: billingSummary.previousBalance,
-        netPayable: billingSummary.netPayable
+        items: updatedItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          purchaseRate: item.purchaseRate || 0,
+          sellingRate: item.sellingRate || 0,
+          total: item.total || (item.quantity * (item.sellingRate || 0))
+        })),
+        billNumber: billNumber || '',
+        subTotal: billingSummary.subTotal || 0,
+        badha: billingSummary.badha || 0,
+        totalAmount: billingSummary.totalAmount || 0,
+        previousBalance: billingSummary.previousBalance || 0,
+        netPayable: billingSummary.netPayable || 0
       };
       
       await updateDoc(orderRef, updatedOrderData);

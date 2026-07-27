@@ -19,32 +19,32 @@ export class AdminOrdersComponent implements OnInit {
   authService = inject(AuthService);
   orders = computed(() => this.dataService.orders().filter(o => o.billType !== 'admin_pos' && o.status === 'pending'));
   products = this.dataService.products;
-  
+
   isDrawerOpen = signal(false);
   selectedOrder = signal<Order | null>(null);
-  
+
   isGenerating = signal(false);
   showSuccessAnim = signal(false);
   showStockWarning = signal(false);
   stockIssues = signal<StockCheckResult['issues']>([]);
   isCancelling = signal(false);
   pendingBillOrderId = signal<string | null>(null);
-  
-  itemToRemove = signal<{order: Order, item: OrderItem} | null>(null);
+
+  itemToRemove = signal<{ order: Order, item: OrderItem } | null>(null);
   isRemovingItem = signal(false);
-  
+
   // Billing States
   editableItems = signal<OrderItem[]>([]);
   badha = signal(0);
   customerBalance = signal(0);
-  
+
   // Computed Billing Totals
   subTotal = computed(() => {
     return this.editableItems().reduce((sum, item) => sum + (item.quantity * (item.sellingRate || 0)), 0);
   });
   totalAmount = computed(() => this.subTotal() + this.badha());
   netPayable = computed(() => this.customerBalance() + this.totalAmount());
-  
+
   // Product Search State
   productSearchTerm = signal('');
   showProductDropdown = signal(false);
@@ -52,36 +52,36 @@ export class AdminOrdersComponent implements OnInit {
   filteredProducts = computed(() => {
     const term = this.productSearchTerm().toLowerCase().trim();
     if (!term) return [];
-    return this.products().filter(p => 
+    return this.products().filter(p =>
       p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
     ).slice(0, 8); // Show up to 8 matching products
   });
-  
+
   isLoading = signal(true);
   currentPage = signal(1);
   itemsPerPage = signal(10);
-  
+
   ngOnInit() {
     setTimeout(() => {
       this.isLoading.set(false);
     }, 2000);
   }
-  
+
   paginatedOrders = computed(() => {
     // Sort orders by date descending (newest first)
-    const sorted = [...this.orders()].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sorted = [...this.orders()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     return sorted.slice(start, start + this.itemsPerPage());
   });
-  
+
   totalPages = computed(() => Math.ceil(this.orders().length / this.itemsPerPage()) || 1);
-  
+
   nextPage() {
     if (this.currentPage() < this.totalPages()) {
       this.currentPage.update(p => p + 1);
     }
   }
-  
+
   prevPage() {
     if (this.currentPage() > 1) {
       this.currentPage.update(p => p - 1);
@@ -96,17 +96,17 @@ export class AdminOrdersComponent implements OnInit {
     const prod = this.products().find(p => p.id === productId);
     return prod ? prod.name : 'Unknown Product';
   }
-  
+
   getProductSku(productId: string): string {
     const prod = this.products().find(p => p.id === productId);
     return prod ? prod.sku : 'N/A';
   }
-  
+
   getProductImage(productId: string): string {
     const prod = this.products().find(p => p.id === productId);
     return prod && prod.images.length ? prod.images[0] : '';
   }
-  
+
   getProductCost(productId: string): number {
     const prod = this.products().find(p => p.id === productId);
     return prod ? (prod.purchaseRate || 0) : 0;
@@ -116,18 +116,18 @@ export class AdminOrdersComponent implements OnInit {
     this.selectedOrder.set(order);
     this.isDrawerOpen.set(true);
     this.showSuccessAnim.set(false);
-    
+
     // Initialize Editable Items with proper default selling and purchase rates
     this.editableItems.set(order.items.map(item => {
       const p = this.products().find(prod => prod.id === item.productId);
       return {
-        ...item, 
+        ...item,
         sellingRate: item.sellingRate || (p ? p.sellingRate : 0),
         purchaseRate: item.purchaseRate || (p ? p.purchaseRate : 0)
       };
     }));
     this.badha.set(0);
-    
+
     // Fetch Customer Balance
     if (order.uid) {
       try {
@@ -150,7 +150,37 @@ export class AdminOrdersComponent implements OnInit {
       this.showSuccessAnim.set(false);
     }, 300);
   }
-  
+
+  getProductStock(productId: string): number {
+    const product = this.products().find(p => p.id === productId);
+    return product ? product.stock : 0;
+  }
+
+  updateItemQty(index: number, newQty: number) {
+    this.editableItems.update(items => {
+      items[index].quantity = newQty;
+      return [...items];
+    });
+  }
+
+  updateItemRate(index: number, newRate: number) {
+    this.editableItems.update(items => {
+      items[index].sellingRate = newRate;
+      return [...items];
+    });
+  }
+
+  hasInvalidItems(): boolean {
+    if (this.selectedOrder()?.status !== 'pending') return false;
+    return this.editableItems().some(item =>
+      !item.quantity ||
+      item.quantity <= 0 ||
+      !item.sellingRate ||
+      item.sellingRate < 0 ||
+      item.quantity > this.getProductStock(item.productId)
+    );
+  }
+
   async onGenerateBillClick(order: Order) {
     this.isGenerating.set(true);
     const result = await this.dataService.checkStockForOrder(order.id);
@@ -187,7 +217,7 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   initRemoveItem(order: Order, item: OrderItem) {
-    this.itemToRemove.set({order, item});
+    this.itemToRemove.set({ order, item });
   }
 
   cancelRemoveItem() {
@@ -197,19 +227,19 @@ export class AdminOrdersComponent implements OnInit {
   async confirmRemoveItemAction() {
     const data = this.itemToRemove();
     if (!data) return;
-    
+
     this.isRemovingItem.set(true);
     try {
       const updatedItems = data.order.items.filter(i => i.productId !== data.item.productId);
       await this.dataService.updateOrder(data.order.id, { items: updatedItems });
-      
+
       // Also update selectedOrder locally to reflect change instantly in the drawer
-      const newSelectedOrder = {...data.order, items: updatedItems};
+      const newSelectedOrder = { ...data.order, items: updatedItems };
       this.selectedOrder.set(newSelectedOrder);
       this.editableItems.set(updatedItems.map(item => {
         const p = this.products().find(prod => prod.id === item.productId);
         return {
-          ...item, 
+          ...item,
           sellingRate: item.sellingRate || (p ? p.sellingRate : 0),
           purchaseRate: item.purchaseRate || (p ? p.purchaseRate : 0)
         };
@@ -227,8 +257,8 @@ export class AdminOrdersComponent implements OnInit {
     try {
       const reason = 'All items were removed from the order before generating bill.';
       await this.dataService.cancelOrder(order.id, reason);
-      
-      const newSelectedOrder = {...order, status: 'cancelled' as const, cancellationReason: reason};
+
+      const newSelectedOrder = { ...order, status: 'cancelled' as const, cancellationReason: reason };
       this.selectedOrder.set(newSelectedOrder);
     } catch (error) {
       console.error('Error cancelling order:', error);
@@ -242,7 +272,7 @@ export class AdminOrdersComponent implements OnInit {
 
   addProductToBill(product: Product) {
     if (this.selectedOrder()?.status !== 'pending') return;
-    
+
     const items = [...this.editableItems()];
     const existing = items.find(i => i.productId === product.id);
     if (existing) {
@@ -262,7 +292,7 @@ export class AdminOrdersComponent implements OnInit {
 
   async generateBill(orderId: string) {
     this.isGenerating.set(true);
-    
+
     try {
       // Calculate totals for items
       const updatedItems = this.editableItems().map(item => ({
@@ -278,19 +308,17 @@ export class AdminOrdersComponent implements OnInit {
         netPayable: this.netPayable()
       };
 
-      await this.dataService.generateBill(orderId, updatedItems, billingSummary);
-      
+      const completedOrder = await this.dataService.generateBill(orderId, updatedItems, billingSummary);
+
       this.isGenerating.set(false);
       this.showSuccessAnim.set(true);
-      
-      // Update selected order reference to reflect completed status
-      const updatedOrder = this.orders().find(o => o.id === orderId);
-      if (updatedOrder) {
-        this.selectedOrder.set(updatedOrder);
-        // Generate PDF Invoice
-        this.invoiceService.generateInvoice(updatedOrder, this.products());
+
+      // Update selected order reference and generate PDF Invoice
+      if (completedOrder) {
+        this.selectedOrder.set(completedOrder);
+        this.invoiceService.generateInvoice(completedOrder, this.products());
       }
-      
+
       // Auto close drawer after showing success animation
       setTimeout(() => {
         this.closeDrawer();

@@ -211,6 +211,7 @@
             <tr>
               <th class="col-num">#</th>
               <th class="col-desc">PRODUCT DESCRIPTION & SKU</th>
+              <th class="col-avail text-center">AVAIL</th>
               <th class="col-qty text-center">ADD QTY</th>
               <th class="col-rate text-right">SELLING RATE (₹)</th>
               <th class="col-amt text-right">AMOUNT (₹)</th>
@@ -227,11 +228,18 @@
                   <span class="rate-pill-buy text-xxs">Cost Reference: ₹{{ getProductCost(item.productId) | number:'1.2-2' }}</span>
                 </div>
               </td>
+              <td class="text-center">
+                <span class="badge-sharp" [class.badge-warning]="getProductStock(item.productId) <= 5" [class.badge-success]="getProductStock(item.productId) > 5">
+                  {{ getProductStock(item.productId) }}
+                </span>
+              </td>
               <td>
                 <div class="flex-align justify-center gap-1">
                   <input type="number" 
                          class="input-table-qty" 
-                         [(ngModel)]="editableItems()[i].quantity" 
+                         [class.input-error]="item.quantity > getProductStock(item.productId) || !item.quantity"
+                         [ngModel]="item.quantity" 
+                         (ngModelChange)="updateItemQty(i, $event)"
                          min="1"
                          [disabled]="order.status !== 'pending'">
                   <span class="text-xs font-bold text-slate-500">Pcs</span>
@@ -242,7 +250,9 @@
                   <span class="text-xs text-slate-400 font-bold">₹</span>
                   <input type="number" 
                          class="input-table-rate" 
-                         [(ngModel)]="editableItems()[i].sellingRate" 
+                         [class.input-error]="!item.sellingRate || item.sellingRate < 0"
+                         [ngModel]="item.sellingRate" 
+                         (ngModelChange)="updateItemRate(i, $event)"
                          min="0"
                          [disabled]="order.status !== 'pending'">
                 </div>
@@ -283,7 +293,7 @@
           
           <div *ngIf="order.items.length > 0">
             <button class="btn-generate-sharp w-100" 
-                    [disabled]="isGenerating()"
+                    [disabled]="isGenerating() || hasInvalidItems()"
                     (click)="onGenerateBillClick(order)">
               <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
                 <span class="material-symbols-outlined">print</span> 
@@ -294,6 +304,9 @@
                 <span>Generating KH001 Invoice...</span>
               </span>
             </button>
+            <div *ngIf="hasInvalidItems()" class="text-danger text-xs font-bold text-center mt-2">
+              Invalid Line Items! Please ensure quantities don't exceed available stock.
+            </div>
           </div>
           
           <div *ngIf="order.items.length === 0">
