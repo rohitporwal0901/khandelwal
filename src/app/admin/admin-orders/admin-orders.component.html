@@ -64,7 +64,7 @@
 <app-side-drawer 
   [isOpen]="isDrawerOpen()" 
   [title]="'Order ' + selectedOrder()?.id" 
-  width="500px"
+  width="80vw"
   (close)="closeDrawer()">
   
   <div class="order-details-content" *ngIf="selectedOrder() as order">
@@ -80,83 +80,298 @@
       </div>
     </div>
     
-    <div class="id-card-wrapper mt-4">
-      <div class="id-card">
-        <div class="id-card-header">
-          <span class="material-symbols-outlined">badge</span>
-          <h5>Customer Identity</h5>
-        </div>
-        <div class="id-card-body">
-          <div class="id-card-photo">
-            <div class="avatar">{{ order.customerName.charAt(0) | uppercase }}</div>
+    <!-- Step 1 & 2: Customer and Add Products -->
+    <div class="grid-6-6 mb-4 mt-4">
+      <!-- STEP 1: Customer Selection Card -->
+      <div class="card-sharp">
+        <div class="card-header flex-align justify-between mb-3">
+          <div class="flex-align">
+            <span class="step-pill mr-2">STEP 1</span>
+            <h3 class="card-title mb-0">Customer Identity</h3>
           </div>
-          <div class="id-card-details">
-            <div class="id-field">
-              <small>FULL NAME</small>
-              <strong>{{ order.customerName }}</strong>
-            </div>
-            <div class="id-field-group">
-              <div class="id-field">
-                <small>PHONE NUMBER</small>
-                <strong>{{ order.phone }}</strong>
+        </div>
+        
+        <div class="selected-customer-banner">
+          <div class="flex-align gap-3">
+            <div class="avatar-box">{{ order.customerName.charAt(0) | uppercase }}</div>
+            <div>
+              <h4 class="text-slate-900 font-bold mb-1">{{ order.customerName }}</h4>
+              <div class="flex-align gap-2">
+                <span class="phone-badge">+91 {{ order.phone }}</span>
+                <span class="pin-badge" *ngIf="order.pincode">PIN: {{ order.pincode }}</span>
+                <span class="pin-badge" *ngIf="order.city">{{ order.city }}</span>
               </div>
-              <div class="id-field" *ngIf="order.email">
-                <small>EMAIL ADDRESS</small>
-                <strong>{{ order.email }}</strong>
+              <p class="text-xs text-slate-500 mb-0 mt-1" *ngIf="order.address">{{ order.address }}</p>
+            </div>
+          </div>
+          
+          <div class="text-right">
+            <span class="text-xxs text-slate-400 uppercase font-bold d-block mb-1">Current Account</span>
+            <div *ngIf="customerBalance() > 0">
+              <strong class="text-danger font-bold text-lg d-block">₹{{ customerBalance() | number:'1.2-2' }}</strong>
+              <span class="text-xxs font-bold text-danger">Old Due (पुराना बकाया)</span>
+            </div>
+            <div *ngIf="customerBalance() < 0">
+              <strong class="text-success font-bold text-lg d-block">₹{{ -customerBalance() | number:'1.2-2' }} CR</strong>
+              <span class="text-xxs font-bold text-success">Advance (अग्रिम राशि)</span>
+            </div>
+            <div *ngIf="customerBalance() === 0">
+              <strong class="text-slate-500 font-bold text-lg d-block">₹0.00</strong>
+              <span class="text-xxs font-bold text-slate-400">Clear Account</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Add Products Card -->
+      <div class="card-sharp">
+        <div class="card-header flex-align justify-between mb-3">
+          <div class="flex-align">
+            <span class="step-pill mr-2">STEP 2</span>
+            <h3 class="card-title mb-0">Add Products to Bill</h3>
+          </div>
+        </div>
+        
+        <div class="search-box-sharp" *ngIf="order.status === 'pending'">
+          <span class="material-symbols-outlined search-icon">qr_code_scanner</span>
+          <input type="text" 
+                 placeholder="Search card by Name or SKU Code..." 
+                 [ngModel]="productSearchTerm()" 
+                 (ngModelChange)="productSearchTerm.set($event); showProductDropdown.set(true)"
+                 (focus)="showProductDropdown.set(true)"
+                 class="search-input">
+          <button class="btn-clear" *ngIf="productSearchTerm()" (click)="productSearchTerm.set(''); showProductDropdown.set(true)">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div *ngIf="order.status !== 'pending'" class="text-muted text-sm pt-2">
+          Cannot add products to a processed order.
+        </div>
+
+        <!-- Floating Product Dropdown -->
+        <div class="dropdown-menu-sharp" *ngIf="showProductDropdown() && productSearchTerm()">
+          <div class="dropdown-header flex-align justify-between">
+            <span>Matches ({{ filteredProducts().length }})</span>
+            <button class="btn-close-mini" (click)="showProductDropdown.set(false)">Close</button>
+          </div>
+          <div class="dropdown-list">
+            <div class="dropdown-item-row" *ngFor="let prod of filteredProducts()" (click)="addProductToBill(prod)">
+              <div class="flex-align gap-3 flex-1 min-w-0">
+                <div class="prod-thumb">
+                  <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <strong class="text-slate-800 d-block text-sm truncate font-bold">{{ prod.name }}</strong>
+                  <div class="flex-align gap-2 mt-1">
+                    <span class="sku-badge">{{ prod.sku }}</span>
+                    <span class="stock-badge" [class.stock-danger]="prod.stock < 10">Stock: {{ prod.stock }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-align gap-3">
+                <div class="text-right">
+                  <div class="text-xxs text-slate-400 font-bold">RATE (₹)</div>
+                  <div class="flex-align gap-1 mt-1">
+                    <span class="rate-pill-buy">Buy ₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
+                    <span class="rate-pill-sell">Sell ₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
+                  </div>
+                </div>
+                <button class="btn-add-icon">
+                  <span class="material-symbols-outlined">add_circle</span>
+                </button>
               </div>
             </div>
-            <div class="id-field">
-              <small>DELIVERY ADDRESS</small>
-              <strong>{{ order.address }}</strong>
-            </div>
-            <div class="id-field" *ngIf="order.notes">
-              <small>ADDITIONAL NOTES</small>
-              <strong>{{ order.notes }}</strong>
+            <div class="empty-list-msg" *ngIf="filteredProducts().length === 0">
+              No matching products found.
             </div>
           </div>
         </div>
       </div>
     </div>
     
-    <div class="details-section mt-4">
-      <h4>Ordered Items</h4>
-      <div class="order-items-list">
-        <div class="order-item" *ngFor="let item of order.items">
-          <img [src]="getProductImage(item.productId)" alt="Product">
-          <div class="item-info">
-            <strong>{{ getProductName(item.productId) }}</strong>
-            <span class="text-muted text-sm d-block mt-1">Code: <strong>{{ getProductSku(item.productId) }}</strong></span>
+    <!-- STEP 3: Main Table & Summary -->
+    <div class="card-sharp">
+      <div class="flex-align justify-between pb-3 mb-4 border-bottom-sharp">
+        <div class="flex-align">
+          <span class="step-pill mr-2">STEP 3</span>
+          <div>
+            <h3 class="card-title mb-1">Bill Line Items & Wholesale Estimate Breakdown</h3>
+            <p class="text-xs text-slate-500 mb-0 font-medium">Review quantities, customize rates, add Badha freight, and generate instant invoice</p>
           </div>
-          <div class="item-actions">
-            <span class="badge badge-warning">Qty: {{ item.quantity }}</span>
-            <button class="btn-delete" *ngIf="order.status === 'pending'" (click)="initRemoveItem(order, item)" title="Remove Item">
-              <span class="material-symbols-outlined">delete</span>
+        </div>
+        <div class="flex-align gap-3">
+          <span class="badge-sharp badge-primary font-bold px-3 py-1">{{ editableItems().length }} Cards Added</span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container-sharp mb-5">
+        <table class="table-sharp">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-desc">PRODUCT DESCRIPTION & SKU</th>
+              <th class="col-qty text-center">ADD QTY</th>
+              <th class="col-rate text-right">SELLING RATE (₹)</th>
+              <th class="col-amt text-right">AMOUNT (₹)</th>
+              <th class="col-act text-center" *ngIf="order.status === 'pending'"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of editableItems(); let i = index">
+              <td class="text-center font-bold text-slate-400 text-xs">{{ i + 1 }}</td>
+              <td>
+                <div class="font-bold text-slate-900 text-sm">{{ getProductName(item.productId) }}</div>
+                <div class="flex-align gap-2 mt-1">
+                  <span class="sku-badge text-xxs">SKU: {{ getProductSku(item.productId) }}</span>
+                  <span class="rate-pill-buy text-xxs">Cost Reference: ₹{{ getProductCost(item.productId) | number:'1.2-2' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="flex-align justify-center gap-1">
+                  <input type="number" 
+                         class="input-table-qty" 
+                         [(ngModel)]="editableItems()[i].quantity" 
+                         min="1"
+                         [disabled]="order.status !== 'pending'">
+                  <span class="text-xs font-bold text-slate-500">Pcs</span>
+                </div>
+              </td>
+              <td class="text-right">
+                <div class="flex-align justify-end gap-1">
+                  <span class="text-xs text-slate-400 font-bold">₹</span>
+                  <input type="number" 
+                         class="input-table-rate" 
+                         [(ngModel)]="editableItems()[i].sellingRate" 
+                         min="0"
+                         [disabled]="order.status !== 'pending'">
+                </div>
+              </td>
+              <td class="text-right font-bold text-slate-900 text-base">
+                ₹{{ (item.quantity * (item.sellingRate || 0)) | number:'1.2-2' }}
+              </td>
+              <td class="text-center" *ngIf="order.status === 'pending'">
+                <button class="btn-delete-sharp" (click)="initRemoveItem(order, item)" title="Remove Item">
+                  <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Grid: Notes + Generate Button (Left) | Summary (Right) -->
+      <div class="grid-footer-2col pt-4 border-top-sharp">
+        <div class="footer-actions-left flex flex-col justify-between" *ngIf="order.status === 'pending'">
+          <div>
+            <div class="form-group mb-4">
+              <label class="label-sharp mb-2 d-block">Additional Notes:</label>
+              <p class="text-sm text-slate-700 bg-slate-50 p-2 border-radius-sm" style="border-radius: 6px; border: 1px solid var(--slate-200);">
+                {{ order.notes || 'No notes provided by customer.' }}
+              </p>
+            </div>
+            <div class="info-banner-sharp mb-4">
+              <div class="flex-align gap-3">
+                <span class="material-symbols-outlined text-maroon text-2xl">verified</span>
+                <div>
+                  <strong class="text-slate-900 text-xs d-block mb-1">Authentic Wholesale Estimate (KH001 Counter)</strong>
+                  <p class="text-xxs text-slate-600 mb-0 leading-normal">Generating this invoice will instantly deduct product stock in real-time and mark order as complete.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="order.items.length > 0">
+            <button class="btn-generate-sharp w-100" 
+                    [disabled]="isGenerating()"
+                    (click)="onGenerateBillClick(order)">
+              <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
+                <span class="material-symbols-outlined">print</span> 
+                <span>Generate Bill & Update Stock</span>
+              </span>
+              <span *ngIf="isGenerating()" class="flex-align justify-center gap-2">
+                <span class="loader" style="width: 20px; height: 20px;"></span> 
+                <span>Generating KH001 Invoice...</span>
+              </span>
+            </button>
+          </div>
+          
+          <div *ngIf="order.items.length === 0">
+            <button class="btn-generate-sharp w-100" style="background: #dc2626;"
+                    [disabled]="isCancelling()"
+                    (click)="confirmCancelEmptyOrder(order)">
+              <span *ngIf="!isCancelling()" class="flex-align justify-center gap-2">
+                <span class="material-symbols-outlined">cancel</span> No Items Left - Cancel Order
+              </span>
+              <span *ngIf="isCancelling()" class="loader" style="width: 20px; height: 20px;"></span>
             </button>
           </div>
         </div>
-      </div>
-    </div>
-    
-    <div class="drawer-actions mt-4" *ngIf="order.status === 'pending'">
-      <button type="button" class="btn btn-primary w-100 generate-btn" 
-              *ngIf="order.items.length > 0"
-              [disabled]="isGenerating()"
-              (click)="onGenerateBillClick(order)">
-        <span *ngIf="!isGenerating()">
-          <span class="material-symbols-outlined">receipt_long</span> Generate Bill & Update Stock
-        </span>
-        <span *ngIf="isGenerating()" class="loader"></span>
-      </button>
+        <div class="footer-actions-left flex flex-col justify-between" *ngIf="order.status !== 'pending'">
+          <!-- Processed states don't have generate buttons -->
+          <div class="info-banner-sharp bg-success-light border-success-light">
+            <div class="flex-align gap-3">
+              <span class="material-symbols-outlined text-success text-2xl">check_circle</span>
+              <div>
+                <strong class="text-slate-900 text-xs d-block mb-1">Order Processed</strong>
+                <p class="text-xxs text-slate-600 mb-0 leading-normal">This order has already been processed.</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <button type="button" class="btn w-100 generate-btn" style="background: var(--error); color: white;"
-              *ngIf="order.items.length === 0"
-              [disabled]="isCancelling()"
-              (click)="confirmCancelEmptyOrder(order)">
-        <span *ngIf="!isCancelling()">
-          <span class="material-symbols-outlined">cancel</span> No Items Left - Cancel Order
-        </span>
-        <span *ngIf="isCancelling()" class="loader"></span>
-      </button>
+        <div class="summary-panel-sharp">
+          <div class="summary-panel-header flex-align justify-between pb-3 mb-3 border-bottom-sharp">
+            <span class="font-bold text-xs uppercase tracking-wider text-slate-600 flex-align gap-1">
+              <span class="material-symbols-outlined text-base text-maroon">calculate</span> Financial Estimate Breakdown
+            </span>
+            <span class="badge-sharp badge-neutral text-xxs">Wholesale Rates</span>
+          </div>
+          
+          <div class="summary-panel-body">
+            <div class="summary-line">
+              <span class="line-label">Products Subtotal:</span>
+              <span class="line-val font-bold text-slate-900">₹{{ subTotal() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="summary-line-badha my-2 py-2 px-3" *ngIf="order.status === 'pending'">
+              <span class="line-label flex-align gap-1 font-bold text-amber-800 text-xs">
+                <span class="material-symbols-outlined text-base text-amber-600">local_shipping</span> 
+                Badha (भाड़ा / Freight Charges):
+              </span>
+              <div class="badha-input-group flex-align">
+                <span class="prefix text-xs font-bold text-slate-400">₹</span>
+                <input type="number" 
+                       class="badha-input" 
+                       [ngModel]="badha()" 
+                       (ngModelChange)="badha.set($event)"
+                       placeholder="0.00" step="1" min="0">
+              </div>
+            </div>
+
+            <div class="summary-line pt-2 mt-1 border-top-sharp">
+              <span class="line-label font-bold text-slate-800">Current Bill Amount (Balance):</span>
+              <span class="line-val font-bold text-slate-900 text-base">₹{{ totalAmount() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="summary-line">
+              <span class="line-label font-medium text-slate-600" *ngIf="customerBalance() >= 0">Old Balance (पुराना बकाया):</span>
+              <span class="line-label font-medium text-emerald-700" *ngIf="customerBalance() < 0">Advance Balance (अग्रिम राशि जमा):</span>
+              <span class="line-val font-bold" [class.text-danger]="customerBalance() > 0" [class.text-success]="customerBalance() < 0">
+                <ng-container *ngIf="customerBalance() >= 0">₹{{ customerBalance() | number:'1.2-2' }}</ng-container>
+                <ng-container *ngIf="customerBalance() < 0">- ₹{{ -customerBalance() | number:'1.2-2' }} (CR)</ng-container>
+              </span>
+            </div>
+
+            <div class="divider-line-sharp my-3"></div>
+
+            <div class="summary-line grand-total-line py-1">
+              <span class="line-label font-extrabold text-slate-900 text-sm">Grand Total Balance (कुल देय राशि):</span>
+              <span class="line-val font-extrabold text-maroon text-2xl tracking-tight">₹{{ netPayable() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="cancelled-banner mt-4" *ngIf="order.status === 'cancelled'">

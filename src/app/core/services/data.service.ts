@@ -255,30 +255,60 @@ export class DataService {
     await updateDoc(orderRef, data);
   }
 
-  async generateBill(orderId: string) {
+  async generateBill(
+    orderId: string, 
+    updatedItems: OrderItem[], 
+    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number }
+  ) {
     try {
-      // 1. Update order status
       const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
-      await updateDoc(orderRef, { status: 'completed' });
+      const orderDoc = await getDoc(orderRef);
+      if (!orderDoc.exists()) return;
+      
+      const orderData = orderDoc.data() as Order;
+      const billNumber = await this.getNextBillNumber();
+
+      // 1. Update order status, items, totals, and billNumber
+      const updatedOrderData = { 
+        status: 'completed' as const,
+        items: updatedItems,
+        billNumber: billNumber,
+        subTotal: billingSummary.subTotal,
+        badha: billingSummary.badha,
+        totalAmount: billingSummary.totalAmount,
+        previousBalance: billingSummary.previousBalance,
+        netPayable: billingSummary.netPayable
+      };
+      
+      await updateDoc(orderRef, updatedOrderData);
 
       // 2. Reduce stock for each product in the order
-      const orderDoc = await getDoc(orderRef);
-      if (orderDoc.exists()) {
-        const orderData = orderDoc.data() as Order;
+      for (const item of updatedItems) {
+        const productRef = doc(this.firestore, `products-kh/${item.productId}`);
+        const productDoc = await getDoc(productRef);
 
-        for (const item of orderData.items) {
-          const productRef = doc(this.firestore, `products-kh/${item.productId}`);
-          const productDoc = await getDoc(productRef);
-
-          if (productDoc.exists()) {
-            const currentStock = productDoc.data()['stock'] || 0;
-            const newStock = Math.max(0, currentStock - item.quantity);
-            await updateDoc(productRef, { stock: newStock });
-          }
+        if (productDoc.exists()) {
+          const currentStock = productDoc.data()['stock'] || 0;
+          const newStock = Math.max(0, currentStock - item.quantity);
+          await updateDoc(productRef, { stock: newStock });
         }
       }
+
+      // 3. Update customer balance
+      if (orderData.uid) {
+        try {
+          const userRef = doc(this.firestore, `users-kh/${orderData.uid}`);
+          await updateDoc(userRef, { balance: billingSummary.netPayable });
+        } catch (e) {
+          console.error(`Failed to update user balance for ${orderData.uid}:`, e);
+        }
+      }
+
+      return { ...orderData, ...updatedOrderData, id: orderId } as Order;
+
     } catch (error) {
       console.error("Error generating bill and updating stock:", error);
+      throw error;
     }
   }
 

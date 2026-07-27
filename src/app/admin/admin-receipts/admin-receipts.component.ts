@@ -182,6 +182,9 @@ export class AdminReceiptsComponent implements OnInit {
     const type = this.orderTypeFilter();
 
     return this.orders().filter(o => {
+      // Exclude app orders that haven't been billed yet
+      if (!o.billNumber) return false;
+
       // Customer check
       if (cust) {
         const matchUid = o.uid && o.uid === cust.uid;
@@ -277,6 +280,9 @@ export class AdminReceiptsComponent implements OnInit {
 
     // Add Invoices (Debits)
     this.orders().forEach(o => {
+      // Exclude unbilled app orders
+      if (!o.billNumber) return;
+
       const matchUid = o.uid && o.uid === cust.uid;
       const matchPhone = o.phone && o.phone === cust.phone;
       if (matchUid || matchPhone) {

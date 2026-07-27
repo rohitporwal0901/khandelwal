@@ -1,20 +1,23 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataService, Order, StockCheckResult, OrderItem } from '../../core/services/data.service';
+import { FormsModule } from '@angular/forms';
+import { DataService, Order, StockCheckResult, OrderItem, Product } from '../../core/services/data.service';
 import { InvoiceService } from '../../core/services/invoice.service';
+import { AuthService } from '../../core/services/auth.service';
 import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.component';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, SideDrawerComponent],
+  imports: [CommonModule, FormsModule, SideDrawerComponent],
   templateUrl: './admin-orders.component.html',
   styleUrls: ['./admin-orders.component.css']
 })
 export class AdminOrdersComponent implements OnInit {
   dataService = inject(DataService);
   invoiceService = inject(InvoiceService);
-  orders = computed(() => this.dataService.orders().filter(o => o.billType !== 'admin_pos'));
+  authService = inject(AuthService);
+  orders = computed(() => this.dataService.orders().filter(o => o.billType !== 'admin_pos' && o.status === 'pending'));
   products = this.dataService.products;
   
   isDrawerOpen = signal(false);
@@ -29,6 +32,30 @@ export class AdminOrdersComponent implements OnInit {
   
   itemToRemove = signal<{order: Order, item: OrderItem} | null>(null);
   isRemovingItem = signal(false);
+  
+  // Billing States
+  editableItems = signal<OrderItem[]>([]);
+  badha = signal(0);
+  customerBalance = signal(0);
+  
+  // Computed Billing Totals
+  subTotal = computed(() => {
+    return this.editableItems().reduce((sum, item) => sum + (item.quantity * (item.sellingRate || 0)), 0);
+  });
+  totalAmount = computed(() => this.subTotal() + this.badha());
+  netPayable = computed(() => this.customerBalance() + this.totalAmount());
+  
+  // Product Search State
+  productSearchTerm = signal('');
+  showProductDropdown = signal(false);
+
+  filteredProducts = computed(() => {
+    const term = this.productSearchTerm().toLowerCase().trim();
+    if (!term) return [];
+    return this.products().filter(p => 
+      p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
+    ).slice(0, 8); // Show up to 8 matching products
+  });
   
   isLoading = signal(true);
   currentPage = signal(1);
@@ -79,11 +106,41 @@ export class AdminOrdersComponent implements OnInit {
     const prod = this.products().find(p => p.id === productId);
     return prod && prod.images.length ? prod.images[0] : '';
   }
+  
+  getProductCost(productId: string): number {
+    const prod = this.products().find(p => p.id === productId);
+    return prod ? (prod.purchaseRate || 0) : 0;
+  }
 
-  openOrderDetails(order: Order) {
+  async openOrderDetails(order: Order) {
     this.selectedOrder.set(order);
     this.isDrawerOpen.set(true);
     this.showSuccessAnim.set(false);
+    
+    // Initialize Editable Items with proper default selling and purchase rates
+    this.editableItems.set(order.items.map(item => {
+      const p = this.products().find(prod => prod.id === item.productId);
+      return {
+        ...item, 
+        sellingRate: item.sellingRate || (p ? p.sellingRate : 0),
+        purchaseRate: item.purchaseRate || (p ? p.purchaseRate : 0)
+      };
+    }));
+    this.badha.set(0);
+    
+    // Fetch Customer Balance
+    if (order.uid) {
+      try {
+        const users = await this.authService.getAllUsers();
+        const user = users.find(u => u.uid === order.uid);
+        this.customerBalance.set(user?.balance || 0);
+      } catch (e) {
+        console.error('Error fetching balance:', e);
+        this.customerBalance.set(0);
+      }
+    } else {
+      this.customerBalance.set(0);
+    }
   }
 
   closeDrawer() {
@@ -149,6 +206,14 @@ export class AdminOrdersComponent implements OnInit {
       // Also update selectedOrder locally to reflect change instantly in the drawer
       const newSelectedOrder = {...data.order, items: updatedItems};
       this.selectedOrder.set(newSelectedOrder);
+      this.editableItems.set(updatedItems.map(item => {
+        const p = this.products().find(prod => prod.id === item.productId);
+        return {
+          ...item, 
+          sellingRate: item.sellingRate || (p ? p.sellingRate : 0),
+          purchaseRate: item.purchaseRate || (p ? p.purchaseRate : 0)
+        };
+      }));
     } catch (e) {
       console.error('Error removing item:', e);
     } finally {
@@ -175,11 +240,45 @@ export class AdminOrdersComponent implements OnInit {
     }
   }
 
+  addProductToBill(product: Product) {
+    if (this.selectedOrder()?.status !== 'pending') return;
+    
+    const items = [...this.editableItems()];
+    const existing = items.find(i => i.productId === product.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      items.unshift({
+        productId: product.id,
+        quantity: 1,
+        sellingRate: product.sellingRate || 0,
+        purchaseRate: product.purchaseRate || 0
+      });
+    }
+    this.editableItems.set(items);
+    this.productSearchTerm.set('');
+    this.showProductDropdown.set(false);
+  }
+
   async generateBill(orderId: string) {
     this.isGenerating.set(true);
     
     try {
-      await this.dataService.generateBill(orderId);
+      // Calculate totals for items
+      const updatedItems = this.editableItems().map(item => ({
+        ...item,
+        total: item.quantity * (item.sellingRate || 0)
+      }));
+
+      const billingSummary = {
+        subTotal: this.subTotal(),
+        badha: this.badha(),
+        totalAmount: this.totalAmount(),
+        previousBalance: this.customerBalance(),
+        netPayable: this.netPayable()
+      };
+
+      await this.dataService.generateBill(orderId, updatedItems, billingSummary);
       
       this.isGenerating.set(false);
       this.showSuccessAnim.set(true);
