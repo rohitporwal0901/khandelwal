@@ -311,11 +311,16 @@ export class AdminReceiptsComponent implements OnInit {
     // Sort chronologically (oldest first)
     rawTxns.sort((a, b) => a.timestamp - b.timestamp);
 
-    // Calculate opening balance (all transactions before startMs)
-    let runningBalance = 0;
+    // Calculate initial balance (Purana Bakaya when customer was first added, before any transactions)
+    const allTimeDebits = rawTxns.reduce((sum, tx) => sum + tx.debit, 0);
+    const allTimeCredits = rawTxns.reduce((sum, tx) => sum + tx.credit, 0);
+    const initialAccountBalance = Math.round(((cust.balance || 0) - (allTimeDebits - allTimeCredits)) * 100) / 100;
+
+    // Calculate opening balance for the selected statement date range (initial balance + transactions before startMs)
+    let runningBalance = initialAccountBalance;
     rawTxns.forEach(tx => {
       if (tx.timestamp < startMs) {
-        runningBalance += (tx.debit - tx.credit);
+        runningBalance = Math.round((runningBalance + (tx.debit - tx.credit)) * 100) / 100;
       }
     });
     const openingBalance = runningBalance;
@@ -324,7 +329,7 @@ export class AdminReceiptsComponent implements OnInit {
     const entries: LedgerReportEntry[] = [];
     rawTxns.forEach(tx => {
       if (tx.timestamp >= startMs && tx.timestamp <= endMs) {
-        runningBalance += (tx.debit - tx.credit);
+        runningBalance = Math.round((runningBalance + (tx.debit - tx.credit)) * 100) / 100;
         const bType = runningBalance > 0 ? 'Dr' : (runningBalance < 0 ? 'Cr' : '');
         entries.push({
           date: tx.dateStr,
