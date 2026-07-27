@@ -15,13 +15,16 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
 
       <!-- ─── Brand Header ─────────────────── -->
       <div class="auth-brand">
-        <div class="brand-logo">
-          <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+        <div class="brand-inner">
+          <div class="brand-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+          </div>
+          <div class="brand-text">
+            <h1>Khandelwal Cards</h1>
+            <span>Exclusive Member Access</span>
+          </div>
         </div>
-        <div class="brand-text">
-          <h1>Khandelwal Cards</h1>
-          <span>Exclusive Member Access</span>
-        </div>
+        <p class="brand-tagline">🏆 India's Premier Wholesale Wedding Cards Portal</p>
       </div>
 
       <!-- ═══════════════════════════════════ -->
@@ -73,47 +76,60 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       <!-- ═══════════════════════════════════ -->
       <!-- Screen 2A: Existing User — PIN     -->
       <!-- ═══════════════════════════════════ -->
-      <div class="auth-card" *ngIf="screen() === 'login-pin'">
-        <div class="card-header-row">
-          <button class="back-btn-clean" (click)="goBack()" title="Back">
-            <span class="material-symbols-outlined">arrow_back</span>
-          </button>
-        </div>
-
-        <div class="header-section mt-2">
-          <h2 class="auth-title">Welcome Back</h2>
-          <div class="phone-chip mt-1">
-            <span class="material-symbols-outlined icon-xs">phone_iphone</span>
-            <span>+91 {{ phoneNumber }}</span>
-            <button class="change-link" (click)="goBack()">Change</button>
+      <div class="auth-card muted-bg" *ngIf="screen() === 'login-pin'">
+        <div class="bg-placeholder">
+          <div class="brand-logo large-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
           </div>
-          <p class="auth-subtitle mt-2">Enter your 6-digit security PIN to unlock store</p>
+          <h3>Secure Member Login</h3>
+          <p>Enter your PIN to access the wholesale store</p>
         </div>
 
-        <div class="pin-boxes mt-3" (keydown)="onPinKeydown($event, 'login')">
-          <input *ngFor="let i of [0,1,2,3,4,5]"
-            type="password"
-            class="pin-box"
-            [class.filled]="loginPinDigits[i] !== ''"
-            maxlength="1"
-            inputmode="numeric"
-            [id]="'login-pin-' + i"
-            [(ngModel)]="loginPinDigits[i]"
-            (input)="onPinInput($event, i, 'login')"
-            (keydown.backspace)="onPinBackspace($event, i, 'login')">
+        <div class="reg-bottom-sheet open">
+          <div class="sheet-handle"></div>
+
+          <div class="sheet-header">
+            <div class="sheet-top-row">
+              <div>
+                <div class="header-badge">
+                  <span class="material-symbols-outlined badge-icon">lock</span>
+                  <span>SECURE LOGIN</span>
+                </div>
+                <h2 class="auth-title mt-1">Welcome Back</h2>
+              </div>
+              <button class="btn-close-clean" (click)="goBack()" title="Back">
+                <span class="material-symbols-outlined">arrow_back</span>
+              </button>
+            </div>
+            <div class="phone-chip mt-2">
+              <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+              <span>+91 {{ phoneNumber }}</span>
+              <button class="change-link" (click)="goBack()">Change</button>
+            </div>
+            <p class="auth-subtitle mt-1">Enter your 6-digit security PIN to unlock store</p>
+          </div>
+
+          <div class="pin-boxes mt-3" (keydown)="onPinKeydown($event, 'login')">
+            <input *ngFor="let i of [0,1,2,3,4,5]"
+              type="password" class="pin-box" [class.filled]="loginPinDigits[i] !== ''"
+              maxlength="1" inputmode="numeric" [id]="'login-pin-' + i"
+              [(ngModel)]="loginPinDigits[i]"
+              (input)="onPinInput($event, i, 'login')"
+              (keydown.backspace)="onPinBackspace($event, i, 'login')">
+          </div>
+
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ errorMsg() }}</span>
+          </div>
+
+          <button class="btn-primary mt-4" (click)="loginUser()" [disabled]="isLoading() || loginPinDigits.join('').length !== 6">
+            <span *ngIf="!isLoading()">Login to Store</span>
+            <span class="btn-spinner" *ngIf="isLoading()"></span>
+          </button>
+
+          <button class="link-btn mt-3" (click)="screen.set('forgot-pin')">Forgot PIN?</button>
         </div>
-
-        <div class="error-msg mt-2" *ngIf="errorMsg()">
-          <span class="material-symbols-outlined">error</span>
-          <span>{{ errorMsg() }}</span>
-        </div>
-
-        <button class="btn-primary mt-4" (click)="loginUser()" [disabled]="isLoading() || loginPinDigits.join('').length !== 6">
-          <span *ngIf="!isLoading()">Login to Store</span>
-          <span class="btn-spinner" *ngIf="isLoading()"></span>
-        </button>
-
-        <button class="link-btn mt-3" (click)="screen.set('forgot-pin')">Forgot PIN?</button>
       </div>
 
       <!-- ═══════════════════════════════════ -->
@@ -208,99 +224,141 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       <!-- ═══════════════════════════════════ -->
       <!-- Screen 3: Forgot PIN               -->
       <!-- ═══════════════════════════════════ -->
-      <div class="auth-card" *ngIf="screen() === 'forgot-pin'">
-        <div class="card-header-row">
-          <button class="back-btn-clean" (click)="screen.set('login-pin')" title="Back">
-            <span class="material-symbols-outlined">arrow_back</span>
+      <div class="auth-card muted-bg" *ngIf="screen() === 'forgot-pin'">
+        <div class="bg-placeholder">
+          <div class="brand-logo large-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+          </div>
+          <h3>Security Recovery</h3>
+          <p>Reset your 6-digit wholesale access PIN</p>
+        </div>
+
+        <div class="reg-bottom-sheet open">
+          <div class="sheet-handle"></div>
+
+          <div class="sheet-header">
+            <div class="sheet-top-row">
+              <div>
+                <div class="header-badge">
+                  <span class="material-symbols-outlined badge-icon">lock_reset</span>
+                  <span>SECURITY RECOVERY</span>
+                </div>
+                <h2 class="auth-title mt-1">Reset Security PIN</h2>
+              </div>
+              <button class="btn-close-clean" (click)="screen.set('login-pin')" title="Back">
+                <span class="material-symbols-outlined">arrow_back</span>
+              </button>
+            </div>
+            <div class="phone-chip mt-2">
+              <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+              <span>+91 {{ phoneNumber }}</span>
+            </div>
+            <p class="auth-subtitle mt-1">Set a new 6-digit PIN for your account</p>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">New PIN</label>
+            <div class="pin-boxes">
+              <input *ngFor="let i of [0,1,2,3,4,5]"
+                type="password" class="pin-box" [class.filled]="newPinDigits[i] !== ''"
+                maxlength="1" inputmode="numeric" [id]="'new-pin-' + i"
+                [(ngModel)]="newPinDigits[i]"
+                (input)="onPinInput($event, i, 'new')"
+                (keydown.backspace)="onPinBackspace($event, i, 'new')">
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Confirm New PIN</label>
+            <div class="pin-boxes">
+              <input *ngFor="let i of [0,1,2,3,4,5]"
+                type="password" class="pin-box" [class.filled]="newConfirmPinDigits[i] !== ''"
+                maxlength="1" inputmode="numeric" [id]="'new-conf-pin-' + i"
+                [(ngModel)]="newConfirmPinDigits[i]"
+                (input)="onPinInput($event, i, 'new-confirm')"
+                (keydown.backspace)="onPinBackspace($event, i, 'new-confirm')">
+            </div>
+          </div>
+
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ errorMsg() }}</span>
+          </div>
+
+          <button class="btn-primary mt-4" (click)="resetPin()"
+                  [disabled]="isLoading() || newPinDigits.join('').length !== 6 || newConfirmPinDigits.join('').length !== 6">
+            <span *ngIf="!isLoading()">Reset PIN</span>
+            <span class="btn-spinner" *ngIf="isLoading()"></span>
           </button>
         </div>
-
-        <div class="header-section mt-2">
-          <div class="header-badge mb-1">
-            <span class="material-symbols-outlined badge-icon">lock_reset</span>
-            <span>SECURITY RECOVERY</span>
-          </div>
-          <h2 class="auth-title">Reset Security PIN</h2>
-          <div class="phone-chip mt-1">
-            <span class="material-symbols-outlined icon-xs">phone_iphone</span>
-            <span>+91 {{ phoneNumber }}</span>
-          </div>
-          <p class="auth-subtitle mt-2">Set a new 6-digit PIN for your account</p>
-        </div>
-
-        <div class="form-group mt-3">
-          <label class="form-label">New PIN</label>
-          <div class="pin-boxes">
-            <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password"
-              class="pin-box"
-              [class.filled]="newPinDigits[i] !== ''"
-              maxlength="1"
-              inputmode="numeric"
-              [id]="'new-pin-' + i"
-              [(ngModel)]="newPinDigits[i]"
-              (input)="onPinInput($event, i, 'new')"
-              (keydown.backspace)="onPinBackspace($event, i, 'new')">
-          </div>
-        </div>
-
-        <div class="form-group mt-3">
-          <label class="form-label">Confirm New PIN</label>
-          <div class="pin-boxes">
-            <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password"
-              class="pin-box"
-              [class.filled]="newConfirmPinDigits[i] !== ''"
-              maxlength="1"
-              inputmode="numeric"
-              [id]="'new-conf-pin-' + i"
-              [(ngModel)]="newConfirmPinDigits[i]"
-              (input)="onPinInput($event, i, 'new-confirm')"
-              (keydown.backspace)="onPinBackspace($event, i, 'new-confirm')">
-          </div>
-        </div>
-
-        <div class="error-msg mt-2" *ngIf="errorMsg()">
-          <span class="material-symbols-outlined">error</span>
-          <span>{{ errorMsg() }}</span>
-        </div>
-
-        <button class="btn-primary mt-4" (click)="resetPin()"
-                [disabled]="isLoading() || newPinDigits.join('').length !== 6 || newConfirmPinDigits.join('').length !== 6">
-          <span *ngIf="!isLoading()">Reset PIN</span>
-          <span class="btn-spinner" *ngIf="isLoading()"></span>
-        </button>
       </div>
 
       <!-- ═══════════════════════════════════ -->
       <!-- Screen 4: Waiting for Approval    -->
       <!-- ═══════════════════════════════════ -->
       <div class="auth-card approval-card" *ngIf="screen() === 'waiting-approval'">
-        <div class="status-icon-wrap">
-          <div class="status-pulse"></div>
+
+        <!-- Top Illustration -->
+        <div class="approval-hero">
+          <div class="approval-rings">
+            <div class="ring ring-3"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-1"></div>
+          </div>
           <div class="status-shield">
             <span class="material-symbols-outlined">shield_person</span>
           </div>
         </div>
 
+        <!-- Status Badge -->
         <div class="status-tag mt-3">
           <span class="status-dot"></span>
-          <span>VERIFICATION PENDING</span>
+          <span>VERIFICATION IN PROGRESS</span>
         </div>
 
-        <h2 class="auth-title mt-3 text-center">Application Under Review</h2>
+        <h2 class="auth-title mt-2 text-center">You're Almost In!</h2>
         <p class="auth-subtitle text-center mt-1">
-          Hello <strong class="text-main">{{ authService.currentUserProfile()?.name || 'Member' }}</strong>! We have received your registration for <strong class="text-main">+91 {{ authService.currentUserProfile()?.phone || phoneNumber }}</strong>.
+          Hi <strong class="text-main">{{ authService.currentUserProfile()?.name || 'Member' }}</strong>, your application for
+          <strong class="text-main">+91&nbsp;{{ authService.currentUserProfile()?.phone || phoneNumber }}</strong> is under review.
         </p>
 
-        <div class="info-box mt-4">
-          <div class="info-icon">
-            <span class="material-symbols-outlined">admin_panel_settings</span>
+        <!-- 3-Step Progress -->
+        <div class="approval-steps mt-4">
+          <div class="step-row">
+            <div class="step-icon-done">
+              <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="step-body">
+              <span class="step-title">Registration Submitted</span>
+              <span class="step-desc">Your details have been received</span>
+            </div>
           </div>
-          <div class="info-text">
-            <strong>Why is approval required?</strong>
-            <p>To maintain our exclusive wholesale pricing and catalogue privacy, Khandelwal Cards Admin verifies all new member accounts before granting access.</p>
+          <div class="step-connector active"></div>
+          <div class="step-row">
+            <div class="step-icon-active">
+              <span class="material-symbols-outlined">manage_accounts</span>
+            </div>
+            <div class="step-body">
+              <span class="step-title">Admin Verification</span>
+              <span class="step-desc">Our team is reviewing your account</span>
+            </div>
           </div>
+          <div class="step-connector"></div>
+          <div class="step-row muted">
+            <div class="step-icon-pending">
+              <span class="material-symbols-outlined">storefront</span>
+            </div>
+            <div class="step-body">
+              <span class="step-title">Wholesale Access Granted</span>
+              <span class="step-desc">Start browsing the full catalogue</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Note -->
+        <div class="approval-note mt-3">
+          <span class="material-symbols-outlined">schedule</span>
+          <span>Approval usually takes <strong>within 24 hours</strong>. You'll be notified by your admin.</span>
         </div>
 
         <div class="error-msg text-center justify-center mt-3" *ngIf="errorMsg()">
@@ -316,7 +374,12 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
           <span class="btn-spinner" *ngIf="isLoading()"></span>
         </button>
 
-        <button class="link-btn mt-3" (click)="logoutFromWaiting()">Sign out / Use another account</button>
+        <a class="call-admin-btn mt-3" href="tel:+918461909143">
+          <span class="material-symbols-outlined">call</span>
+          <span>Call Admin — +91 84619 09143</span>
+        </a>
+
+        <button class="link-btn mt-2" (click)="logoutFromWaiting()">Sign out / Use another account</button>
       </div>
 
     </div>
@@ -347,37 +410,48 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       width: 100%;
       background: linear-gradient(135deg, #3a0000 0%, #7a0000 50%, #5a0000 100%);
       display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 24px var(--space-base) 32px;
-      margin-bottom: -24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 32px var(--space-base) 44px;
       position: relative;
       z-index: 1;
+      margin-bottom: -28px;
+    }
+    .brand-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-tagline {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.55);
+      margin: 8px 0 0;
+      font-weight: 500;
+      letter-spacing: 0.2px;
     }
     .brand-logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.35);
       flex-shrink: 0;
-      border: 2px solid rgba(212,175,55,0.6);
+      border: 2px solid rgba(212,175,55,0.7);
     }
     .brand-img { width: 100%; height: 100%; object-fit: cover; }
     .brand-text {
       h1 {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1.35rem;
         font-weight: 800;
         color: white;
         letter-spacing: -0.3px;
       }
       span {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         color: #D4AF37;
         font-weight: 700;
-        letter-spacing: 1.2px;
+        letter-spacing: 1.4px;
         text-transform: uppercase;
       }
     }
@@ -391,14 +465,67 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       padding: 28px var(--space-base) 2.5rem;
       position: relative;
       z-index: 2;
-      box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
       display: flex;
       flex-direction: column;
-      
+
       &.muted-bg {
         background: #f4f2f0;
         overflow: hidden;
       }
+    }
+
+    /* ─── Benefits Section ──────────────────── */
+    .benefits-section { width: 100%; }
+    .benefits-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: #E2E8F0;
+    }
+    .divider-text {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .benefit-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: #F8FAFC;
+      border: 1px solid #F1F5F9;
+      border-radius: 14px;
+      margin-top: 10px;
+      transition: background 0.15s;
+      &:hover { background: #F1F5F9; }
+    }
+    .benefit-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      .material-symbols-outlined { font-size: 1.25rem; }
+      &.maroon { background: #FFF5F5; .material-symbols-outlined { color: #8B0000; } }
+      &.gold   { background: #FFFDF0; .material-symbols-outlined { color: #B8860B; } }
+      &.green  { background: #F0FDF4; .material-symbols-outlined { color: #16A34A; } }
+    }
+    .benefit-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      .benefit-title { font-size: 0.85rem; font-weight: 700; color: #1E293B; }
+      .benefit-desc  { font-size: 0.75rem; color: #64748B; line-height: 1.3; }
     }
 
     .card-header-row {
@@ -409,8 +536,8 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
     }
 
     .back-btn-clean, .btn-close-clean {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: #f1f5f9;
       border: none;
@@ -422,7 +549,7 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       transition: all 0.2s ease;
       &:hover { background: #e2e8f0; color: #0f172a; }
       &:active { transform: scale(0.92); }
-      .material-symbols-outlined { font-size: 1.35rem; }
+      .material-symbols-outlined { font-size: 1.2rem; }
     }
 
     .vip-badge {
@@ -465,15 +592,15 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       flex-direction: column;
     }
     .auth-title {
-      font-size: 1.45rem;
+      font-size: 1.3rem;
       font-weight: 800;
       color: var(--text-main);
       margin: 0;
-      letter-spacing: -0.4px;
+      letter-spacing: -0.3px;
       line-height: 1.25;
     }
     .auth-subtitle {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       margin: 0;
       line-height: 1.45;
@@ -676,40 +803,115 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 2rem;
+      padding-top: 1.5rem;
     }
-    .status-icon-wrap {
+
+    /* Animated Rings */
+    .approval-hero {
       position: relative;
-      width: 80px;
-      height: 80px;
+      width: 96px;
+      height: 96px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .status-pulse {
+    .approval-rings {
       position: absolute;
       inset: 0;
-      border-radius: 50%;
-      background: rgba(212, 175, 55, 0.2);
-      animation: pulseGlow 2s infinite ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    @keyframes pulseGlow {
-      0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.25); opacity: 0.2; }
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(212,175,55,0.35);
+      animation: ringPulse 2.5s infinite ease-out;
+    }
+    .ring-1 { width: 68px; height: 68px; animation-delay: 0s; }
+    .ring-2 { width: 82px; height: 82px; animation-delay: 0.5s; }
+    .ring-3 { width: 96px; height: 96px; animation-delay: 1s; }
+    @keyframes ringPulse {
+      0% { opacity: 0.8; transform: scale(0.95); }
+      100% { opacity: 0; transform: scale(1.1); }
     }
     .status-shield {
       position: relative;
-      width: 68px;
-      height: 68px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background: linear-gradient(135deg, #D4AF37, #B8860B);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 20px rgba(212, 175, 55, 0.35);
-      
-      .material-symbols-outlined { font-size: 2.2rem; }
+      box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+      z-index: 2;
+      .material-symbols-outlined { font-size: 2rem; }
+    }
+
+    /* 3-Step Progress Tracker */
+    .approval-steps {
+      width: 100%;
+      background: #F8FAFC;
+      border: 1px solid #E8EDF3;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      &.muted { opacity: 0.4; }
+    }
+    .step-icon-done {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #ECFDF5; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      .material-symbols-outlined { font-size: 1.1rem; color: #16A34A; }
+    }
+    .step-icon-active {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #FFFDF0; border: 2px solid #D4AF37; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      .material-symbols-outlined { font-size: 1.1rem; color: #D4AF37; }
+    }
+    .step-icon-pending {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #F1F5F9; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      .material-symbols-outlined { font-size: 1.1rem; color: #94A3B8; }
+    }
+    .step-body {
+      display: flex; flex-direction: column; gap: 1px;
+      .step-title { font-size: 0.82rem; font-weight: 700; color: #1E293B; }
+      .step-desc { font-size: 0.72rem; color: #64748B; }
+    }
+    .step-connector {
+      width: 2px; height: 16px;
+      background: #E2E8F0; margin-left: 16px; border-radius: 999px;
+      &.active { background: linear-gradient(to bottom, #16A34A, #D4AF37); }
+    }
+
+    /* Approval Note */
+    .approval-note {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #FFFDF0;
+      border: 1px solid #E6C875;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      color: #6B4F00;
+      line-height: 1.4;
+      .material-symbols-outlined { font-size: 1rem; color: #D4AF37; margin-top: 1px; flex-shrink: 0; }
+      strong { color: #4A3500; }
     }
     .status-tag {
       display: inline-flex;
@@ -816,6 +1018,30 @@ type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-appro
       font-size: 0.82rem;
       font-weight: 500;
       .material-symbols-outlined { font-size: 1.1rem; }
+    }
+
+    /* ─── Call Admin Button ──────────────────── */
+    .call-admin-btn {
+      width: 100%;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #F0FDF4;
+      border: 1.5px solid #86EFAC;
+      border-radius: 14px;
+      color: #16A34A;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.2px;
+      .material-symbols-outlined { font-size: 1.15rem; }
+      &:hover { background: #DCFCE7; border-color: #4ADE80; }
+      &:active { transform: scale(0.98); }
     }
 
     /* ─── Form ──────────────────────────────── */

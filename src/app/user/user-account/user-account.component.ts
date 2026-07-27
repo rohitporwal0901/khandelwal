@@ -364,12 +364,12 @@ import { AuthService } from '../../core/services/auth.service';
     .logout-wrap { width: 100%; }
     .btn-logout-clean {
       width: 100%; height: 48px;
-      background: #FFFFFF; color: #FF3F6C;
+      background: #FFFFFF; color: #8B0000;
       border: 1px solid #EAEAEA; border-radius: 8px;
       font-size: 0.82rem; font-weight: 700; letter-spacing: 0.8px;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       gap: 8px; transition: all 0.15s ease;
-      &:hover { background: #FFF5F7; border-color: #FF3F6C; }
+      &:hover { background: #FFF5F5; border-color: #8B0000; }
       &:active { transform: scale(0.99); }
       .material-symbols-outlined { font-size: 1.2rem; }
     }
@@ -445,7 +445,7 @@ import { AuthService } from '../../core/services/auth.service';
       padding: 24px var(--space-base) 2rem; z-index: 201;
       transition: transform 0.3s ease; text-align: center;
       .dialog-icon {
-        width: 52px; height: 52px; border-radius: 50%; background: #FFF5F7; color: #FF3F6C;
+        width: 52px; height: 52px; border-radius: 50%; background: #FFF5F5; color: #8B0000;
         display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
         .material-symbols-outlined { font-size: 1.6rem; }
       }
@@ -459,7 +459,7 @@ import { AuthService } from '../../core/services/auth.service';
       background: none; font-size: 0.9rem; font-weight: 700; color: #282C3F; cursor: pointer;
     }
     .btn-logout-confirm {
-      flex: 1; height: 48px; background: #FF3F6C; border: none; border-radius: 8px;
+      flex: 1; height: 48px; background: linear-gradient(135deg, #8B0000, #C0392B); border: none; border-radius: 8px;
       color: white; font-size: 0.9rem; font-weight: 700; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       &:disabled { opacity: 0.6; }
@@ -484,7 +484,7 @@ import { AuthService } from '../../core/services/auth.service';
     }
     .error-msg {
       display: flex; align-items: center; gap: 6px;
-      color: #FF3F6C; font-size: 0.8rem; font-weight: 500; margin-top: 10px;
+      color: #8B0000; font-size: 0.8rem; font-weight: 500; margin-top: 10px;
       .material-symbols-outlined { font-size: 1rem; }
     }
     .success-msg {
