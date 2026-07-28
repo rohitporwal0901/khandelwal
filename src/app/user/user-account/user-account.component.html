@@ -1,227 +1,136 @@
 <div class="account-page">
 
-      <!-- ─── Premium Leather Wallet Card ─── -->
-      <div class="wallet-card-container">
-        <div class="wallet-card">
-          <div class="wallet-stitch-border">
-            
-            <!-- Left: Profile Info -->
-            <div class="wallet-left">
-              <div class="avatar-wrap">
-                <div class="profile-avatar" [class.uploading]="photoUploading()">
-                  <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
-                  <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
-                  <div class="spinner-overlay" *ngIf="photoUploading()">
-                    <div class="spinner"></div>
-                  </div>
-                </div>
-                <!-- Tick Badge -->
-                <div class="tick-badge">
-                  <span class="material-symbols-outlined">check</span>
-                </div>
-                
-                <!-- Camera Badge -->
-                <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
-                  <span class="material-symbols-outlined icon">photo_camera</span>
-                </button>
-                <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
-              </div>
-              
-              <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
-              <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
-              
-              <div class="verified-tag">
-                <span class="material-symbols-outlined icon-ver">verified_user</span>
-                <span>Verified Wholesale Client</span>
+  <!-- ─── Premium Leather Wallet Card ─── -->
+  <div class="wallet-card-container">
+    <div class="wallet-card">
+      <div class="wallet-stitch-border">
+
+        <!-- Left: Profile Info -->
+        <div class="wallet-left">
+          <div class="avatar-wrap">
+            <div class="profile-avatar" [class.uploading]="photoUploading()">
+              <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
+              <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
+              <div class="spinner-overlay" *ngIf="photoUploading()">
+                <div class="spinner"></div>
               </div>
             </div>
-            
-            <div class="wallet-divider"></div>
-            
-            <!-- Right: Ledger Balance -->
-            <div class="wallet-right">
-              <span class="bc-title">WALLET BALANCE</span>
-              
-              <!-- Due State -->
-              <ng-container *ngIf="(profile()?.balance || 0) > 0">
-                <div class="bc-amount text-white">₹{{ profile()?.balance | number:'1.2-2' }}</div>
-                <div class="bc-sub text-danger">(Due / बकाया)</div>
-              </ng-container>
-              
-              <!-- Advance State -->
-              <ng-container *ngIf="(profile()?.balance || 0) < 0">
-                <div class="bc-amount text-white">₹{{ ((profile()?.balance || 0) * -1) | number:'1.2-2' }}</div>
-                <div class="bc-sub text-success">(Advance / जमा)</div>
-              </ng-container>
-              
-              <!-- Settled State -->
-              <ng-container *ngIf="(profile()?.balance || 0) === 0">
-                <div class="bc-amount text-white">₹0.00</div>
-                <div class="bc-sub text-success">(Settled)</div>
-              </ng-container>
-              
-              <button class="view-statement-btn" (click)="router.navigate(['/shop/ledger'])">
-                <span class="material-symbols-outlined icon-left">receipt_long</span>
-                View Statement
-                <span class="material-symbols-outlined icon-right">chevron_right</span>
-              </button>
-              
-              <div class="status-badge-clean mt-2">
-                <span class="dot-green"></span>
-                <span>Active Wholesale Access</span>
-              </div>
+            <!-- Tick Badge -->
+            <div class="tick-badge">
+              <span class="material-symbols-outlined">check</span>
             </div>
-            
-            <!-- Flap -->
-            <div class="wallet-flap">
-              <div class="wallet-button"></div>
-            </div>
-            
-          </div>
-        </div>
-      </div>
 
-      <!-- ─── Clean Menu Sections ────────────── -->
-      <div class="menu-container">
-        
-        <div class="section-heading">Orders & Catalogue</div>
-        <div class="menu-box">
-          <div class="menu-row" (click)="router.navigate(['/shop/orders'])">
-            <span class="material-symbols-outlined row-icon icon-orders">package_2</span>
-            <div class="row-info">
-              <span class="row-title">My Orders</span>
-              <span class="row-subtitle">Track custom printing & production status</span>
-            </div>
-            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+            <!-- Camera Badge -->
+            <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
+              <span class="material-symbols-outlined icon">photo_camera</span>
+            </button>
+            <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
           </div>
 
-          <div class="row-divider"></div>
+          <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
+          <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
 
-          <div class="menu-row" (click)="router.navigate(['/shop'])">
-            <span class="material-symbols-outlined row-icon icon-shop">auto_stories</span>
-            <div class="row-info">
-              <span class="row-title">Browse Catalogue</span>
-              <span class="row-subtitle">Explore wedding & invitation card designs</span>
-            </div>
-            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+          <div class="verified-tag">
+            <span class="material-symbols-outlined icon-ver">verified_user</span>
+            <span>Verified Client</span>
           </div>
         </div>
 
-        <div class="section-heading mt-4">Security & Settings</div>
-        <div class="menu-box">
-          <div class="menu-row" (click)="showChangePinSheet.set(true)">
-            <span class="material-symbols-outlined row-icon icon-pin">lock_reset</span>
-            <div class="row-info">
-              <span class="row-title">Change Security PIN</span>
-              <span class="row-subtitle">Update your 6-digit wholesale access code</span>
-            </div>
-            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
-          </div>
+        <div class="wallet-divider"></div>
 
-          <div class="row-divider"></div>
+        <!-- Right: Ledger Balance -->
+        <div class="wallet-right">
+          <span class="bc-title">WALLET BALANCE</span>
 
-          <div class="menu-row" (click)="router.navigate(['/shop/ledger'])">
-            <span class="material-symbols-outlined row-icon icon-support">receipt_long</span>
-            <div class="row-info">
-              <span class="row-title">My Ledger & Receipts</span>
-              <span class="row-subtitle">View and download your billing statements</span>
-            </div>
-            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
-          </div>
-        </div>
+          <!-- Due State -->
+          <ng-container *ngIf="(profile()?.balance || 0) > 0">
+            <div class="bc-amount text-white">₹{{ profile()?.balance | number:'1.2-2' }}</div>
+            <div class="bc-sub text-danger">(Due / बकाया)</div>
+          </ng-container>
 
-        <!-- ─── Sign Out ──────────────────────── -->
-        <div class="logout-wrap mt-4">
-          <button class="btn-logout-clean" (click)="confirmLogout.set(true)">
-            <span class="material-symbols-outlined">logout</span>
-            <span>LOG OUT OF STORE</span>
+          <!-- Advance State -->
+          <ng-container *ngIf="(profile()?.balance || 0) < 0">
+            <div class="bc-amount text-white">₹{{ ((profile()?.balance || 0) * -1) | number:'1.2-2' }}</div>
+            <div class="bc-sub text-success">(Advance / जमा)</div>
+          </ng-container>
+
+          <!-- Settled State -->
+          <ng-container *ngIf="(profile()?.balance || 0) === 0">
+            <div class="bc-amount text-white">₹0.00</div>
+            <div class="bc-sub text-success">(Settled)</div>
+          </ng-container>
+
+          <button class="view-statement-btn" (click)="router.navigate(['/shop/ledger'])">
+            <span class="material-symbols-outlined icon-left">receipt_long</span>
+            Statement
+            <span class="material-symbols-outlined icon-right">chevron_right</span>
           </button>
+
+          <div class="status-badge-clean mt-2">
+            <span class="dot-green"></span>
+            <span>Active Access</span>
+          </div>
         </div>
 
-        <p class="app-version-text">Khandelwal Cards Portal v2.0 • Secured Access</p>
+        <!-- Flap -->
+        <div class="wallet-flap">
+          <div class="wallet-button"></div>
+        </div>
+
       </div>
-
-      <!-- ─── Change PIN Bottom Sheet (Rapido Style) ──────── -->
-      <div class="overlay" *ngIf="showChangePinSheet()" (click)="showChangePinSheet.set(false)"></div>
-      <div class="bottom-sheet" [class.open]="showChangePinSheet()">
-        <div class="sheet-handle"></div>
-        
-        <div class="sheet-top-row">
-          <div>
-            <div class="sheet-header-badge">🔐 Security Settings</div>
-            <h3 class="sheet-title mt-1">Change Access PIN</h3>
-          </div>
-          <button class="btn-close-rapido" (click)="showChangePinSheet.set(false)" title="Close">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-        <p class="sheet-sub">Enter your current 6-digit PIN and set a new security PIN below.</p>
-
-        <div class="form-group mt-2">
-          <label class="form-label">Current PIN</label>
-          <div class="pin-boxes">
-            <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password" class="pin-box" [class.filled]="currentPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
-              [id]="'cur-pin-' + i"
-              [(ngModel)]="currentPinDigits[i]"
-              (input)="onPinInput($event, i, 'current')"
-              (keydown.backspace)="onPinBackspace($event, i, 'current')">
-          </div>
-        </div>
-
-        <div class="form-group mt-2">
-          <label class="form-label">New PIN</label>
-          <div class="pin-boxes">
-            <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password" class="pin-box" [class.filled]="newPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
-              [id]="'chg-new-pin-' + i"
-              [(ngModel)]="newPinDigits[i]"
-              (input)="onPinInput($event, i, 'new')"
-              (keydown.backspace)="onPinBackspace($event, i, 'new')">
-          </div>
-        </div>
-
-        <div class="form-group mt-2">
-          <label class="form-label">Confirm New PIN</label>
-          <div class="pin-boxes">
-            <input *ngFor="let i of [0,1,2,3,4,5]"
-              type="password" class="pin-box" [class.filled]="confirmNewPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
-              [id]="'chg-conf-pin-' + i"
-              [(ngModel)]="confirmNewPinDigits[i]"
-              (input)="onPinInput($event, i, 'confirm')"
-              (keydown.backspace)="onPinBackspace($event, i, 'confirm')">
-          </div>
-        </div>
-
-        <div class="error-msg" *ngIf="changePinError()">
-          <span class="material-symbols-outlined">error</span> {{ changePinError() }}
-        </div>
-        <div class="success-msg" *ngIf="changePinSuccess()">
-          <span class="material-symbols-outlined">check_circle</span> PIN changed successfully!
-        </div>
-
-        <button class="btn-rapido-update mt-3" (click)="changePin()"
-                [disabled]="changePinLoading() || currentPinDigits.join('').length !== 6 || newPinDigits.join('').length !== 6 || confirmNewPinDigits.join('').length !== 6">
-          <span *ngIf="!changePinLoading()">Update Security PIN</span>
-          <span class="btn-spinner" *ngIf="changePinLoading()"></span>
-        </button>
-      </div>
-
-      <!-- ─── Logout Confirm Dialog ──────── -->
-      <div class="overlay" *ngIf="confirmLogout()" (click)="confirmLogout.set(false)"></div>
-      <div class="confirm-dialog" [class.open]="confirmLogout()">
-        <div class="dialog-icon">
-          <span class="material-symbols-outlined">logout</span>
-        </div>
-        <h3>Sign Out?</h3>
-        <p>Are you sure you want to sign out from your Khandelwal Cards wholesale account?</p>
-        <div class="dialog-actions">
-          <button class="btn-cancel" (click)="confirmLogout.set(false)">Stay Logged In</button>
-          <button class="btn-logout-confirm" (click)="logout()" [disabled]="logoutLoading()">
-            <span *ngIf="!logoutLoading()">Sign Out</span>
-            <span class="btn-spinner-dark" *ngIf="logoutLoading()"></span>
-          </button>
-        </div>
-      </div>
-
     </div>
+  </div>
+
+  <!-- ─── Clean Menu Sections ────────────── -->
+  <div class="menu-container">
+    
+    <div class="section-heading">Orders & Catalogue</div>
+    
+    <div class="menu-card" (click)="router.navigate(['/shop/orders'])">
+      <div class="row-icon icon-orders"><span class="material-symbols-outlined">package_2</span></div>
+      <div class="row-info">
+        <span class="row-title">My Orders</span>
+        <span class="row-subtitle">Track custom printing & production status</span>
+      </div>
+      <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+    </div>
+
+    <div class="menu-card" (click)="router.navigate(['/shop'])">
+      <div class="row-icon icon-shop"><span class="material-symbols-outlined">auto_stories</span></div>
+      <div class="row-info">
+        <span class="row-title">Browse Catalogue</span>
+        <span class="row-subtitle">Explore wedding & invitation card designs</span>
+      </div>
+      <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+    </div>
+
+    <div class="section-heading mt-4">Security & Settings</div>
+    
+    <div class="menu-card" (click)="showChangePinSheet.set(true)">
+      <div class="row-icon icon-pin"><span class="material-symbols-outlined">lock_reset</span></div>
+      <div class="row-info">
+        <span class="row-title">Change Security PIN</span>
+        <span class="row-subtitle">Update your 6-digit wholesale access code</span>
+      </div>
+      <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+    </div>
+
+    <div class="menu-card" (click)="router.navigate(['/shop/ledger'])">
+      <div class="row-icon icon-support"><span class="material-symbols-outlined">receipt_long</span></div>
+      <div class="row-info">
+        <span class="row-title">My Ledger & Receipts</span>
+        <span class="row-subtitle">View and download your billing statements</span>
+      </div>
+      <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+    </div>
+
+    <!-- ─── Sign Out ──────────────────────── -->
+    <div class="logout-wrap mt-4">
+      <button class="btn-logout-clean" (click)="confirmLogout.set(true)">
+        <span class="material-symbols-outlined">logout</span>
+        <span>LOG OUT OF STORE</span>
+      </button>
+    </div>
+  </div>
+
+</div>
