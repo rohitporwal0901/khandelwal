@@ -303,6 +303,7 @@ export class UserLayoutComponent {
     if (this.router.url.includes('/login')) return false;
     if (!this.authService.isAuthenticated()) return false;
     const profile = this.authService.currentUserProfile();
+    if (!profile) return false;
     if (profile && (profile.status === 'pending' || profile.status === 'rejected')) return false;
     return true;
   }
