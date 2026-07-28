@@ -14,6 +14,7 @@ import { AdminCustomersComponent } from './admin/admin-customers/admin-customers
 import { AdminBillingComponent } from './admin/admin-billing/admin-billing.component';
 import { AdminReceiptsComponent } from './admin/admin-receipts/admin-receipts.component';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
+import { AdminOldBillsComponent } from './admin/admin-old-bills/admin-old-bills.component';
 import { adminGuard } from './core/guards/admin.guard';
 
 // User
@@ -45,6 +46,7 @@ export const routes: Routes = [
       { path: 'orders', component: AdminOrdersComponent },
       { path: 'billing', component: AdminBillingComponent },
       { path: 'receipts', component: AdminReceiptsComponent },
+      { path: 'old-bills', component: AdminOldBillsComponent },
       { path: 'customers', component: AdminCustomersComponent },
       { path: 'settings', component: AdminSettingsComponent }
     ]

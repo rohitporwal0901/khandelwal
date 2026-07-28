@@ -32,7 +32,7 @@ export class AdminLayoutComponent {
 
   isBillingRoute(): boolean {
     const url = this.router.url;
-    return url.includes('/admin/billing') || url.includes('/admin/receipts');
+    return url.includes('/admin/billing') || url.includes('/admin/receipts') || url.includes('/admin/old-bills');
   }
 
   promptLogout() {
