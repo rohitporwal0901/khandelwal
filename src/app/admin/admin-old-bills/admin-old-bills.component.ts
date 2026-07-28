@@ -108,6 +108,20 @@ export class AdminOldBillsComponent implements OnInit {
     setTimeout(() => {
       this.isFetchingData.set(false);
       this.isLoading.set(false);
+
+      // Auto-select the first available date and bill when filters change
+      const dates = this.allDatesInFilter();
+      if (dates.length > 0) {
+        this.selectedDateStr.set(dates[0].dateStr);
+        if (dates[0].bills && dates[0].bills.length > 0) {
+          this.selectedOrder.set(dates[0].bills[0]);
+        } else {
+          this.selectedOrder.set(null);
+        }
+      } else {
+        this.selectedDateStr.set('');
+        this.selectedOrder.set(null);
+      }
     }, 400);
   }
 
