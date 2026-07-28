@@ -4,6 +4,14 @@
     <p class="text-muted">Review, verify, and manage store access for all registered wholesale users</p>
   </div>
   <div class="header-actions">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" placeholder="Search by name or phone"
+             [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+      <button class="search-clear" *ngIf="searchQuery()" (click)="onSearch('')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
     <button class="btn btn-outline flex-align" (click)="loadUsers()" [disabled]="loading()">
       <span class="material-symbols-outlined mr-1">refresh</span> Refresh List
     </button>
@@ -12,27 +20,32 @@
 
 <!-- Filter Tabs -->
 <div class="filter-tabs mb-4">
-  <button class="tab-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">
+  <button class="tab-btn" [class.active]="filterStatus() === 'all'" (click)="setFilter('all')">
     All Members <span class="tab-count">{{ users().length }}</span>
   </button>
-  <button class="tab-btn tab-pending" [class.active]="filterStatus() === 'pending'" (click)="filterStatus.set('pending')">
+  <button class="tab-btn tab-pending" [class.active]="filterStatus() === 'pending'" (click)="setFilter('pending')">
     ⏳ Pending Verification <span class="tab-count count-pending">{{ getCount('pending') }}</span>
   </button>
-  <button class="tab-btn" [class.active]="filterStatus() === 'approved'" (click)="filterStatus.set('approved')">
+  <button class="tab-btn" [class.active]="filterStatus() === 'approved'" (click)="setFilter('approved')">
     ✅ Approved Access <span class="tab-count">{{ getCount('approved') }}</span>
   </button>
-  <button class="tab-btn" [class.active]="filterStatus() === 'rejected'" (click)="filterStatus.set('rejected')">
+  <button class="tab-btn" [class.active]="filterStatus() === 'rejected'" (click)="setFilter('rejected')">
     ❌ Declined <span class="tab-count">{{ getCount('rejected') }}</span>
   </button>
 </div>
 
-<div class="glass-panel" style="padding: 0;">
+<div class="glass-panel" style="padding: 0; position: relative;">
+  <div class="pagination-overlay" *ngIf="isPaginating()">
+    <span class="spinner-large"></span>
+    <p>Loading members...</p>
+  </div>
+
   <div class="loading-wrap" *ngIf="loading()">
     <div class="spinner"></div>
     <span>Loading members from database...</span>
   </div>
 
-  <table class="table w-100" *ngIf="!loading()">
+  <table class="table w-100" [class.blur-content]="isPaginating()" *ngIf="!loading()">
     <thead>
       <tr>
         <th>Member / Business</th>
@@ -43,7 +56,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let user of filteredUsers()">
+      <tr *ngFor="let user of paginatedUsers()">
         <td>
           <div class="customer-info">
             <div class="avatar">
@@ -98,9 +111,21 @@
       <tr *ngIf="filteredUsers().length === 0">
         <td colspan="5" class="text-center empty-state">
           <span class="material-symbols-outlined empty-icon">group_off</span>
-          <p>No members found matching the selected status filter.</p>
+          <p>No members found matching the selected filters.</p>
         </td>
       </tr>
     </tbody>
   </table>
+</div>
+
+<div class="pagination-bar" *ngIf="!loading() && filteredUsers().length > 0">
+  <button class="btn btn-outline" [disabled]="currentPage() === 1" (click)="prevPage()">
+    <span class="material-symbols-outlined">chevron_left</span> Previous
+  </button>
+  <div class="page-info">
+    Page {{ currentPage() }} of {{ totalPages() || 1 }}
+  </div>
+  <button class="btn btn-outline" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">
+    Next <span class="material-symbols-outlined">chevron_right</span>
+  </button>
 </div>

@@ -18,6 +18,11 @@ export class AdminCustomersComponent implements OnInit {
   filterStatus = signal<'all' | 'pending' | 'approved' | 'rejected'>('all');
   updatingUid = signal<string>('');
 
+  currentPage = signal(1);
+  pageSize = signal(10);
+  isPaginating = signal(false);
+  searchQuery = signal<string>('');
+
   ngOnInit() {
     this.loadUsers();
   }
@@ -38,11 +43,63 @@ export class AdminCustomersComponent implements OnInit {
     return this.users().filter(u => u.status === status).length;
   }
 
+  setFilter(status: 'all' | 'pending' | 'approved' | 'rejected') {
+    this.filterStatus.set(status);
+    this.currentPage.set(1);
+  }
+
+  onSearch(val: string) {
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
+  }
+
   filteredUsers = computed(() => {
     const status = this.filterStatus();
-    if (status === 'all') return this.users();
-    return this.users().filter(u => u.status === status);
+    const query = this.searchQuery().toLowerCase().trim();
+    let list = this.users();
+    
+    if (status !== 'all') {
+      list = list.filter(u => u.status === status);
+    }
+
+    if (query) {
+      list = list.filter(u => 
+        (u.name || '').toLowerCase().includes(query) ||
+        (u.phone || '').includes(query)
+      );
+    }
+    return list;
   });
+
+  paginatedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    const end = start + this.pageSize();
+    return this.filteredUsers().slice(start, end);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.filteredUsers().length / this.pageSize());
+  });
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.isPaginating.set(true);
+      setTimeout(() => {
+        this.currentPage.update(p => p + 1);
+        this.isPaginating.set(false);
+      }, 400); // simulate network delay
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.isPaginating.set(true);
+      setTimeout(() => {
+        this.currentPage.update(p => p - 1);
+        this.isPaginating.set(false);
+      }, 400); // simulate network delay
+    }
+  }
 
   async changeStatus(user: UserProfile, newStatus: 'approved' | 'rejected') {
     this.updatingUid.set(user.uid);
