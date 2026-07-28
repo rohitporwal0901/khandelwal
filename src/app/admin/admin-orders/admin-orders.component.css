@@ -680,7 +680,7 @@
 }
 
 /* Modal Styles */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
 .modal-card {
   background: white; border-radius: 12px; width: 520px; max-width: 95vw; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2); border: 1px solid var(--slate-200);
   .modal-header { padding: 1rem 1.25rem; background: var(--slate-50); border-bottom: 1px solid var(--slate-200); }
