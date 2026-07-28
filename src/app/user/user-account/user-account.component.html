@@ -1,53 +1,44 @@
 <div class="account-page">
 
-      <!-- ─── Clean Myntra-Style Profile Header ─── -->
-      <div class="profile-header">
-        <div class="profile-card-inner">
-          
-          <!-- Avatar & Camera Upload -->
-          <div class="avatar-wrap">
-            <div class="profile-avatar" [class.uploading]="photoUploading()">
-              <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
-              <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
+      <!-- ─── Premium Member Card ─── -->
+      <div class="member-card-container">
+        <div class="member-card">
+          <!-- Top: Profile Info -->
+          <div class="mc-top">
+            <div class="avatar-wrap">
+              <div class="profile-avatar" [class.uploading]="photoUploading()">
+                <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
+                <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
 
-              <div class="spinner-overlay" *ngIf="photoUploading()">
-                <div class="spinner"></div>
+                <div class="spinner-overlay" *ngIf="photoUploading()">
+                  <div class="spinner"></div>
+                </div>
+              </div>
+
+              <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
+                <span class="material-symbols-outlined icon">photo_camera</span>
+              </button>
+              <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
+            </div>
+
+            <div class="profile-details">
+              <div class="verified-tag">
+                <span class="material-symbols-outlined icon-ver">verified</span>
+                <span>Verified Wholesale Client</span>
+              </div>
+              <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
+              <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
+
+              <div class="status-badge-clean">
+                <span class="dot-green"></span>
+                <span>Active Wholesale Access</span>
               </div>
             </div>
-
-            <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
-              <span class="material-symbols-outlined icon">photo_camera</span>
-            </button>
-            <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
           </div>
-
-          <!-- User Details -->
-          <div class="profile-details">
-            <div class="verified-tag">
-              <span class="material-symbols-outlined icon-ver">verified</span>
-              <span>Verified Wholesale Client</span>
-            </div>
-            <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
-            <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
-
-            <div class="status-badge-clean">
-              <span class="dot-green"></span>
-              <span>Active Wholesale Access</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Account Ledger Balance Card -->
-      <div class="balance-card-container">
-        <div class="balance-card" [class.is-due]="(profile()?.balance || 0) > 0" [class.is-advance]="(profile()?.balance || 0) < 0">
-          <div class="bc-left">
-            <div class="bc-icon-wrap">
-              <span class="material-symbols-outlined bc-icon">
-                {{ (profile()?.balance || 0) > 0 ? 'account_balance_wallet' : 'account_balance_wallet' }}
-              </span>
-            </div>
-            <div class="bc-info">
+          
+          <!-- Bottom: Ledger Balance -->
+          <div class="mc-bottom" [class.is-due]="(profile()?.balance || 0) > 0" [class.is-advance]="(profile()?.balance || 0) < 0" (click)="router.navigate(['/shop/ledger'])">
+            <div class="mc-bal-info">
               <span class="bc-title">Account Ledger Balance</span>
               
               <!-- Due State -->
@@ -65,8 +56,12 @@
                 ₹0.00 <span class="bc-sub">(Settled)</span>
               </span>
             </div>
+            
+            <div class="mc-action">
+              <span class="view-text">View Statement</span>
+              <span class="material-symbols-outlined bc-arrow">arrow_forward</span>
+            </div>
           </div>
-          <span class="material-symbols-outlined bc-arrow">chevron_right</span>
         </div>
       </div>
 
