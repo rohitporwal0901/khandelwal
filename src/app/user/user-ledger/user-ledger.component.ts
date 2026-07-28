@@ -120,10 +120,10 @@ export class UserLedgerComponent implements OnInit {
   downloadItem(entry: UILedgerEntry, event: Event) {
     event.stopPropagation();
     if (entry.type === 'receipt') {
-      this.invoiceService.generateReceipt(entry.sourceItem as Receipt);
+      this.invoiceService.generateReceipt(entry.sourceItem as Receipt, true);
     } else if (entry.type === 'bill') {
       const products = this.dataService.products();
-      this.invoiceService.generateInvoice(entry.sourceItem as Order, products);
+      this.invoiceService.generateInvoice(entry.sourceItem as Order, products, true);
     }
   }
 
@@ -167,7 +167,8 @@ export class UserLedgerComponent implements OnInit {
           startStr,
           endStr,
           openingBal,
-          finalBal
+          finalBal,
+          true
         );
       } catch (e) {
         console.error('Error generating ledger PDF:', e);

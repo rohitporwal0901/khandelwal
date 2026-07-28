@@ -25,7 +25,7 @@ export class InvoiceService {
    * Generates Estimate / Bill matching physical wholesale stationery layout
    * Adapts dynamically to page width/height (A5/A4 safe)
    */
-  generateInvoice(order: Order, products: Product[]) {
+  generateInvoice(order: Order, products: Product[], isDirectDownload: boolean = false) {
     const doc = new jsPDF({ format: 'a5', unit: 'mm', orientation: 'portrait' });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -194,10 +194,15 @@ export class InvoiceService {
       }
     });
 
-    doc.autoPrint();
-    const blob = doc.output('blob');
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    if (isDirectDownload) {
+      const fileName = `Bill_${order.billNumber || order.id}.pdf`;
+      doc.save(fileName);
+    } else {
+      doc.autoPrint();
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
   }
 
   /**
@@ -210,7 +215,8 @@ export class InvoiceService {
     startDateStr: string, 
     endDateStr: string,
     openingBalance: number,
-    closingBalance: number
+    closingBalance: number,
+    isDirectDownload: boolean = false
   ) {
     const doc = new jsPDF({ format: 'a5', unit: 'mm', orientation: 'landscape' });
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -324,17 +330,22 @@ export class InvoiceService {
     doc.setFont('helvetica', 'italic');
     doc.text('Note: This is a computer-generated wholesale account ledger statement from Khandelwal Stationery.', leftX, finalY2 + 10);
 
-    doc.autoPrint();
-    const blob = doc.output('blob');
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    if (isDirectDownload) {
+      const fileName = `Ledger_${customer.name.replace(/\s+/g, '_')}_${startDateStr}_to_${endDateStr}.pdf`;
+      doc.save(fileName);
+    } else {
+      doc.autoPrint();
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
   }
 
   /**
    * Generates Portrait Payment Receipt Voucher
    * Clean aesthetic matching the invoice layout
    */
-  generateReceipt(receipt: Receipt) {
+  generateReceipt(receipt: Receipt, isDirectDownload: boolean = false) {
     const doc = new jsPDF({ format: 'a5', unit: 'mm', orientation: 'portrait' });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -465,9 +476,14 @@ export class InvoiceService {
     doc.setFont('helvetica', 'italic');
     doc.text('Thank you for your payment! This is a computer-generated receipt voucher.', leftX, pageHeight - m - 5);
 
-    doc.autoPrint();
-    const blob = doc.output('blob');
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    if (isDirectDownload) {
+      const fileName = `Receipt_${receipt.receiptNumber}.pdf`;
+      doc.save(fileName);
+    } else {
+      doc.autoPrint();
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
   }
 }

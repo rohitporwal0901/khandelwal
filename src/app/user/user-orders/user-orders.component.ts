@@ -69,6 +69,6 @@ export class UserOrdersComponent implements OnInit {
   downloadBill(order: Order, event: Event) {
     event.stopPropagation();
     const products = this.dataService.products();
-    this.invoiceService.generateInvoice(order, products);
+    this.invoiceService.generateInvoice(order, products, true);
   }
 }
