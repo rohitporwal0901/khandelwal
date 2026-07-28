@@ -1,1 +1,46 @@
-<p>user-layout works!</p>
+    <div class="mobile-app-container" [class.auth-mode]="!canShowNav()">
+      <header class="app-header" [class.scrolled]="isScrolled()" *ngIf="canShowNav() && !isFullPage()">
+        <div class="logo" routerLink="/shop">
+          <div class="logo-mark">
+            <img src="assets/images/card1.png" alt="Logo" class="logo-img">
+          </div>
+          <div class="logo-text">
+            <h1>Khandelwal Cards</h1>
+            <span class="logo-tagline">Premium Printing</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a routerLink="/shop/cart" class="cart-btn" [class.has-items]="cartCount() > 0">
+            <span class="material-symbols-outlined">shopping_cart</span>
+            <span class="badge" *ngIf="cartCount() > 0">{{ cartCount() }}</span>
+          </a>
+        </div>
+      </header>
+      
+      <main class="app-content" [class.no-nav]="!canShowNav()" (scroll)="onContentScroll($event)">
+        <router-outlet></router-outlet>
+      </main>
+      
+      <nav class="bottom-nav" *ngIf="canShowNav()">
+        <a routerLink="/shop" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item" id="nav-home">
+          <div class="nav-icon-wrap">
+            <span class="material-symbols-outlined">home</span>
+          </div>
+          <span class="nav-label">Home</span>
+        </a>
+        <a routerLink="/shop/cart" routerLinkActive="active" class="nav-item" id="nav-cart">
+          <div class="nav-icon-wrap">
+            <span class="material-symbols-outlined">shopping_cart</span>
+            <span class="nav-badge" *ngIf="cartCount() > 0">{{ cartCount() }}</span>
+          </div>
+          <span class="nav-label">Cart</span>
+        </a>
+        <a [routerLink]="authService.isAuthenticated() ? '/shop/account' : '/shop/login'"
+           routerLinkActive="active" class="nav-item" id="nav-account">
+          <div class="nav-icon-wrap">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+          <span class="nav-label">Account</span>
+        </a>
+      </nav>
+    </div>

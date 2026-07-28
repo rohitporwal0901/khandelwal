@@ -1,0 +1,105 @@
+.ledger-page {
+      min-height: 100%;
+      background: var(--background);
+      padding-bottom: 2rem;
+    }
+    .ledger-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px var(--space-base); background: var(--surface);
+      border-bottom: 1px solid rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10;
+      h2 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main); flex: 1; }
+    }
+    .back-btn {
+      background: none; border: none; cursor: pointer; color: var(--text-secondary);
+      display: flex; align-items: center; padding: 4px; border-radius: 8px;
+      &:active { background: rgba(0,0,0,0.05); }
+      .material-symbols-outlined { font-size: 1.3rem; }
+    }
+
+    .ledger-summary { padding: 16px var(--space-base); }
+    .balance-card {
+      background: var(--surface); border-radius: 16px; padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; border: 1px solid rgba(0,0,0,0.04);
+      &.due { border-top: 4px solid var(--error); }
+      &.credit { border-top: 4px solid var(--success); }
+    }
+    .balance-label { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .balance-amount { display: block; font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+    .due .balance-amount { color: var(--error); }
+    .credit .balance-amount { color: var(--success); }
+    .balance-desc { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 16px 0; }
+    
+    .btn-download-ledger {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; background: var(--primary); color: white; border: none;
+      border-radius: 12px; padding: 12px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: transform 0.2s;
+      &:active { transform: scale(0.98); }
+      &:disabled { opacity: 0.7; cursor: not-allowed; }
+    }
+
+    .statement-container { padding: 0 var(--space-base); }
+    .section-title { font-size: 1rem; font-weight: 700; color: var(--text-main); margin: 0 0 16px 0; }
+
+    .empty-state { text-align: center; padding: 2rem; background: var(--surface); border-radius: 16px; }
+    .empty-icon {
+      width: 64px; height: 64px; background: rgba(139,0,0,0.07); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
+      .material-symbols-outlined { font-size: 1.8rem; color: var(--primary); }
+    }
+    .empty-state h3 { font-size: 1rem; font-weight: 700; margin: 0 0 4px; }
+    .empty-state p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+    /* ─── Orders List (Ledger Timeline) ────── */
+    .orders-list {
+      padding: 16px var(--space-base);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ─── Order Card ───────────────────────── */
+    .order-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.04);
+      cursor: default;
+      transition: box-shadow 0.2s;
+    }
+    .order-card-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
+    }
+    .order-date {
+      font-size: 0.72rem; color: var(--text-muted); font-weight: 500;
+    }
+    .order-id { font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
+    
+    .action-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .btn-download-bill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(139, 0, 0, 0.08); color: var(--primary);
+      border: 1px solid rgba(139, 0, 0, 0.2); border-radius: 8px;
+      padding: 6px 12px; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      &:active { transform: scale(0.96); background: rgba(139, 0, 0, 0.12); }
+      .material-symbols-outlined { font-size: 1rem; }
+    }
+    
+    .detail-divider {
+      height: 1px; background: rgba(0,0,0,0.06); margin: 10px 0;
+    }
+    .detail-row {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 5px 0; font-size: 0.8rem;
+    }
+    .detail-label { color: var(--text-muted); font-weight: 500; flex-shrink: 0; }
+    .detail-value { color: var(--text-main); font-weight: 500; text-align: right; }
+    .text-success { color: var(--success); }
+    .text-main { color: var(--text-main); }

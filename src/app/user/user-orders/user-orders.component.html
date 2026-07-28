@@ -1,0 +1,106 @@
+<div class="orders-page">
+
+      <!-- ─── Header ───────────────────── -->
+      <div class="orders-header">
+        <button class="back-btn" (click)="router.navigate(['/shop/account'])">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h2>My Orders</h2>
+        <span class="order-count" *ngIf="!isLoading() && orders().length > 0">
+          {{ orders().length }}
+        </span>
+      </div>
+
+      <!-- ─── Loading State ────────────── -->
+      <div class="loading-state" *ngIf="isLoading()">
+        <div class="order-card-skeleton" *ngFor="let i of [1,2,3]">
+          <div class="skel-line" style="width: 40%; height: 10px; border-radius: 4px;"></div>
+          <div class="skel-line mt-2" style="width: 70%; height: 14px; border-radius: 4px;"></div>
+          <div class="skel-line mt-2" style="width: 50%; height: 10px; border-radius: 4px;"></div>
+        </div>
+      </div>
+
+      <!-- ─── Empty State ──────────────── -->
+      <div class="empty-state" *ngIf="!isLoading() && orders().length === 0">
+        <div class="empty-icon">
+          <span class="material-symbols-outlined">package_2</span>
+        </div>
+        <h3>No orders yet</h3>
+        <p>Start shopping and your orders will appear here.</p>
+        <button class="shop-btn" (click)="router.navigate(['/shop'])">
+          <span class="material-symbols-outlined">storefront</span>
+          Browse Products
+        </button>
+      </div>
+
+      <!-- ─── Orders List ──────────────── -->
+      <div class="orders-list" *ngIf="!isLoading() && orders().length > 0">
+        <div class="order-card" *ngFor="let order of orders()" (click)="toggleExpand(order.id)">
+          <div class="order-card-top" style="margin-bottom: 4px;">
+            <span class="order-id" style="font-size: 1rem; color: var(--primary);">
+              {{ order.billNumber ? 'Bill ' + order.billNumber : 'Order #' + order.id.slice(-6).toUpperCase() }}
+            </span>
+            <span class="order-date">{{ formatDate(order.date) }}</span>
+          </div>
+
+          <div class="order-meta">
+            <span class="items-count">{{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'items' }}</span>
+          </div>
+
+          <!-- Expanded Details -->
+          <div class="order-details" *ngIf="expandedOrder() === order.id">
+            
+            <div class="action-row" *ngIf="order.status === 'completed'">
+              <button class="btn-download-bill" (click)="downloadBill(order, $event)">
+                <span class="material-symbols-outlined">download</span>
+                Download Bill
+              </button>
+            </div>
+
+            <div class="detail-divider"></div>
+
+            <div class="detail-row">
+              <span class="detail-label">Name</span>
+              <span class="detail-value">{{ order.customerName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Phone</span>
+              <span class="detail-value">+91 {{ order.phone }}</span>
+            </div>
+            <div class="detail-row" *ngIf="order.address">
+              <span class="detail-label">Address</span>
+              <span class="detail-value">{{ order.address }}</span>
+            </div>
+            <div class="detail-row" *ngIf="order.notes">
+              <span class="detail-label">Notes</span>
+              <span class="detail-value">{{ order.notes }}</span>
+            </div>
+            <div class="detail-row" *ngIf="order.cancellationReason">
+              <span class="detail-label">Reason</span>
+              <span class="detail-value text-error">{{ order.cancellationReason }}</span>
+            </div>
+
+            <div class="items-section">
+              <div class="items-label">Items Ordered</div>
+              <div class="order-item-row" *ngFor="let item of order.items">
+                <div class="item-img-wrap">
+                  <img [src]="getProductImage(item.productId)" [alt]="getProductName(item.productId)" class="item-thumb">
+                </div>
+                <div class="item-info">
+                  <span class="item-name">{{ getProductName(item.productId) }}</span>
+                  <span class="item-sku">{{ getProductSku(item.productId) }}</span>
+                </div>
+                <div class="item-qty">Qty: {{ item.quantity }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="expand-indicator">
+            <span class="material-symbols-outlined" [class.rotated]="expandedOrder() === order.id">
+              expand_more
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>

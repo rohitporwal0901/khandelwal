@@ -1,1 +1,131 @@
-<p>user-product-details works!</p>
+<!-- Loading -->
+    <div class="initial-loader" *ngIf="!dataService.isProductsLoaded()">
+      <div class="spinner-large"></div>
+      <p class="loader-text">Loading...</p>
+    </div>
+
+    <!-- Not Found -->
+    <div class="not-found" *ngIf="dataService.isProductsLoaded() && !product()">
+      <span class="material-symbols-outlined">inventory_2</span>
+      <h3>Product not found</h3>
+      <button class="action-btn outline-btn" (click)="goBack()">Go Back</button>
+    </div>
+
+    <!-- Product -->
+    <div class="pd-container" *ngIf="product() as prod">
+
+      <!-- Back -->
+      <button class="back-btn" (click)="goBack()" aria-label="Go back">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+
+      <!-- Gallery -->
+      <div class="gallery-wrap">
+        <app-image-gallery [images]="prod.images"></app-image-gallery>
+      </div>
+
+      <!-- Info Card -->
+      <div class="info-card">
+        <!-- Category chip -->
+        <span class="category-chip">{{ getCategoryName(prod.categoryId) }}</span>
+
+        <h2 class="prod-title">{{ prod.name }}</h2>
+
+        <div class="sku-row">
+          <span class="material-symbols-outlined sku-icon">tag</span>
+          <span class="sku-val">{{ prod.sku }}</span>
+        </div>
+
+        <!-- Stock pill -->
+        <div class="stock-row" *ngIf="prod.stock > 0">
+          <span class="stock-pill in-stock">
+            <span class="stock-dot"></span>
+            {{ prod.stock }} in stock
+          </span>
+        </div>
+        <div class="stock-row" *ngIf="prod.stock === 0">
+          <span class="stock-pill out-stock">Out of Stock</span>
+        </div>
+
+        <!-- Divider -->
+        <div class="divider"></div>
+
+        <!-- Description -->
+        <p class="prod-desc" *ngIf="prod.description">{{ prod.description }}</p>
+
+        <!-- Action Buttons -->
+        <div class="actions-wrap">
+          <button class="action-btn outline-btn" (click)="openQtySheet()"
+                  [disabled]="prod.stock === 0" [class.disabled]="prod.stock === 0">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            {{ prod.stock === 0 ? 'Out of Stock' : 'Add to Bag' }}
+          </button>
+          <button class="action-btn primary-btn" (click)="openQtySheet()" *ngIf="prod.stock > 0">
+            <span class="material-symbols-outlined">flash_on</span>
+            Buy Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Qty Bottom Sheet -->
+    <app-bottom-sheet [isOpen]="isQtySheetOpen()" title="Select Quantity" (close)="closeQtySheet()">
+      <div class="qty-selector" *ngIf="product() as prod">
+        <p class="qty-hint">Choose preset or enter custom quantity</p>
+
+        <div class="preset-grid">
+          <button class="preset-btn"
+                  *ngFor="let qty of [100, 200, 300, 500, 1000]"
+                  [class.active]="selectedQty() === qty"
+                  (click)="selectedQty.set(qty)">
+            {{ qty }}
+          </button>
+        </div>
+
+        <div class="custom-qty-wrap">
+          <label class="field-label">Custom Quantity</label>
+          <input type="number" class="qty-input form-control"
+                 [ngModel]="selectedQty() || null" (ngModelChange)="selectedQty.set(+$event)"
+                 placeholder="Enter quantity" min="1" [max]="prod.stock">
+        </div>
+
+        <div class="stock-info" [class.error]="selectedQty() > prod.stock">
+          <span class="material-symbols-outlined">inventory_2</span>
+          Available: {{ prod.stock }}
+        </div>
+
+        <div class="error-block" *ngIf="selectedQty() > prod.stock">
+          <span class="material-symbols-outlined">error</span>
+          <div class="error-text">
+            <span class="error-title">Quantity exceeds stock</span>
+            <span class="error-sub">Only {{ prod.stock }} items available</span>
+          </div>
+        </div>
+
+        <div class="sheet-actions">
+          <button class="sheet-btn cancel-btn" (click)="closeQtySheet()">Cancel</button>
+          <button class="sheet-btn confirm-btn"
+                  [disabled]="selectedQty() < 1 || selectedQty() > prod.stock"
+                  (click)="addToCart()">
+            Apply & Add to Cart
+          </button>
+        </div>
+      </div>
+    </app-bottom-sheet>
+
+    <!-- Toast -->
+    <div class="toast-wrap" *ngIf="product() as prod">
+      <div class="toast" [class.show]="isQtySheetOpen() && selectedQty() > prod.stock && !cartStockError()?.show">
+        <span class="material-symbols-outlined">warning</span>
+        Stock limit: only {{ prod.stock }} left
+      </div>
+      <div class="toast error-toast" [class.show]="cartStockError()?.show">
+        <span class="material-symbols-outlined">error</span>
+        <div>
+          <strong>Stock Limit Reached</strong>
+          <span *ngIf="cartStockError()">
+            {{ cartStockError()?.cartQty }} in cart. {{ cartStockError()?.maxAllowed }} more available.
+          </span>
+        </div>
+      </div>
+    </div>

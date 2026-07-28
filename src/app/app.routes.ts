@@ -24,6 +24,7 @@ import { UserCartComponent } from './user/user-cart/user-cart.component';
 import { UserAuthComponent } from './user/user-auth/user-auth.component';
 import { UserAccountComponent } from './user/user-account/user-account.component';
 import { UserOrdersComponent } from './user/user-orders/user-orders.component';
+import { UserLedgerComponent } from './user/user-ledger/user-ledger.component';
 import { userGuard } from './core/guards/user.guard';
 
 export const routes: Routes = [
@@ -59,7 +60,8 @@ export const routes: Routes = [
       { path: 'cart', component: UserCartComponent, canActivate: [userGuard] },
       { path: 'login', component: UserAuthComponent },
       { path: 'account', component: UserAccountComponent, canActivate: [userGuard] },
-      { path: 'orders', component: UserOrdersComponent, canActivate: [userGuard] }
+      { path: 'orders', component: UserOrdersComponent, canActivate: [userGuard] },
+      { path: 'ledger', component: UserLedgerComponent, canActivate: [userGuard] }
     ]
   },
 

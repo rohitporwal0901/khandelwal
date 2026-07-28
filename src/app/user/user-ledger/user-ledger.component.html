@@ -1,0 +1,70 @@
+<div class="ledger-page">
+      <!-- ─── Header ───────────────────── -->
+      <div class="ledger-header">
+        <button class="back-btn" (click)="router.navigate(['/shop/account'])">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h2>My Ledger Statement</h2>
+      </div>
+
+      <!-- ─── Ledger Summary & Action ──── -->
+      <div class="ledger-summary" *ngIf="userProfile()">
+        <div class="balance-card" [class.credit]="(userProfile()?.balance || 0) < 0" [class.due]="(userProfile()?.balance || 0) > 0">
+          <span class="balance-label">Current Balance</span>
+          <span class="balance-amount">
+            ₹{{ Math.abs(userProfile()?.balance || 0) | number:'1.2-2' }}
+            {{ (userProfile()?.balance || 0) < 0 ? ' (Advance)' : ((userProfile()?.balance || 0) > 0 ? ' (Due)' : '') }}
+          </span>
+          <p class="balance-desc">Your total outstanding balance.</p>
+          
+          <button class="btn-download-ledger" (click)="downloadFullLedger()" [disabled]="isGeneratingLedger()">
+            <span class="material-symbols-outlined">receipt_long</span>
+            {{ isGeneratingLedger() ? 'Generating...' : 'Download Full PDF Statement' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── Statement Timeline ───────── -->
+      <div class="statement-container">
+        <h3 class="section-title">Recent Transactions</h3>
+        
+        <div class="empty-state" *ngIf="!isLoading() && ledgerEntries().length === 0">
+          <div class="empty-icon">
+            <span class="material-symbols-outlined">history</span>
+          </div>
+          <h3>No transactions yet</h3>
+          <p>Your billing and payment history will appear here.</p>
+        </div>
+
+        <div class="orders-list" *ngIf="!isLoading() && ledgerEntries().length > 0">
+          <div class="order-card" *ngFor="let entry of ledgerEntries()">
+            <div class="order-card-top" style="margin-bottom: 4px;">
+              <span class="order-id" style="font-size: 1rem; color: var(--primary);">
+                {{ entry.narration }}
+              </span>
+              <span class="order-date">{{ entry.dateStr | date:'dd MMM yyyy' }}</span>
+            </div>
+
+            <div class="action-row">
+              <button class="btn-download-bill" (click)="downloadItem(entry, $event)">
+                <span class="material-symbols-outlined">download</span>
+                Download {{ entry.type === 'bill' ? 'Bill' : 'Receipt' }}
+              </button>
+            </div>
+
+            <div class="detail-divider"></div>
+
+            <div class="detail-row">
+              <span class="detail-label">{{ entry.type === 'receipt' ? 'Amount Received' : 'Bill Amount' }}</span>
+              <span class="detail-value" [class.text-success]="entry.type === 'receipt'">
+                ₹{{ (entry.type === 'receipt' ? entry.credit : entry.debit) | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Running Balance</span>
+              <span class="detail-value">₹{{ entry.balance | number:'1.2-2' }} {{ entry.balanceType }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

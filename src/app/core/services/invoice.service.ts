@@ -22,96 +22,101 @@ export class InvoiceService {
   constructor() { }
 
   /**
-   * Generates A5 Portrait Estimate / Bill matching physical wholesale stationery layout (Screenshot 2)
-   * Dimensions: 148mm (width) × 210mm (height)
+   * Generates Estimate / Bill matching physical wholesale stationery layout
+   * Adapts dynamically to page width/height (A5/A4 safe)
    */
   generateInvoice(order: Order, products: Product[]) {
     const doc = new jsPDF({ format: 'a5', unit: 'mm', orientation: 'portrait' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const m = 5; // global margin
+    const leftX = m + 3;
+    const rightX = pageWidth - m - 3;
+    const centerX = pageWidth / 2;
+    
     const textBlack = [0, 0, 0] as [number, number, number];
-    const textDark = [20, 20, 20] as [number, number, number];
-    const textMuted = [80, 80, 80] as [number, number, number];
+    
+    // Draw outer border
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.rect(m, m, pageWidth - 2 * m, pageHeight - 2 * m);
 
-    // Page Width is 148mm -> Center is 74mm, Right margin is 138mm, Left margin is 10mm
-    const centerX = 74;
-    const rightX = 138;
-    const leftX = 10;
-
-    // 1. Top Title Section (Authentic Pink Slip / Wholesale Estimate Style)
-    doc.setFontSize(11);
+    // 1. Top Title Section
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...textBlack);
-    doc.text('|| SHRI ||', centerX, 11, { align: 'center' });
+    doc.setFontSize(22);
+    doc.text('ESTIMATE', centerX, m + 10, { align: 'center' });
     
-    doc.setFontSize(18);
-    doc.text('Estimate', centerX, 19, { align: 'center' });
+    doc.setFontSize(13);
+    doc.text('KHANDELWAL STATIONERY', centerX, m + 17, { align: 'center' });
     
-    doc.setFontSize(11.5);
-    doc.setTextColor(...textDark);
-    doc.text('Khandelwal Stationery', centerX, 25, { align: 'center' });
-    
-    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text('121, Ram Sahay Marg Nagda / Indore, MP', centerX, 30, { align: 'center' });
-    doc.text('Phone: 7089731034 | 9826474254', centerX, 34, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('121, Rama Sahy Marg Nagda', centerX, m + 22, { align: 'center' });
+    doc.text('Phone: 7089731034', centerX, m + 26, { align: 'center' });
 
     // Divider Line
-    doc.setDrawColor(150, 150, 150);
-    doc.setLineWidth(0.4);
-    doc.line(leftX, 38, rightX, 38);
+    doc.setLineWidth(0.3);
+    doc.line(m, m + 29, pageWidth - m, m + 29);
 
-    // 2. Left & Right Metadata Header
-    doc.setFontSize(9.5);
-    doc.setTextColor(...textDark);
+    // 2. Metadata Header
+    let currentY = m + 35;
+    doc.setFontSize(9);
     
-    // Left side: Bill No & Customer Info
     const billNumStr = order.billNumber || order.id.slice(0, 8).toUpperCase();
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Bill No: ${billNumStr}`, leftX, 44);
-    doc.setFontSize(10);
-    doc.text(`M/S ${order.customerName}`, leftX, 50);
     
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...textMuted);
-    const pinStr = order.pincode ? ` - Pin: ${order.pincode}` : '';
-    const fullAddr = (order.address || 'Address not provided') + pinStr;
-    const addrLines = doc.splitTextToSize(`Address: ${fullAddr}`, 65);
-    doc.text(addrLines, leftX, 55);
-    doc.text(`Phone: +91 ${order.phone}`, leftX, 55 + (addrLines.length * 4));
-
-    // Right side: Date and Type
-    doc.setFontSize(8);
+    // Left side
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
-    doc.text('ORIGINAL FOR RECIPIENT', rightX, 44, { align: 'right' });
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textDark);
-    const orderDate = new Date(order.date).toLocaleDateString('en-IN', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-    doc.text(`Date: ${orderDate}`, rightX, 50, { align: 'right' });
-    doc.text(`Status: ${order.status.toUpperCase()}`, rightX, 55, { align: 'right' });
+    doc.text('Bill No.', leftX, currentY);
+    doc.text(':', leftX + 15, currentY);
+    doc.text(billNumStr, leftX + 18, currentY);
 
-    // 3. Prepare Table Data
+    doc.text('M/S', leftX, currentY + 6);
+    doc.text(':', leftX + 15, currentY + 6);
+    doc.text(order.customerName, leftX + 18, currentY + 6);
+
+    doc.text('Address', leftX, currentY + 12);
+    doc.text(':', leftX + 15, currentY + 12);
+    
+    const pinStr = order.pincode ? ` ${order.pincode}` : '';
+    const fullAddr = (order.address || '') + pinStr + (order.phone ? ` ${order.phone}` : '');
+    const splitAddr = doc.splitTextToSize(fullAddr, centerX - 20);
+    doc.text(splitAddr, leftX + 18, currentY + 12);
+
+    // Right side
+    doc.setFont('helvetica', 'bold');
+    doc.text('ORIGINAL FOR RECIPIENT', rightX, currentY, { align: 'right' });
+    
+    const orderDateObj = new Date(order.date);
+    const dateStr = orderDateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    const timeStr = orderDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    doc.text('Date', rightX - 35, currentY + 6);
+    doc.text(':', rightX - 25, currentY + 6);
+    doc.text(dateStr, rightX, currentY + 6, { align: 'right' });
+
+    doc.text('Time', rightX - 35, currentY + 12);
+    doc.text(':', rightX - 25, currentY + 12);
+    doc.text(timeStr, rightX, currentY + 12, { align: 'right' });
+
+    // 3. Table Data
     let calculatedSubTotal = 0;
     let totalQty = 0;
 
-    const tableData = order.items.map((item, index) => {
+    const tableData: any[][] = order.items.map((item, index) => {
       const prod = products.find(p => p.id === item.productId);
       const rate = item.sellingRate !== undefined ? item.sellingRate : (prod?.sellingRate || 0);
       const amount = item.total !== undefined ? item.total : (item.quantity * rate);
       calculatedSubTotal += amount;
       totalQty += item.quantity;
 
-      const prodName = prod ? `${prod.name} (${prod.sku})` : 'Wedding Card / Printing Item';
+      const prodName = prod ? `${prod.name}` : 'Wedding Card';
       return [
         (index + 1).toString(),
         prodName,
         `${item.quantity} Pcs`,
-        `Rs ${rate.toFixed(2)}`,
-        `Rs ${amount.toFixed(2)}`
+        rate.toFixed(2),
+        amount.toFixed(2)
       ];
     });
 
@@ -119,12 +124,18 @@ export class InvoiceService {
     if (badhaVal > 0) {
       tableData.push([
         (tableData.length + 1).toString(),
-        'Badha / Packing & Forwarding',
+        'Packing & Forwarding',
         '1 Pcs',
-        `Rs ${badhaVal.toFixed(2)}`,
-        `Rs ${badhaVal.toFixed(2)}`
+        badhaVal.toFixed(2),
+        badhaVal.toFixed(2)
       ]);
       totalQty += 1;
+    }
+    
+    // Add empty rows to match the visual padding of a physical estimate book
+    const minRows = 10;
+    while (tableData.length < minRows) {
+      tableData.push(['', '', '', '', '']);
     }
 
     const subTotalVal = order.subTotal !== undefined ? order.subTotal : calculatedSubTotal;
@@ -132,80 +143,57 @@ export class InvoiceService {
     const prevBalVal = order.previousBalance || 0;
     const netPayableVal = order.netPayable !== undefined ? order.netPayable : (totalAmountVal + prevBalVal);
 
-    // 4. Generate Table with Total Footer
-    const startYPos = Math.max(68, 57 + (addrLines.length * 4));
+    currentY = Math.max(currentY + 12 + (splitAddr.length * 4), currentY + 18);
 
     autoTable(doc, {
-      startY: startYPos,
-      head: [['SNo', 'Item Description', 'Quantity', 'Rate', 'Amount']],
+      startY: currentY,
+      head: [['S.No.', 'Item', 'Quantity', 'Rate', 'Amount']],
       body: tableData,
-      foot: [['', 'Total', `${totalQty} Pcs`, '', `Rs ${totalAmountVal.toFixed(2)}`]],
+      foot: [['Total', '', totalQty.toString(), '', totalAmountVal.toFixed(2)]],
       theme: 'grid',
-      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 8.5, cellPadding: 3.5, lineWidth: 0.3, lineColor: [0, 0, 0] },
-      footStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 8.5, cellPadding: 3.5, lineWidth: 0.3, lineColor: [0, 0, 0] },
-      bodyStyles: { fontSize: 8, cellPadding: 3, textColor: textBlack, lineWidth: 0.15, lineColor: [150, 150, 150] },
-      styles: { fontSize: 8, cellPadding: 3, textColor: textBlack },
+      margin: { left: m, right: m },
+      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 4, lineWidth: 0.3, lineColor: [0, 0, 0], halign: 'center' },
+      footStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 4, lineWidth: 0.3, lineColor: [0, 0, 0] },
+      bodyStyles: { fontSize: 9, cellPadding: 4, textColor: textBlack, lineWidth: { top: 0, bottom: 0, left: 0.3, right: 0.3 }, lineColor: [0, 0, 0] },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
-        3: { cellWidth: 23, halign: 'right' },
-        4: { cellWidth: 26, halign: 'right', fontStyle: 'bold' }
+        0: { cellWidth: 12, halign: 'center' },
+        1: { cellWidth: 'auto', halign: 'left' },
+        2: { cellWidth: 20, halign: 'center' },
+        3: { cellWidth: 18, halign: 'center' },
+        4: { cellWidth: 24, halign: 'center' }
       }
     });
 
-    // 5. Bottom Financial Summary & Signature Area (Exactly matching Screenshot 2 layout)
-    const finalY = (doc as any).lastAutoTable.finalY || 130;
-    let summaryY = finalY + 8;
-
-    // Right Side Box: Balance & Grand Total Breakdown
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Balance (Current Bill):', 85, summaryY);
-    doc.text(`Rs ${totalAmountVal.toFixed(2)}`, rightX, summaryY, { align: 'right' });
-    summaryY += 5.5;
-
-    if (prevBalVal !== 0) {
-      if (prevBalVal > 0) {
-        doc.text('Old Balance:', 85, summaryY);
-        doc.text(`Rs ${prevBalVal.toFixed(2)}`, rightX, summaryY, { align: 'right' });
-      } else {
-        doc.text('Advance Balance:', 85, summaryY);
-        doc.text(`Rs ${Math.abs(prevBalVal).toFixed(2)} CR`, rightX, summaryY, { align: 'right' });
-      }
-      summaryY += 5.5;
-    }
-
-    // Divider
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.4);
-    doc.line(85, summaryY - 1.5, rightX, summaryY - 1.5);
-    summaryY += 3;
-
-    doc.setFontSize(9.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...textBlack);
-    doc.text('Grand Total Balance:', 85, summaryY);
-    doc.text(`Rs ${netPayableVal.toFixed(2)}`, rightX, summaryY, { align: 'right' });
-
-    // Left Side: Jurisdiction & Signature (positioned near bottom left of table)
-    const leftSigY = finalY + 10;
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(...textMuted);
-    doc.text('Under Nagda Jurisdiction. For - Estimate', leftX, leftSigY);
+    const finalY = (doc as any).lastAutoTable.finalY;
     
-    if (order.notes) {
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Note: ${order.notes}`, leftX, leftSigY + 4);
-    }
-
-    doc.setFontSize(8.5);
+    // Left text
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Under Nagda Jurisdiction. For - Estimate', leftX, finalY + 10);
+    
+    // Signature Box
+    doc.setLineWidth(0.3);
+    doc.rect(m, finalY + 14, 75, 25);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...textDark);
-    doc.text('Signature Purchaser', leftX, leftSigY + 22);
+    doc.text('Signature Purchaser', m + 3, finalY + 19);
 
-    // 6. Save / Download PDF
+    // Right table
+    autoTable(doc, {
+      startY: finalY + 5,
+      margin: { left: pageWidth - m - 62, right: m },
+      body: [
+        ['Balance', totalAmountVal.toFixed(2)],
+        ['Old Balance', prevBalVal.toFixed(2)],
+        ['Grand Total Balance', netPayableVal.toFixed(2)]
+      ],
+      theme: 'grid',
+      bodyStyles: { fillColor: [255, 255, 255], fontSize: 9, cellPadding: 4, textColor: textBlack, lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: 38, halign: 'left' },
+        1: { cellWidth: 24, halign: 'center' } // matches Amount column width perfectly
+      }
+    });
+
     doc.autoPrint();
     const blob = doc.output('blob');
     const url = URL.createObjectURL(blob);
@@ -213,8 +201,8 @@ export class InvoiceService {
   }
 
   /**
-   * Generates A5 Landscape Account Report / Customer Ledger (Screenshot 1)
-   * Dimensions: 210mm (width) × 148mm (height)
+   * Generates Landscape Account Report / Customer Ledger
+   * Clean aesthetic matching the invoice layout
    */
   generateLedgerReport(
     customer: UserProfile, 
@@ -225,113 +213,117 @@ export class InvoiceService {
     closingBalance: number
   ) {
     const doc = new jsPDF({ format: 'a5', unit: 'mm', orientation: 'landscape' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const m = 5;
+    const leftX = m + 3;
+    const rightX = pageWidth - m - 3;
+    const centerX = pageWidth / 2;
     const textBlack = [0, 0, 0] as [number, number, number];
-    const textDark = [20, 20, 20] as [number, number, number];
-    const textMuted = [80, 80, 80] as [number, number, number];
 
-    // Page Width is 210mm -> Center is 105mm, Right margin is 196mm, Left margin is 14mm
-    const centerX = 105;
-    const rightX = 196;
-    const leftX = 14;
+    // Draw outer border
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.rect(m, m, pageWidth - 2 * m, pageHeight - 2 * m);
 
     // 1. Title Header
-    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...textBlack);
-    doc.text('ACCOUNT REPORT / LEDGER STATEMENT', centerX, 12, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('ACCOUNT REPORT / LEDGER STATEMENT', centerX, m + 10, { align: 'center' });
     
-    doc.setFontSize(10);
-    doc.setTextColor(...textDark);
-    doc.text('Khandelwal Stationery Wholesaler • Nagda / Indore', centerX, 18, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text('KHANDELWAL STATIONERY', centerX, m + 16, { align: 'center' });
 
-    // Customer Subtitle
-    doc.setFontSize(11.5);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${customer.name} (${customer.phone || 'No Phone'})`, centerX, 26, { align: 'center' });
-    
-    // Date Range Subtitle
-    doc.setFontSize(8.5);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
+    doc.text('121, Rama Sahy Marg Nagda | Phone: 7089731034', centerX, m + 21, { align: 'center' });
+
+    // Divider Line
+    doc.setLineWidth(0.3);
+    doc.line(m, m + 24, pageWidth - m, m + 24);
+
+    // Customer & Date Info
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`M/S: ${customer.name} (${customer.phone || 'No Phone'})`, leftX, m + 31);
+    
     const formatDate = (s: string) => {
       if (!s) return '';
       const parts = s.split('-');
       if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
       return s;
     };
-    doc.text(`Statement Period: ${formatDate(startDateStr)} to ${formatDate(endDateStr)}`, centerX, 31, { align: 'center' });
-
-    // Divider Line
-    doc.setDrawColor(150, 150, 150);
-    doc.setLineWidth(0.4);
-    doc.line(leftX, 35, rightX, 35);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Period: ${formatDate(startDateStr)} to ${formatDate(endDateStr)}`, rightX, m + 31, { align: 'right' });
 
     // 2. Prepare Table Rows
     const tableData: any[][] = [];
 
-    // Opening Balance Row
     const openBalType = openingBalance > 0 ? 'Dr' : (openingBalance < 0 ? 'Cr' : '');
-    const openBalStr = openingBalance !== 0 ? `Rs ${Math.abs(openingBalance).toFixed(2)} ${openBalType}` : 'Rs 0.00';
+    const openBalStr = openingBalance !== 0 ? `${Math.abs(openingBalance).toFixed(2)} ${openBalType}` : '0.00';
     tableData.push([
       formatDate(startDateStr),
       'Opening Ledger Balance (Purana Bakaya)',
-      openingBalance > 0 ? `Rs ${openingBalance.toFixed(2)}` : '-',
-      openingBalance < 0 ? `Rs ${Math.abs(openingBalance).toFixed(2)}` : '-',
+      openingBalance > 0 ? openingBalance.toFixed(2) : '-',
+      openingBalance < 0 ? Math.abs(openingBalance).toFixed(2) : '-',
       openBalStr
     ]);
 
-    // Transaction Rows
     entries.forEach(item => {
-      const drStr = item.debit > 0 ? `Rs ${item.debit.toFixed(2)}` : '-';
-      const crStr = item.credit > 0 ? `Rs ${item.credit.toFixed(2)}` : '-';
-      const balStr = `Rs ${item.balance.toFixed(2)} ${item.balanceType}`;
-      tableData.push([
-        item.date,
-        item.narration,
-        drStr,
-        crStr,
-        balStr
-      ]);
+      const drStr = item.debit > 0 ? item.debit.toFixed(2) : '-';
+      const crStr = item.credit > 0 ? item.credit.toFixed(2) : '-';
+      const balStr = `${item.balance.toFixed(2)} ${item.balanceType}`;
+      tableData.push([item.date, item.narration, drStr, crStr, balStr]);
     });
 
-    // 3. Generate Table
     autoTable(doc, {
-      startY: 40,
+      startY: m + 35,
       head: [['Date', 'Narration / Particulars', 'Dr (Bills)', 'Cr (Receipts)', 'Balance']],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 8.5, cellPadding: 3.5, lineWidth: 0.3, lineColor: [0, 0, 0] },
-      bodyStyles: { fontSize: 8, cellPadding: 3, textColor: textBlack, lineWidth: 0.15, lineColor: [150, 150, 150] },
+      margin: { left: m, right: m, top: m + 5, bottom: m + 5 },
+      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 4, lineWidth: 0.3, lineColor: [0, 0, 0] },
+      bodyStyles: { fontSize: 9, cellPadding: 4, textColor: textBlack, lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 25, halign: 'center' },
         1: { cellWidth: 'auto', fontStyle: 'normal' },
-        2: { cellWidth: 32, halign: 'right', textColor: textBlack },
-        3: { cellWidth: 32, halign: 'right', textColor: textBlack },
-        4: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+        2: { cellWidth: 30, halign: 'center' },
+        3: { cellWidth: 30, halign: 'center' },
+        4: { cellWidth: 35, halign: 'center', fontStyle: 'bold' }
+      },
+      didDrawPage: function(data) {
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.3);
+        doc.rect(m, m, pageWidth - 2 * m, pageHeight - 2 * m);
       }
     });
 
-    // 4. Closing Balance Summary Footer
-    const finalY = (doc as any).lastAutoTable.finalY || 110;
-    let summaryY = finalY + 8;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...textBlack);
+    const finalY = (doc as any).lastAutoTable.finalY;
     
-    const closeBalType = closingBalance > 0 ? 'Dr (Bakaya Due)' : (closingBalance < 0 ? 'Cr (Agrim Advance)' : 'Settled');
-    doc.text(`Closing Balance as on ${formatDate(endDateStr)}:`, leftX, summaryY);
+    // Bottom Summary Table
+    const closeBalType = closingBalance > 0 ? 'Dr (Bakaya)' : (closingBalance < 0 ? 'Cr (Advance)' : 'Settled');
     
-    doc.setTextColor(...textBlack);
-    doc.text(`Rs ${Math.abs(closingBalance).toFixed(2)} ${closeBalType}`, rightX, summaryY, { align: 'right' });
+    autoTable(doc, {
+      startY: finalY + 5,
+      margin: { left: pageWidth - m - 80, right: m },
+      body: [
+        ['Closing Balance as on ' + formatDate(endDateStr), `${Math.abs(closingBalance).toFixed(2)} ${closeBalType}`]
+      ],
+      theme: 'grid',
+      bodyStyles: { fillColor: [255, 255, 255], fontSize: 9, cellPadding: 4, textColor: textBlack, lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: 45, halign: 'left' },
+        1: { cellWidth: 35, halign: 'center' }
+      }
+    });
 
-    summaryY += 12;
+    const finalY2 = (doc as any).lastAutoTable.finalY;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
-    doc.setTextColor(...textMuted);
-    doc.text('Note: This is a computer-generated wholesale account ledger statement from Khandelwal Stationery Nagda.', leftX, summaryY);
+    doc.text('Note: This is a computer-generated wholesale account ledger statement from Khandelwal Stationery.', leftX, finalY2 + 10);
 
-    // Save PDF / Open in Print Dialog
     doc.autoPrint();
     const blob = doc.output('blob');
     const url = URL.createObjectURL(blob);
@@ -339,126 +331,139 @@ export class InvoiceService {
   }
 
   /**
-   * Generates A5 Portrait Payment Receipt Voucher
+   * Generates Portrait Payment Receipt Voucher
+   * Clean aesthetic matching the invoice layout
    */
   generateReceipt(receipt: Receipt) {
     const doc = new jsPDF({ format: 'a5', unit: 'mm', orientation: 'portrait' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const m = 5;
+    const leftX = m + 3;
+    const rightX = pageWidth - m - 3;
+    const centerX = pageWidth / 2;
     const textBlack = [0, 0, 0] as [number, number, number];
-    const textDark = [20, 20, 20] as [number, number, number];
-    const textMuted = [80, 80, 80] as [number, number, number];
 
-    const centerX = 74;
-    const rightX = 138;
-    const leftX = 10;
+    // Draw outer border
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.rect(m, m, pageWidth - 2 * m, pageHeight - 2 * m);
 
     // 1. Top Title Section
-    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...textBlack);
-    doc.text('|| SHRI ||', centerX, 11, { align: 'center' });
-
-    doc.setFontSize(15);
-    doc.text('PAYMENT RECEIPT VOUCHER', centerX, 19, { align: 'center' });
-
-    doc.setFontSize(11);
-    doc.setTextColor(...textDark);
-    doc.text('Khandelwal Stationery', centerX, 25, { align: 'center' });
-
-    doc.setFontSize(8.5);
+    doc.setFontSize(20);
+    doc.text('PAYMENT RECEIPT', centerX, m + 10, { align: 'center' });
+    
+    doc.setFontSize(13);
+    doc.text('KHANDELWAL STATIONERY', centerX, m + 17, { align: 'center' });
+    
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textMuted);
-    doc.text('121, Ram Sahay Marg Nagda / Indore, MP', centerX, 30, { align: 'center' });
-    doc.text('Phone: 7089731034 | 9826474254', centerX, 34, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('121, Rama Sahy Marg Nagda', centerX, m + 22, { align: 'center' });
+    doc.text('Phone: 7089731034', centerX, m + 26, { align: 'center' });
 
     // Divider Line
-    doc.setDrawColor(150, 150, 150);
-    doc.setLineWidth(0.4);
-    doc.line(leftX, 38, rightX, 38);
+    doc.setLineWidth(0.3);
+    doc.line(m, m + 29, pageWidth - m, m + 29);
 
-    // 2. Receipt Metadata
+    // 2. Metadata Header
+    let currentY = m + 35;
     doc.setFontSize(9);
-    doc.setTextColor(...textDark);
+    
+    // Left side
     doc.setFont('helvetica', 'bold');
-    doc.text(`Receipt No: ${receipt.receiptNumber}`, leftX, 45);
-    doc.setFontSize(9.5);
-    doc.text(`Received From: M/S ${receipt.customerName}`, leftX, 51);
+    doc.text('Receipt No.', leftX, currentY);
+    doc.text(':', leftX + 22, currentY);
+    doc.text(receipt.receiptNumber, leftX + 25, currentY);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...textMuted);
-    doc.text(`Phone: +91 ${receipt.phone}`, leftX, 56);
+    doc.text('Received From', leftX, currentY + 6);
+    doc.text(':', leftX + 22, currentY + 6);
+    doc.text(`M/S ${receipt.customerName}`, leftX + 25, currentY + 6);
+
+    doc.text('Phone', leftX, currentY + 12);
+    doc.text(':', leftX + 22, currentY + 12);
+    doc.text(`+91 ${receipt.phone}`, leftX + 25, currentY + 12);
+    
     if (receipt.referenceNumber) {
-      doc.text(`Txn Ref / Cheque No: ${receipt.referenceNumber}`, leftX, 61);
+      doc.text('Ref / Cheque', leftX, currentY + 18);
+      doc.text(':', leftX + 22, currentY + 18);
+      doc.text(receipt.referenceNumber, leftX + 25, currentY + 18);
     }
 
-    doc.setFontSize(8);
+    // Right side
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
-    doc.text('ORIGINAL FOR RECIPIENT', rightX, 45, { align: 'right' });
+    doc.text('ORIGINAL FOR RECIPIENT', rightX, currentY, { align: 'right' });
+    
+    const recDateObj = new Date(receipt.date);
+    const dateStr = recDateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    const timeStr = recDateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textDark);
-    const recDate = new Date(receipt.date).toLocaleDateString('en-IN', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-    doc.text(`Date: ${recDate}`, rightX, 51, { align: 'right' });
-    doc.text(`Mode: ${receipt.paymentMode.toUpperCase()}`, rightX, 56, { align: 'right' });
+    doc.text('Date', rightX - 35, currentY + 6);
+    doc.text(':', rightX - 25, currentY + 6);
+    doc.text(dateStr, rightX, currentY + 6, { align: 'right' });
+
+    doc.text('Time', rightX - 35, currentY + 12);
+    doc.text(':', rightX - 25, currentY + 12);
+    doc.text(timeStr, rightX, currentY + 12, { align: 'right' });
+
+    doc.text('Mode', rightX - 35, currentY + 18);
+    doc.text(':', rightX - 25, currentY + 18);
+    doc.text(receipt.paymentMode.toUpperCase(), rightX, currentY + 18, { align: 'right' });
 
     // 3. Settlement Breakdown Table
     const prevBalStr = receipt.previousBalance > 0 
-      ? `Rs ${receipt.previousBalance.toFixed(2)} (Due / बकाया)` 
-      : `Rs ${Math.abs(receipt.previousBalance).toFixed(2)} (Advance / अग्रिम)`;
+      ? `${receipt.previousBalance.toFixed(2)} (Due)` 
+      : `${Math.abs(receipt.previousBalance).toFixed(2)} (Advance)`;
 
     const newBalStr = receipt.newBalance > 0 
-      ? `Rs ${receipt.newBalance.toFixed(2)} (Remaining Due / शेष बकाया)` 
+      ? `${receipt.newBalance.toFixed(2)} (Due)` 
       : (receipt.newBalance < 0 
-        ? `Rs ${Math.abs(receipt.newBalance).toFixed(2)} (Advance Credit / अग्रिम जमा)` 
-        : `Rs 0.00 (Settled / चुकता)`);
+        ? `${Math.abs(receipt.newBalance).toFixed(2)} (Advance)` 
+        : `0.00 (Settled)`);
 
     const tableData = [
       ['Old Ledger Balance', prevBalStr],
-      ['Amount Received (जमा राशि)', `Rs ${receipt.receivedAmount.toFixed(2)} (${receipt.paymentMode})`],
+      ['Amount Received', `${receipt.receivedAmount.toFixed(2)}`],
       ['New Ledger Balance', newBalStr]
     ];
 
-    const startYPos = receipt.referenceNumber ? 67 : 62;
+    currentY = receipt.referenceNumber ? currentY + 25 : currentY + 25;
 
     autoTable(doc, {
-      startY: startYPos,
-      head: [['Description / Particulars', 'Amount / Status (Rs)']],
+      startY: currentY,
+      head: [['Description / Particulars', 'Amount / Status']],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 8.5, cellPadding: 3.5, lineWidth: 0.3, lineColor: [0, 0, 0] },
-      bodyStyles: { fontSize: 8, cellPadding: 4, textColor: textBlack, lineWidth: 0.15, lineColor: [150, 150, 150] },
+      margin: { left: m, right: m },
+      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 10, cellPadding: 5, lineWidth: 0.3, lineColor: [0, 0, 0] },
+      bodyStyles: { fontSize: 10, cellPadding: 5, textColor: textBlack, lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: {
-        0: { cellWidth: 55, fontStyle: 'bold' },
-        1: { cellWidth: 'auto', halign: 'right', fontStyle: 'bold' }
+        0: { cellWidth: 'auto', fontStyle: 'bold' },
+        1: { cellWidth: 50, halign: 'center', fontStyle: 'bold' }
       }
     });
 
-    // 4. Footer Section
-    const finalY = (doc as any).lastAutoTable.finalY || 110;
-    let summaryY = finalY + 10;
+    const finalY = (doc as any).lastAutoTable.finalY;
+    let summaryY = finalY + 15;
+
+    // Signature Area
+    doc.setLineWidth(0.3);
+    doc.rect(rightX - 55, summaryY, 55, 22);
+    doc.setFontSize(9);
+    doc.text('For Khandelwal Stationery', rightX - 27.5, summaryY + 28, { align: 'center' });
+    
+    doc.rect(m, summaryY, 55, 22);
+    doc.text('Customer Signature', m + 27.5, summaryY + 28, { align: 'center' });
 
     if (receipt.notes) {
-      doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...textDark);
-      doc.text(`Remarks / Notes: ${receipt.notes}`, leftX, summaryY);
-      summaryY += 8;
+      doc.text(`Notes: ${receipt.notes}`, leftX, summaryY + 35);
     }
 
-    doc.setFontSize(7.5);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
-    doc.setTextColor(...textMuted);
-    doc.text('Thank you for your payment! This is a computer-generated receipt voucher.', leftX, summaryY);
-
-    summaryY += 18;
-    doc.setFontSize(8.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...textDark);
-    doc.text('Customer Signature', leftX, summaryY);
-    doc.text('For - Khandelwal Stationery', 85, summaryY);
+    doc.text('Thank you for your payment! This is a computer-generated receipt voucher.', leftX, pageHeight - m - 5);
 
     doc.autoPrint();
     const blob = doc.output('blob');

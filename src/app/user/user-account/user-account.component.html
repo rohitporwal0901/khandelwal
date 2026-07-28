@@ -1,0 +1,216 @@
+<div class="account-page">
+
+      <!-- ─── Clean Myntra-Style Profile Header ─── -->
+      <div class="profile-header">
+        <div class="profile-card-inner">
+          
+          <!-- Avatar & Camera Upload -->
+          <div class="avatar-wrap">
+            <div class="profile-avatar" [class.uploading]="photoUploading()">
+              <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
+              <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
+
+              <div class="spinner-overlay" *ngIf="photoUploading()">
+                <div class="spinner"></div>
+              </div>
+            </div>
+
+            <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
+              <span class="material-symbols-outlined icon">photo_camera</span>
+            </button>
+            <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
+          </div>
+
+          <!-- User Details -->
+          <div class="profile-details">
+            <div class="verified-tag">
+              <span class="material-symbols-outlined icon-ver">verified</span>
+              <span>Verified Wholesale Client</span>
+            </div>
+            <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
+            <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
+
+            <div class="status-badge-clean">
+              <span class="dot-green"></span>
+              <span>Active Wholesale Access</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Ledger Balance Card -->
+      <div class="balance-card-container">
+        <div class="balance-card" [class.is-due]="(profile()?.balance || 0) > 0" [class.is-advance]="(profile()?.balance || 0) < 0">
+          <div class="bc-left">
+            <div class="bc-icon-wrap">
+              <span class="material-symbols-outlined bc-icon">
+                {{ (profile()?.balance || 0) > 0 ? 'account_balance_wallet' : 'account_balance_wallet' }}
+              </span>
+            </div>
+            <div class="bc-info">
+              <span class="bc-title">Account Ledger Balance</span>
+              
+              <!-- Due State -->
+              <span *ngIf="(profile()?.balance || 0) > 0" class="bc-amount text-danger">
+                ₹{{ profile()?.balance | number:'1.2-2' }} <span class="bc-sub">(Due / बकाया)</span>
+              </span>
+              
+              <!-- Advance State -->
+              <span *ngIf="(profile()?.balance || 0) < 0" class="bc-amount text-success">
+                ₹{{ ((profile()?.balance || 0) * -1) | number:'1.2-2' }} <span class="bc-sub">(Advance / जमा)</span>
+              </span>
+              
+              <!-- Settled State -->
+              <span *ngIf="(profile()?.balance || 0) === 0" class="bc-amount text-success">
+                ₹0.00 <span class="bc-sub">(Settled)</span>
+              </span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined bc-arrow">chevron_right</span>
+        </div>
+      </div>
+
+      <!-- ─── Clean Menu Sections ────────────── -->
+      <div class="menu-container">
+        
+        <div class="section-heading">Orders & Catalogue</div>
+        <div class="menu-box">
+          <div class="menu-row" (click)="router.navigate(['/shop/orders'])">
+            <span class="material-symbols-outlined row-icon icon-orders">package_2</span>
+            <div class="row-info">
+              <span class="row-title">My Orders</span>
+              <span class="row-subtitle">Track custom printing & production status</span>
+            </div>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <div class="menu-row" (click)="router.navigate(['/shop'])">
+            <span class="material-symbols-outlined row-icon icon-shop">auto_stories</span>
+            <div class="row-info">
+              <span class="row-title">Browse Catalogue</span>
+              <span class="row-subtitle">Explore wedding & invitation card designs</span>
+            </div>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+          </div>
+        </div>
+
+        <div class="section-heading mt-4">Security & Settings</div>
+        <div class="menu-box">
+          <div class="menu-row" (click)="showChangePinSheet.set(true)">
+            <span class="material-symbols-outlined row-icon icon-pin">lock_reset</span>
+            <div class="row-info">
+              <span class="row-title">Change Security PIN</span>
+              <span class="row-subtitle">Update your 6-digit wholesale access code</span>
+            </div>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <div class="menu-row" (click)="router.navigate(['/shop/ledger'])">
+            <span class="material-symbols-outlined row-icon icon-support">receipt_long</span>
+            <div class="row-info">
+              <span class="row-title">My Ledger & Receipts</span>
+              <span class="row-subtitle">View and download your billing statements</span>
+            </div>
+            <span class="material-symbols-outlined row-chevron">arrow_forward_ios</span>
+          </div>
+        </div>
+
+        <!-- ─── Sign Out ──────────────────────── -->
+        <div class="logout-wrap mt-4">
+          <button class="btn-logout-clean" (click)="confirmLogout.set(true)">
+            <span class="material-symbols-outlined">logout</span>
+            <span>LOG OUT OF STORE</span>
+          </button>
+        </div>
+
+        <p class="app-version-text">Khandelwal Cards Portal v2.0 • Secured Access</p>
+      </div>
+
+      <!-- ─── Change PIN Bottom Sheet (Rapido Style) ──────── -->
+      <div class="overlay" *ngIf="showChangePinSheet()" (click)="showChangePinSheet.set(false)"></div>
+      <div class="bottom-sheet" [class.open]="showChangePinSheet()">
+        <div class="sheet-handle"></div>
+        
+        <div class="sheet-top-row">
+          <div>
+            <div class="sheet-header-badge">🔐 Security Settings</div>
+            <h3 class="sheet-title mt-1">Change Access PIN</h3>
+          </div>
+          <button class="btn-close-rapido" (click)="showChangePinSheet.set(false)" title="Close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <p class="sheet-sub">Enter your current 6-digit PIN and set a new security PIN below.</p>
+
+        <div class="form-group mt-2">
+          <label class="form-label">Current PIN</label>
+          <div class="pin-boxes">
+            <input *ngFor="let i of [0,1,2,3,4,5]"
+              type="password" class="pin-box" [class.filled]="currentPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
+              [id]="'cur-pin-' + i"
+              [(ngModel)]="currentPinDigits[i]"
+              (input)="onPinInput($event, i, 'current')"
+              (keydown.backspace)="onPinBackspace($event, i, 'current')">
+          </div>
+        </div>
+
+        <div class="form-group mt-2">
+          <label class="form-label">New PIN</label>
+          <div class="pin-boxes">
+            <input *ngFor="let i of [0,1,2,3,4,5]"
+              type="password" class="pin-box" [class.filled]="newPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
+              [id]="'chg-new-pin-' + i"
+              [(ngModel)]="newPinDigits[i]"
+              (input)="onPinInput($event, i, 'new')"
+              (keydown.backspace)="onPinBackspace($event, i, 'new')">
+          </div>
+        </div>
+
+        <div class="form-group mt-2">
+          <label class="form-label">Confirm New PIN</label>
+          <div class="pin-boxes">
+            <input *ngFor="let i of [0,1,2,3,4,5]"
+              type="password" class="pin-box" [class.filled]="confirmNewPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
+              [id]="'chg-conf-pin-' + i"
+              [(ngModel)]="confirmNewPinDigits[i]"
+              (input)="onPinInput($event, i, 'confirm')"
+              (keydown.backspace)="onPinBackspace($event, i, 'confirm')">
+          </div>
+        </div>
+
+        <div class="error-msg" *ngIf="changePinError()">
+          <span class="material-symbols-outlined">error</span> {{ changePinError() }}
+        </div>
+        <div class="success-msg" *ngIf="changePinSuccess()">
+          <span class="material-symbols-outlined">check_circle</span> PIN changed successfully!
+        </div>
+
+        <button class="btn-rapido-update mt-3" (click)="changePin()"
+                [disabled]="changePinLoading() || currentPinDigits.join('').length !== 6 || newPinDigits.join('').length !== 6 || confirmNewPinDigits.join('').length !== 6">
+          <span *ngIf="!changePinLoading()">Update Security PIN</span>
+          <span class="btn-spinner" *ngIf="changePinLoading()"></span>
+        </button>
+      </div>
+
+      <!-- ─── Logout Confirm Dialog ──────── -->
+      <div class="overlay" *ngIf="confirmLogout()" (click)="confirmLogout.set(false)"></div>
+      <div class="confirm-dialog" [class.open]="confirmLogout()">
+        <div class="dialog-icon">
+          <span class="material-symbols-outlined">logout</span>
+        </div>
+        <h3>Sign Out?</h3>
+        <p>Are you sure you want to sign out from your Khandelwal Cards wholesale account?</p>
+        <div class="dialog-actions">
+          <button class="btn-cancel" (click)="confirmLogout.set(false)">Stay Logged In</button>
+          <button class="btn-logout-confirm" (click)="logout()" [disabled]="logoutLoading()">
+            <span *ngIf="!logoutLoading()">Sign Out</span>
+            <span class="btn-spinner-dark" *ngIf="logoutLoading()"></span>
+          </button>
+        </div>
+      </div>
+
+    </div>

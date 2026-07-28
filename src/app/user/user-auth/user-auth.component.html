@@ -1,0 +1,372 @@
+<div class="auth-page">
+
+      <!-- ─── Brand Header ─────────────────── -->
+      <div class="auth-brand">
+        <div class="brand-inner">
+          <div class="brand-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+          </div>
+          <div class="brand-text">
+            <h1>Khandelwal Cards</h1>
+            <span>Exclusive Member Access</span>
+          </div>
+        </div>
+        <p class="brand-tagline">🏆 India's Premier Wholesale Wedding Cards Portal</p>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- Screen 1: Phone Number             -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="auth-card" *ngIf="screen() === 'phone'">
+        <div class="vip-badge">
+          <span class="material-symbols-outlined icon-small">verified_user</span>
+          <span>Verified Wholesale Portal</span>
+        </div>
+        
+        <div class="header-section mt-3">
+          <h2 class="auth-title">Welcome to Khandelwal</h2>
+          <p class="auth-subtitle">Enter your mobile number to sign in or apply for exclusive member access.</p>
+        </div>
+
+        <div class="form-group mt-4">
+          <label class="form-label">Mobile Number</label>
+          <div class="phone-input-wrap">
+            <span class="country-code">🇮🇳 +91</span>
+            <input
+              type="tel"
+              class="form-input phone-input"
+              placeholder="98765 43210"
+              [(ngModel)]="phoneNumber"
+              maxlength="10"
+              inputmode="numeric"
+              (keyup.enter)="checkPhone()"
+              (input)="onPhoneInput($event)"
+              id="phone-input"
+              autofocus>
+          </div>
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ errorMsg() }}</span>
+          </div>
+        </div>
+
+        <button class="btn-primary mt-4" (click)="checkPhone()" [disabled]="isLoading() || phoneNumber.length !== 10">
+          <span *ngIf="!isLoading()">Continue</span>
+          <span class="btn-spinner" *ngIf="isLoading()"></span>
+        </button>
+
+        <p class="terms-text">
+          By continuing, you agree to our <span class="link-text">Terms of Wholesale Access</span>
+        </p>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- Screen 2A: Existing User — PIN     -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="auth-card muted-bg" *ngIf="screen() === 'login-pin'">
+        <div class="bg-placeholder">
+          <div class="brand-logo large-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+          </div>
+          <h3>Secure Member Login</h3>
+          <p>Enter your PIN to access the wholesale store</p>
+        </div>
+
+        <div class="reg-bottom-sheet open">
+          <div class="sheet-handle"></div>
+
+          <div class="sheet-header">
+            <div class="sheet-top-row">
+              <div>
+                <div class="header-badge">
+                  <span class="material-symbols-outlined badge-icon">lock</span>
+                  <span>SECURE LOGIN</span>
+                </div>
+                <h2 class="auth-title mt-1">Welcome Back</h2>
+              </div>
+              <button class="btn-close-clean" (click)="goBack()" title="Back">
+                <span class="material-symbols-outlined">arrow_back</span>
+              </button>
+            </div>
+            <div class="phone-chip mt-2">
+              <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+              <span>+91 {{ phoneNumber }}</span>
+              <button class="change-link" (click)="goBack()">Change</button>
+            </div>
+            <p class="auth-subtitle mt-1">Enter your 6-digit security PIN to unlock store</p>
+          </div>
+
+          <div class="pin-boxes mt-3" (keydown)="onPinKeydown($event, 'login')">
+            <input *ngFor="let i of [0,1,2,3,4,5]"
+              type="password" class="pin-box" [class.filled]="loginPinDigits[i] !== ''"
+              maxlength="1" inputmode="numeric" [id]="'login-pin-' + i"
+              [(ngModel)]="loginPinDigits[i]"
+              (input)="onPinInput($event, i, 'login')"
+              (keydown.backspace)="onPinBackspace($event, i, 'login')">
+          </div>
+
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ errorMsg() }}</span>
+          </div>
+
+          <button class="btn-primary mt-4" (click)="loginUser()" [disabled]="isLoading() || loginPinDigits.join('').length !== 6">
+            <span *ngIf="!isLoading()">Login to Store</span>
+            <span class="btn-spinner" *ngIf="isLoading()"></span>
+          </button>
+
+          <button class="link-btn mt-3" (click)="screen.set('forgot-pin')">Forgot PIN?</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- Screen 2B: New User — Bottom Sheet  -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="auth-card muted-bg" *ngIf="screen() === 'register'">
+        <div class="bg-placeholder">
+          <div class="brand-logo large-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+          </div>
+          <h3>Application in Progress...</h3>
+          <p>Please complete the registration form below</p>
+        </div>
+
+        <div class="reg-bottom-sheet open">
+          <div class="sheet-handle"></div>
+          
+          <div class="sheet-header">
+            <div class="sheet-top-row">
+              <div>
+                <div class="header-badge">
+                  <span class="material-symbols-outlined badge-icon">badge</span>
+                  <span>NEW MEMBER APPLICATION</span>
+                </div>
+                <h2 class="auth-title mt-1">Create Account</h2>
+              </div>
+              <button class="btn-close-clean" (click)="goBack()" title="Close">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div class="phone-chip mt-2">
+              <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+              <span>+91 {{ phoneNumber }}</span>
+              <button class="change-link" (click)="goBack()">Change</button>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Your Full Name / Business Name</label>
+            <div class="input-with-icon">
+              <span class="material-symbols-outlined icon">storefront</span>
+              <input type="text" class="form-input with-icon" placeholder="e.g. Sharma Wedding Cards / Rahul Kumar"
+                     [(ngModel)]="registerName" id="reg-name">
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Set 6-Digit Security PIN</label>
+            <div class="pin-boxes">
+              <input *ngFor="let i of [0,1,2,3,4,5]"
+                type="password"
+                class="pin-box"
+                [class.filled]="registerPinDigits[i] !== ''"
+                maxlength="1"
+                inputmode="numeric"
+                [id]="'reg-pin-' + i"
+                [(ngModel)]="registerPinDigits[i]"
+                (input)="onPinInput($event, i, 'register')"
+                (keydown.backspace)="onPinBackspace($event, i, 'register')">
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Confirm 6-Digit PIN</label>
+            <div class="pin-boxes">
+              <input *ngFor="let i of [0,1,2,3,4,5]"
+                type="password"
+                class="pin-box"
+                [class.filled]="confirmPinDigits[i] !== ''"
+                maxlength="1"
+                inputmode="numeric"
+                [id]="'conf-pin-' + i"
+                [(ngModel)]="confirmPinDigits[i]"
+                (input)="onPinInput($event, i, 'confirm')"
+                (keydown.backspace)="onPinBackspace($event, i, 'confirm')">
+            </div>
+          </div>
+
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ errorMsg() }}</span>
+          </div>
+
+          <button class="btn-primary mt-4" (click)="registerUser()"
+                  [disabled]="isLoading() || !registerName.trim() || registerPinDigits.join('').length !== 6 || confirmPinDigits.join('').length !== 6">
+            <span *ngIf="!isLoading()">Submit Application</span>
+            <span class="btn-spinner" *ngIf="isLoading()"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- Screen 3: Forgot PIN               -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="auth-card muted-bg" *ngIf="screen() === 'forgot-pin'">
+        <div class="bg-placeholder">
+          <div class="brand-logo large-logo">
+            <img src="assets/images/card1.png" alt="Logo" class="brand-img">
+          </div>
+          <h3>Security Recovery</h3>
+          <p>Reset your 6-digit wholesale access PIN</p>
+        </div>
+
+        <div class="reg-bottom-sheet open">
+          <div class="sheet-handle"></div>
+
+          <div class="sheet-header">
+            <div class="sheet-top-row">
+              <div>
+                <div class="header-badge">
+                  <span class="material-symbols-outlined badge-icon">lock_reset</span>
+                  <span>SECURITY RECOVERY</span>
+                </div>
+                <h2 class="auth-title mt-1">Reset Security PIN</h2>
+              </div>
+              <button class="btn-close-clean" (click)="screen.set('login-pin')" title="Back">
+                <span class="material-symbols-outlined">arrow_back</span>
+              </button>
+            </div>
+            <div class="phone-chip mt-2">
+              <span class="material-symbols-outlined icon-xs">phone_iphone</span>
+              <span>+91 {{ phoneNumber }}</span>
+            </div>
+            <p class="auth-subtitle mt-1">Set a new 6-digit PIN for your account</p>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">New PIN</label>
+            <div class="pin-boxes">
+              <input *ngFor="let i of [0,1,2,3,4,5]"
+                type="password" class="pin-box" [class.filled]="newPinDigits[i] !== ''"
+                maxlength="1" inputmode="numeric" [id]="'new-pin-' + i"
+                [(ngModel)]="newPinDigits[i]"
+                (input)="onPinInput($event, i, 'new')"
+                (keydown.backspace)="onPinBackspace($event, i, 'new')">
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Confirm New PIN</label>
+            <div class="pin-boxes">
+              <input *ngFor="let i of [0,1,2,3,4,5]"
+                type="password" class="pin-box" [class.filled]="newConfirmPinDigits[i] !== ''"
+                maxlength="1" inputmode="numeric" [id]="'new-conf-pin-' + i"
+                [(ngModel)]="newConfirmPinDigits[i]"
+                (input)="onPinInput($event, i, 'new-confirm')"
+                (keydown.backspace)="onPinBackspace($event, i, 'new-confirm')">
+            </div>
+          </div>
+
+          <div class="error-msg mt-2" *ngIf="errorMsg()">
+            <span class="material-symbols-outlined">error</span>
+            <span>{{ errorMsg() }}</span>
+          </div>
+
+          <button class="btn-primary mt-4" (click)="resetPin()"
+                  [disabled]="isLoading() || newPinDigits.join('').length !== 6 || newConfirmPinDigits.join('').length !== 6">
+            <span *ngIf="!isLoading()">Reset PIN</span>
+            <span class="btn-spinner" *ngIf="isLoading()"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- Screen 4: Waiting for Approval    -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="auth-card approval-card" *ngIf="screen() === 'waiting-approval'">
+
+        <!-- Top Illustration -->
+        <div class="approval-hero">
+          <div class="approval-rings">
+            <div class="ring ring-3"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-1"></div>
+          </div>
+          <div class="status-shield">
+            <span class="material-symbols-outlined">shield_person</span>
+          </div>
+        </div>
+
+        <!-- Status Badge -->
+        <div class="status-tag mt-3">
+          <span class="status-dot"></span>
+          <span>VERIFICATION IN PROGRESS</span>
+        </div>
+
+        <h2 class="auth-title mt-2 text-center">You're Almost In!</h2>
+        <p class="auth-subtitle text-center mt-1">
+          Hi <strong class="text-main">{{ authService.currentUserProfile()?.name || 'Member' }}</strong>, your application for
+          <strong class="text-main">+91&nbsp;{{ authService.currentUserProfile()?.phone || phoneNumber }}</strong> is under review.
+        </p>
+
+        <!-- 3-Step Progress -->
+        <div class="approval-steps mt-4">
+          <div class="step-row">
+            <div class="step-icon-done">
+              <span class="material-symbols-outlined">check_circle</span>
+            </div>
+            <div class="step-body">
+              <span class="step-title">Registration Submitted</span>
+              <span class="step-desc">Your details have been received</span>
+            </div>
+          </div>
+          <div class="step-connector active"></div>
+          <div class="step-row">
+            <div class="step-icon-active">
+              <span class="material-symbols-outlined">manage_accounts</span>
+            </div>
+            <div class="step-body">
+              <span class="step-title">Admin Verification</span>
+              <span class="step-desc">Our team is reviewing your account</span>
+            </div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-row muted">
+            <div class="step-icon-pending">
+              <span class="material-symbols-outlined">storefront</span>
+            </div>
+            <div class="step-body">
+              <span class="step-title">Wholesale Access Granted</span>
+              <span class="step-desc">Start browsing the full catalogue</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Note -->
+        <div class="approval-note mt-3">
+          <span class="material-symbols-outlined">schedule</span>
+          <span>Approval usually takes <strong>within 24 hours</strong>. You'll be notified by your admin.</span>
+        </div>
+
+        <div class="error-msg text-center justify-center mt-3" *ngIf="errorMsg()">
+          <span class="material-symbols-outlined">info</span>
+          <span>{{ errorMsg() }}</span>
+        </div>
+
+        <button class="btn-primary mt-4" (click)="refreshApprovalStatus()" [disabled]="isLoading()">
+          <span *ngIf="!isLoading()" class="flex-align">
+            <span class="material-symbols-outlined mr-1">refresh</span>
+            <span>Check Approval Status</span>
+          </span>
+          <span class="btn-spinner" *ngIf="isLoading()"></span>
+        </button>
+
+        <a class="call-admin-btn mt-3" href="tel:+918461909143">
+          <span class="material-symbols-outlined">call</span>
+          <span>Call Admin — +91 84619 09143</span>
+        </a>
+
+        <button class="link-btn mt-2" (click)="logoutFromWaiting()">Sign out / Use another account</button>
+      </div>
+
+    </div>

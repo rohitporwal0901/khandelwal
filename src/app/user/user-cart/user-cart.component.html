@@ -1,1 +1,170 @@
-<p>user-cart works!</p>
+<div class="cart-page">
+
+      <!-- ─── Header ─────────────────────── -->
+      <div class="cart-header">
+        <h2 class="cart-title">
+          Your Cart
+          <span class="count-badge" *ngIf="cartItems().length > 0">
+            {{ cartItems().length }} {{ cartItems().length === 1 ? 'item' : 'items' }}
+          </span>
+        </h2>
+      </div>
+
+      <!-- ─── Empty State ─────────────────── -->
+      <div class="empty-cart" *ngIf="cartItems().length === 0 && !orderSuccess()">
+        <div class="empty-icon">
+          <span class="material-symbols-outlined">shopping_bag</span>
+        </div>
+        <h3>Your bag is empty</h3>
+        <p>Discover our premium printing cards and add them to your bag.</p>
+        <button class="shop-btn" (click)="continueShopping()">
+          <span class="material-symbols-outlined">storefront</span>
+          Browse Products
+        </button>
+      </div>
+
+      <!-- ─── Cart Items ───────────────────── -->
+      <div class="cart-content" *ngIf="cartItems().length > 0 && !orderSuccess()">
+        <div class="items-list">
+          <div class="cart-item" *ngFor="let item of cartItems()">
+            <div class="item-img-wrap">
+              <img [src]="getProductImage(item.productId)" [alt]="getProductName(item.productId)">
+            </div>
+
+            <div class="item-info">
+              <span class="item-cat">{{ getProductCategory(item.productId) }}</span>
+              <h4 class="item-name">{{ getProductName(item.productId) }}</h4>
+              <p class="item-sku">SKU: {{ getProductSku(item.productId) }}</p>
+              <div class="item-qty-row">
+                <span class="qty-chip">Qty: {{ item.quantity }}</span>
+              </div>
+            </div>
+
+            <div class="item-actions">
+              <button class="del-btn" (click)="removeItem(item.productId)"
+                      [class.confirming]="productToRemove() === item.productId"
+                      [attr.aria-label]="'Remove ' + getProductName(item.productId)">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+              <div class="confirm-popup" [class.show]="productToRemove() === item.productId">
+                <button class="cf-yes" (click)="confirmRemove()">Remove</button>
+                <button class="cf-no" (click)="cancelRemove()">Keep</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Total Products</span>
+            <span class="val">{{ cartItems().length }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Total Quantity</span>
+            <span class="val">{{ totalQuantity() }}</span>
+          </div>
+          <div class="summary-note">
+            <span class="material-symbols-outlined">info</span>
+            Final pricing will be confirmed by our team after order review.
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-wrap">
+          <button class="place-btn" (click)="openCheckout()">
+            <span class="material-symbols-outlined">local_shipping</span>
+            Place Order Request
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── Success ───────────────────────── -->
+      <div class="success-screen" *ngIf="orderSuccess()">
+        <div class="success-anim">
+          <div class="success-circle">
+            <span class="material-symbols-outlined">check</span>
+          </div>
+        </div>
+        <h3>Order Submitted!</h3>
+        <p>Your request has been sent. Our team will contact you shortly to confirm your order.</p>
+        <div class="order-id-card">
+          <span class="oid-label">Order Reference</span>
+          <span class="oid-val">{{ lastOrderId }}</span>
+        </div>
+        <button class="shop-btn" (click)="continueShopping()">
+          <span class="material-symbols-outlined">home</span>
+          Back to Home
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── Checkout Sheet ──────────────────── -->
+    <app-bottom-sheet [isOpen]="isCheckoutOpen()" title="Contact Details" (close)="closeCheckout()">
+      <form (ngSubmit)="checkoutForm.valid && submitOrder()" #checkoutForm="ngForm" class="checkout-form">
+        <p class="form-hint">We'll use these details to process your order request.</p>
+
+        <div class="form-group" [class.has-error]="nameField.invalid && (nameField.touched || checkoutForm.submitted)">
+          <label class="form-label">Full Name <span class="req">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="customerDetails.customerName"
+                 name="customerName" required #nameField="ngModel" placeholder="e.g. Rahul Sharma">
+          <div class="field-error" *ngIf="nameField.invalid && (nameField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Please enter your full name
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number <span class="locked-badge">🔒 Locked</span></label>
+          <input type="tel" class="form-control readonly-input" [(ngModel)]="customerDetails.phone"
+                 name="phone" readonly #phoneField="ngModel" placeholder="+91 98765 43210">
+          <div class="field-hint">Phone number cannot be changed for this account.</div>
+        </div>
+
+        <div class="form-group" [class.has-error]="emailField.invalid && (emailField.touched || checkoutForm.submitted)">
+          <label class="form-label">Email Address <span class="req">*</span></label>
+          <input type="email" class="form-control" [(ngModel)]="customerDetails.email"
+                 name="email" required #emailField="ngModel" placeholder="you@email.com">
+          <div class="field-error" *ngIf="emailField.invalid && (emailField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Valid email is required
+          </div>
+        </div>
+
+        <div class="form-group" [class.has-error]="addressField.invalid && (addressField.touched || checkoutForm.submitted)">
+          <label class="form-label">Delivery Address <span class="req">*</span></label>
+          <textarea class="form-control" rows="3" [(ngModel)]="customerDetails.address"
+                    name="address" required #addressField="ngModel" placeholder="Complete delivery address..."></textarea>
+          <div class="field-error" *ngIf="addressField.invalid && (addressField.touched || checkoutForm.submitted)">
+            <span class="material-symbols-outlined">error</span> Address is required
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half-width">
+            <label class="form-label">City <span class="optional">(Optional)</span></label>
+            <input type="text" class="form-control" [(ngModel)]="customerDetails.city"
+                   name="city" placeholder="e.g. Ujjain">
+          </div>
+          <div class="form-group half-width">
+            <label class="form-label">Pincode <span class="optional">(Optional)</span></label>
+            <input type="text" class="form-control" [(ngModel)]="customerDetails.pincode"
+                   name="pincode" placeholder="e.g. 456001">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes <span class="optional">(Optional)</span></label>
+          <textarea class="form-control" rows="2" [(ngModel)]="customerDetails.notes"
+                    name="notes" placeholder="Special instructions..."></textarea>
+        </div>
+
+        <div class="sheet-actions">
+          <button type="button" class="sheet-btn cancel-btn" (click)="closeCheckout()">Cancel</button>
+          <button type="submit" class="sheet-btn confirm-btn" [disabled]="isSubmitting()">
+            <ng-container *ngIf="!isSubmitting()">Confirm Order</ng-container>
+            <div class="dots-loader" *ngIf="isSubmitting()">
+              <span></span><span></span><span></span>
+            </div>
+          </button>
+        </div>
+      </form>
+    </app-bottom-sheet>
