@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DataService, Order } from '../../core/services/data.service';
+import { DataService, Order, OrderItem, Product } from '../../core/services/data.service';
 import { InvoiceService } from '../../core/services/invoice.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { SideDrawerComponent } from '../../shared/side-drawer/side-drawer.component';
@@ -31,7 +31,31 @@ export class AdminOldBillsComponent implements OnInit {
   isLoading = signal(true);
   isFetchingData = signal(false);
 
+  // Edit Bill Drawer States
+  isDrawerOpen = signal(false);
+  isGenerating = signal(false);
+  showSuccessAnim = signal(false);
 
+  editableItems = signal<OrderItem[]>([]);
+  badha = signal(0);
+  originalPreviousBalance = signal(0);
+
+  subTotal = computed(() => {
+    return this.editableItems().reduce((sum, item) => sum + (item.quantity * (item.sellingRate || 0)), 0);
+  });
+  totalBillAmount = computed(() => this.subTotal() + this.badha());
+  netPayable = computed(() => this.originalPreviousBalance() + this.totalBillAmount());
+
+  productSearchTerm = signal('');
+  showProductDropdownDrawer = signal(false);
+
+  filteredProductsDrawer = computed(() => {
+    const term = this.productSearchTerm().toLowerCase().trim();
+    if (!term) return [];
+    return this.dataService.products().filter(p =>
+      p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)
+    ).slice(0, 8);
+  });
   // Selection state
   selectedDateStr = signal<string>('');
   selectedOrder = signal<Order | null>(null);
@@ -268,5 +292,110 @@ export class AdminOldBillsComponent implements OnInit {
     event.stopPropagation();
     const products = this.dataService.products();
     this.invoiceService.generateInvoice(order, products, true); // true = direct download
+  }
+
+  // --- Edit Bill Drawer Methods ---
+
+  openEditDrawer(order: Order) {
+    this.isDrawerOpen.set(true);
+    this.showSuccessAnim.set(false);
+    
+    // Copy order state
+    this.editableItems.set(order.items.map(i => ({...i})));
+    this.badha.set(order.badha || 0);
+    this.originalPreviousBalance.set(order.previousBalance || 0);
+  }
+
+  closeDrawer() {
+    this.isDrawerOpen.set(false);
+    setTimeout(() => {
+      this.showSuccessAnim.set(false);
+      this.editableItems.set([]);
+    }, 300);
+  }
+
+  getProductStock(productId: string): number {
+    const product = this.dataService.products().find(p => p.id === productId);
+    return product ? product.stock : 0;
+  }
+  
+  getProductCost(productId: string): number {
+    const prod = this.dataService.products().find(p => p.id === productId);
+    return prod ? (prod.purchaseRate || 0) : 0;
+  }
+
+  updateItemQty(index: number, newQty: number) {
+    this.editableItems.update(items => {
+      items[index].quantity = newQty;
+      return [...items];
+    });
+  }
+
+  updateItemRate(index: number, newRate: number) {
+    this.editableItems.update(items => {
+      items[index].sellingRate = newRate;
+      return [...items];
+    });
+  }
+
+  removeItem(index: number) {
+    this.editableItems.update(items => items.filter((_, i) => i !== index));
+  }
+
+  addProductToBill(product: Product) {
+    const items = [...this.editableItems()];
+    const existing = items.find(i => i.productId === product.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      items.unshift({
+        productId: product.id,
+        quantity: 1,
+        sellingRate: product.sellingRate || 0,
+        purchaseRate: product.purchaseRate || 0
+      });
+    }
+    this.editableItems.set(items);
+    this.productSearchTerm.set('');
+    this.showProductDropdownDrawer.set(false);
+  }
+
+  async updateBill() {
+    const order = this.selectedOrder();
+    if (!order) return;
+    
+    this.isGenerating.set(true);
+
+    try {
+      const updatedItems = this.editableItems().map(item => ({
+        ...item,
+        total: item.quantity * (item.sellingRate || 0)
+      }));
+
+      const billingSummary = {
+        subTotal: this.subTotal(),
+        badha: this.badha(),
+        totalAmount: this.totalBillAmount(),
+        previousBalance: this.originalPreviousBalance(),
+        netPayable: this.netPayable()
+      };
+
+      const updatedOrder = await this.dataService.updateGeneratedBill(order.id, updatedItems, billingSummary);
+      
+      this.isGenerating.set(false);
+      this.showSuccessAnim.set(true);
+
+      if (updatedOrder) {
+        this.selectedOrder.set(updatedOrder);
+      }
+
+      setTimeout(() => {
+        this.closeDrawer();
+      }, 1500);
+
+    } catch (error) {
+      console.error(error);
+      this.isGenerating.set(false);
+    }
   }
 }

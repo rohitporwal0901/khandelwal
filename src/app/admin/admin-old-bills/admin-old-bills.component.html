@@ -7,25 +7,31 @@
       </div>
       <div>
         <h1 class="text-xl font-bold mb-1 text-slate-900">Old Bills & Invoices</h1>
-        <p class="text-xs text-slate-500 mb-0 font-medium">View, filter, and manage previous invoices and print duplicates</p>
+        <p class="text-xs text-slate-500 mb-0 font-medium">View, filter, and manage previous invoices and print
+          duplicates</p>
       </div>
     </div>
   </div>
 
   <!-- Sleek Filter Toolbar -->
   <div class="filter-toolbar mb-4 flex-col">
-    
+
     <!-- Main Filter Row -->
     <div class="flex-align flex-wrap w-100" style="gap: 1.25rem;">
       <!-- Time Range Pills -->
       <div class="filter-group">
         <label class="filter-label">Time Range</label>
         <div class="pill-group">
-          <button class="pill-btn" [class.active]="dateFilter() === 'today'" (click)="setDateFilter('today')">Today</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'yesterday'" (click)="setDateFilter('yesterday')">Yesterday</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'this_week'" (click)="setDateFilter('this_week')">This Week</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'this_month'" (click)="setDateFilter('this_month')">This Month</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'custom'" (click)="setDateFilter('custom')">Custom</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'today'"
+            (click)="setDateFilter('today')">Today</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'yesterday'"
+            (click)="setDateFilter('yesterday')">Yesterday</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'this_week'"
+            (click)="setDateFilter('this_week')">This Week</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'this_month'"
+            (click)="setDateFilter('this_month')">This Month</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'custom'"
+            (click)="setDateFilter('custom')">Custom</button>
         </div>
       </div>
 
@@ -34,13 +40,12 @@
         <label class="filter-label">Customer Search</label>
         <div class="search-box-sharp w-100" (click)="showCustomerDropdown.set(true)">
           <span class="material-symbols-outlined search-icon" style="top: 8px;">person_search</span>
-          <input type="text" 
-                 [placeholder]="selectedCustomerUid() ? getSelectedCustomerName() : 'Search customer by name...'" 
-                 [ngModel]="customerSearchTerm()" 
-                 (ngModelChange)="customerSearchTerm.set($event)"
-                 (focus)="showCustomerDropdown.set(true)"
-                 class="filter-input w-100 pl-40">
-          <button class="btn-clear" style="top: 4px;" *ngIf="selectedCustomerUid() || customerSearchTerm()" (click)="selectCustomer(''); customerSearchTerm.set(''); $event.stopPropagation()">
+          <input type="text"
+            [placeholder]="selectedCustomerUid() ? getSelectedCustomerName() : 'Search customer by name...'"
+            [ngModel]="customerSearchTerm()" (ngModelChange)="customerSearchTerm.set($event)"
+            (focus)="showCustomerDropdown.set(true)" class="filter-input w-100 pl-40">
+          <button class="btn-clear" style="top: 4px;" *ngIf="selectedCustomerUid() || customerSearchTerm()"
+            (click)="selectCustomer(''); customerSearchTerm.set(''); $event.stopPropagation()">
             <span class="material-symbols-outlined text-sm">close</span>
           </button>
         </div>
@@ -49,7 +54,8 @@
         <div class="dropdown-menu-sharp" *ngIf="showCustomerDropdown()" style="top: calc(100% + 4px);">
           <div class="dropdown-header flex-align justify-between">
             <span>Select Customer</span>
-            <button class="btn-close-mini" (click)="showCustomerDropdown.set(false); $event.stopPropagation()">Close</button>
+            <button class="btn-close-mini"
+              (click)="showCustomerDropdown.set(false); $event.stopPropagation()">Close</button>
           </div>
           <div class="dropdown-list">
             <div class="dropdown-item-row" (click)="selectCustomer('')">
@@ -77,11 +83,11 @@
         <label class="filter-label">Bill No.</label>
         <div class="search-box-sharp w-100">
           <span class="material-symbols-outlined search-icon" style="top: 8px;">tag</span>
-          <input type="text" class="filter-input w-100 pl-40" placeholder="Search..." 
-                 [ngModel]="searchBillNo()" (ngModelChange)="searchBillNo.set($event)" (keyup.enter)="applyFilters()">
+          <input type="text" class="filter-input w-100 pl-40" placeholder="Search..." [ngModel]="searchBillNo()"
+            (ngModelChange)="searchBillNo.set($event)" (keyup.enter)="applyFilters()">
         </div>
       </div>
-      
+
       <!-- Action Button -->
       <div class="filter-group justify-end" style="padding-top: 18px;">
         <button class="btn-primary flex-align px-4 h-36" (click)="applyFilters()">
@@ -95,11 +101,13 @@
       <span class="filter-label mb-0 text-maroon" style="font-size: 0.75rem;">Custom Range:</span>
       <div class="flex-align gap-2">
         <span class="text-xs font-bold text-slate-500 uppercase">From</span>
-        <input type="date" class="filter-input w-140" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); applyFilters()">
+        <input type="date" class="filter-input w-140" [ngModel]="fromDate()"
+          (ngModelChange)="fromDate.set($event); applyFilters()">
       </div>
       <div class="flex-align gap-2">
         <span class="text-xs font-bold text-slate-500 uppercase">To</span>
-        <input type="date" class="filter-input w-140" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); applyFilters()">
+        <input type="date" class="filter-input w-140" [ngModel]="toDate()"
+          (ngModelChange)="toDate.set($event); applyFilters()">
       </div>
     </div>
 
@@ -107,7 +115,7 @@
 
   <!-- Master Detail Grid (Sticky Left, Scrolling Right) -->
   <div class="master-detail-grid">
-    
+
     <!-- Left Panel: Sidebar (Dates & Bills) -->
     <div class="sidebar-panel">
       <div class="sidebar-header">
@@ -115,42 +123,39 @@
       </div>
 
       <div class="sidebar-body">
-        
+
         <!-- Dates Column -->
         <div class="dates-column">
-           <div *ngIf="isFetchingData()" class="p-4 text-center">
-             <div class="spinner-border text-slate-300" style="width: 20px; height: 20px;"></div>
-           </div>
-           
-           <ng-container *ngIf="!isFetchingData()">
-             <div *ngFor="let d of allDatesInFilter()" 
-                  class="date-item"
-                  [class.active]="selectedDateStr() === d.dateStr"
-                  (click)="selectDate(d.dateStr)">
-                <div class="date-text">{{ d.dateStr }}</div>
-                <div class="date-count" *ngIf="d.count > 0">{{ d.count }} Bills</div>
-             </div>
-           </ng-container>
+          <div *ngIf="isFetchingData()" class="p-4 text-center">
+            <div class="spinner-border text-slate-300" style="width: 20px; height: 20px;"></div>
+          </div>
+
+          <ng-container *ngIf="!isFetchingData()">
+            <div *ngFor="let d of allDatesInFilter()" class="date-item" [class.active]="selectedDateStr() === d.dateStr"
+              (click)="selectDate(d.dateStr)">
+              <div class="date-text">{{ d.dateStr }}</div>
+              <div class="date-count" *ngIf="d.count > 0">{{ d.count }} Bills</div>
+            </div>
+          </ng-container>
         </div>
-        
+
         <!-- Bills Column -->
         <div class="bills-column">
-           <div *ngIf="!isFetchingData() && billsForSelectedDate().length === 0" class="empty-state">
-             No bills found.
-           </div>
-           
-           <ng-container *ngIf="!isFetchingData()">
-             <div *ngFor="let order of billsForSelectedDate()"
-                  class="bill-item"
-                  [class.active]="selectedOrder()?.id === order.id"
-                  (click)="selectedOrder.set(order)">
-                <div class="bill-item-top">
-                   <span class="bill-no">#{{ order.billNumber }}</span>
-                   <span class="bill-amt">₹{{ (order.totalAmount !== undefined ? order.totalAmount : ((order.subTotal || 0) + (order.badha || 0))) | number:'1.0-0' }}</span>
-                </div>
-                <div class="bill-customer">{{ order.customerName }}</div>
-             </div>
-           </ng-container>
+          <div *ngIf="!isFetchingData() && billsForSelectedDate().length === 0" class="empty-state">
+            No bills found.
+          </div>
+
+          <ng-container *ngIf="!isFetchingData()">
+            <div *ngFor="let order of billsForSelectedDate()" class="bill-item"
+              [class.active]="selectedOrder()?.id === order.id" (click)="selectedOrder.set(order)">
+              <div class="bill-item-top">
+                <span class="bill-no">#{{ order.billNumber }}</span>
+                <span class="bill-amt">₹{{ (order.totalAmount !== undefined ? order.totalAmount : ((order.subTotal || 0)
+                  + (order.badha || 0))) | number:'1.0-0' }}</span>
+              </div>
+              <div class="bill-customer">{{ order.customerName }}</div>
+            </div>
+          </ng-container>
         </div>
       </div>
 
@@ -162,129 +167,362 @@
 
     <!-- Right Panel: Bill Details (No Fixed Height) -->
     <div class="detail-panel">
-       
-       <div *ngIf="!selectedOrder()" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 400px; text-align: center; padding: 3rem;">
-         <span class="material-symbols-outlined mb-2 text-slate-400" style="font-size: 54px;">receipt_long</span>
-         <p class="font-medium text-slate-500" style="font-size: 1.1rem; margin-top: 10px;">Select a bill from the left to view details</p>
-       </div>
 
-       <ng-container *ngIf="selectedOrder() as order">
-         <!-- actions bar -->
-         <div class="detail-actions">
-            <span class="font-bold text-slate-800 text-sm">Print Preview - {{ order.customerName }}</span>
-            <div class="flex-align gap-2">
-              <button class="btn-secondary flex-align gap-1 py-1 px-3" style="height: 32px; font-size: 0.75rem;" (click)="printBill(order, $event)">
-                <span class="material-symbols-outlined text-sm">print</span> Print
-              </button>
-              <button class="btn-primary flex-align gap-1 py-1 px-3" style="height: 32px; font-size: 0.75rem;" (click)="downloadPdf(order, $event)">
-                <span class="material-symbols-outlined text-sm">download</span> Export PDF
-              </button>
+      <div *ngIf="!selectedOrder()"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 400px; text-align: center; padding: 3rem;">
+        <span class="material-symbols-outlined mb-2 text-slate-400" style="font-size: 54px;">receipt_long</span>
+        <p class="font-medium text-slate-500" style="font-size: 1.1rem; margin-top: 10px;">Select a bill from the left
+          to view details</p>
+      </div>
+
+      <ng-container *ngIf="selectedOrder() as order">
+        <!-- actions bar -->
+        <div class="detail-actions">
+          <span class="font-bold text-slate-800 text-sm">Print Preview - {{ order.customerName }}</span>
+          <div class="flex-align gap-2">
+            <!-- <button class="btn-secondary flex-align gap-1 py-1 px-3" style="height: 32px; font-size: 0.75rem;" (click)="openEditDrawer(order)">
+                <span class="material-symbols-outlined text-sm">edit</span> Edit
+              </button> -->
+            <button class="btn-secondary flex-align gap-1 py-1 px-3" style="height: 32px; font-size: 0.75rem;"
+              (click)="printBill(order, $event)">
+              <span class="material-symbols-outlined text-sm">print</span> Print
+            </button>
+            <button class="btn-primary flex-align gap-1 py-1 px-3" style="height: 32px; font-size: 0.75rem;"
+              (click)="downloadPdf(order, $event)">
+              <span class="material-symbols-outlined text-sm">download</span> Export PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- The ESTIMATE Paper -->
+        <div class="print-preview-container">
+          <div class="print-invoice-paper">
+            <div class="invoice-title">ESTIMATE</div>
+            <div class="invoice-header">
+              <h2>KHANDELWAL STATIONERY</h2>
+              <p>121, Rama Sahy Marg Nagda</p>
+              <p>Phone: 7089713034</p>
             </div>
-         </div>
 
-         <!-- The ESTIMATE Paper -->
-         <div class="print-preview-container">
-            <div class="print-invoice-paper">
-              <div class="invoice-title">ESTIMATE</div>
-              <div class="invoice-header">
-                <h2>KHANDELWAL STATIONERY</h2>
-                <p>121, Rama Sahy Marg Nagda</p>
-                <p>Phone: 7089713034</p>
+            <div class="invoice-meta border-top-thick border-bottom-thick">
+              <table class="w-100 text-sm">
+                <tr>
+                  <td class="font-bold pb-1" style="width: 70px;">Bill No.</td>
+                  <td class="font-bold pb-1" style="width: 15px;">:</td>
+                  <td class="font-bold pb-1">{{ order.billNumber }}</td>
+                  <td class="font-bold pb-1 text-right" colspan="3">ORIGINAL FOR RECIPIENT</td>
+                </tr>
+                <tr>
+                  <td class="font-bold pb-1">M/S</td>
+                  <td class="font-bold pb-1">:</td>
+                  <td class="font-bold pb-1">{{ order.customerName }}</td>
+                  <td class="font-bold pb-1 text-right" style="width: 60px;">Date</td>
+                  <td class="font-bold pb-1" style="width: 15px;">:</td>
+                  <td class="font-bold pb-1" style="width: 110px;">{{ order.date | date:'dd-MM-yyyy' }}</td>
+                </tr>
+                <tr>
+                  <td class="font-bold align-top">Address</td>
+                  <td class="font-bold align-top">:</td>
+                  <td class="font-bold align-top">{{ order.address || '' }} {{ order.city || '' }} {{ order.phone }}
+                  </td>
+                  <td class="font-bold text-right align-top">Time</td>
+                  <td class="font-bold align-top">:</td>
+                  <td class="font-bold align-top">{{ order.date | date:'hh:mm a' }}</td>
+                </tr>
+              </table>
+            </div>
+
+            <table class="print-table w-100 mt-2">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">S.No.</th>
+                  <th class="text-left">Item</th>
+                  <th style="width: 100px;">Quantity</th>
+                  <th style="width: 100px;">Rate</th>
+                  <th style="width: 120px;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of order.items; let i = index">
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td>{{ getProductName(item.productId) }}</td>
+                  <td class="text-center">{{ item.quantity }} Pcs</td>
+                  <td class="text-center">{{ item.sellingRate | number:'1.2-2' }}</td>
+                  <td class="text-center">{{ (item.quantity * (item.sellingRate || 0)) | number:'1.2-2' }}</td>
+                </tr>
+                <tr *ngIf="order.badha && order.badha > 0">
+                  <td class="text-center">{{ order.items.length + 1 }}</td>
+                  <td>Packing & Forwarding</td>
+                  <td class="text-center">1 Pcs</td>
+                  <td class="text-center">{{ order.badha | number:'1.2-2' }}</td>
+                  <td class="text-center">{{ order.badha | number:'1.2-2' }}</td>
+                </tr>
+                <tr class="empty-row" style="height: 160px;">
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2" class="text-left" style="padding-left: 1rem;">Total</th>
+                  <th class="text-center">{{ getTotalItems(order) + (order.badha ? 1 : 0) }}</th>
+                  <th></th>
+                  <th class="text-center">{{ (order.subTotal || 0) + (order.badha || 0) | number:'1.0-0' }}</th>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="print-footer grid-footer mt-3">
+              <div class="left-footer flex flex-col justify-between">
+                <p class="text-sm font-medium">Under Nagda Jurisdiction. For - Estimate</p>
+                <div class="signature-box mt-10 text-sm font-bold border-black p-2"
+                  style="border: 1px solid black; width: 240px; min-height: 90px;">
+                  Signature Purchaser
+                </div>
               </div>
-
-              <div class="invoice-meta border-top-thick border-bottom-thick">
-                <table class="w-100 text-sm">
+              <div class="right-footer">
+                <table class="balance-table w-100">
                   <tr>
-                    <td class="font-bold pb-1" style="width: 70px;">Bill No.</td>
-                    <td class="font-bold pb-1" style="width: 15px;">:</td>
-                    <td class="font-bold pb-1">{{ order.billNumber }}</td>
-                    <td class="font-bold pb-1 text-right" colspan="3">ORIGINAL FOR RECIPIENT</td>
+                    <td class="font-bold py-2 px-3 border-bottom-black">Balance</td>
+                    <td class="text-center font-bold py-2 px-3 border-bottom-black">{{ (order.subTotal || 0) +
+                      (order.badha || 0) | number:'1.0-0' }}</td>
                   </tr>
                   <tr>
-                    <td class="font-bold pb-1">M/S</td>
-                    <td class="font-bold pb-1">:</td>
-                    <td class="font-bold pb-1">{{ order.customerName }}</td>
-                    <td class="font-bold pb-1 text-right" style="width: 60px;">Date</td>
-                    <td class="font-bold pb-1" style="width: 15px;">:</td>
-                    <td class="font-bold pb-1" style="width: 110px;">{{ order.date | date:'dd-MM-yyyy' }}</td>
+                    <td class="font-bold py-2 px-3 border-bottom-black">Old Balance</td>
+                    <td class="text-center font-bold py-2 px-3 border-bottom-black">{{ order.previousBalance |
+                      number:'1.2-2' }}</td>
                   </tr>
                   <tr>
-                    <td class="font-bold align-top">Address</td>
-                    <td class="font-bold align-top">:</td>
-                    <td class="font-bold align-top">{{ order.address || '' }} {{ order.city || '' }} {{ order.phone }}</td>
-                    <td class="font-bold text-right align-top">Time</td>
-                    <td class="font-bold align-top">:</td>
-                    <td class="font-bold align-top">{{ order.date | date:'hh:mm a' }}</td>
+                    <td class="font-bold py-2 px-3">Grand Total Balance</td>
+                    <td class="text-center font-bold py-2 px-3">{{ (order.netPayable !== undefined ? order.netPayable :
+                      ((order.totalAmount || 0) + (order.previousBalance || 0))) | number:'1.2-2' }}</td>
                   </tr>
                 </table>
               </div>
-
-              <table class="print-table w-100 mt-2">
-                <thead>
-                  <tr>
-                    <th style="width: 60px;">S.No.</th>
-                    <th class="text-left">Item</th>
-                    <th style="width: 100px;">Quantity</th>
-                    <th style="width: 100px;">Rate</th>
-                    <th style="width: 120px;">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of order.items; let i = index">
-                    <td class="text-center">{{ i + 1 }}</td>
-                    <td>{{ getProductName(item.productId) }}</td>
-                    <td class="text-center">{{ item.quantity }} Pcs</td>
-                    <td class="text-center">{{ item.sellingRate | number:'1.2-2' }}</td>
-                    <td class="text-center">{{ (item.quantity * (item.sellingRate || 0)) | number:'1.2-2' }}</td>
-                  </tr>
-                  <tr *ngIf="order.badha && order.badha > 0">
-                    <td class="text-center">{{ order.items.length + 1 }}</td>
-                    <td>Packing & Forwarding</td>
-                    <td class="text-center">1 Pcs</td>
-                    <td class="text-center">{{ order.badha | number:'1.2-2' }}</td>
-                    <td class="text-center">{{ order.badha | number:'1.2-2' }}</td>
-                  </tr>
-                  <tr class="empty-row" style="height: 160px;">
-                    <td></td><td></td><td></td><td></td><td></td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <th colspan="2" class="text-left" style="padding-left: 1rem;">Total</th>
-                    <th class="text-center">{{ getTotalItems(order) + (order.badha ? 1 : 0) }}</th>
-                    <th></th>
-                    <th class="text-center">{{ (order.subTotal || 0) + (order.badha || 0) | number:'1.0-0' }}</th>
-                  </tr>
-                </tfoot>
-              </table>
-
-              <div class="print-footer grid-footer mt-3">
-                <div class="left-footer flex flex-col justify-between">
-                  <p class="text-sm font-medium">Under Nagda Jurisdiction. For - Estimate</p>
-                  <div class="signature-box mt-10 text-sm font-bold border-black p-2" style="border: 1px solid black; width: 240px; min-height: 90px;">
-                    Signature Purchaser
-                  </div>
-                </div>
-                <div class="right-footer">
-                  <table class="balance-table w-100">
-                    <tr>
-                      <td class="font-bold py-2 px-3 border-bottom-black">Balance</td>
-                      <td class="text-center font-bold py-2 px-3 border-bottom-black">{{ (order.subTotal || 0) + (order.badha || 0) | number:'1.0-0' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="font-bold py-2 px-3 border-bottom-black">Old Balance</td>
-                      <td class="text-center font-bold py-2 px-3 border-bottom-black">{{ order.previousBalance | number:'1.2-2' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="font-bold py-2 px-3">Grand Total Balance</td>
-                      <td class="text-center font-bold py-2 px-3">{{ (order.netPayable !== undefined ? order.netPayable : ((order.totalAmount || 0) + (order.previousBalance || 0))) | number:'1.2-2' }}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
             </div>
-         </div>
-       </ng-container>
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>
+
+<!-- Edit Bill Drawer -->
+<app-side-drawer [isOpen]="isDrawerOpen()" [title]="'Edit Bill #' + selectedOrder()?.billNumber" width="80vw"
+  (close)="closeDrawer()">
+
+  <div class="order-details-content" *ngIf="selectedOrder() as order">
+
+    <div class="grid-6-6 mb-4 mt-4">
+      <!-- STEP 1: Add Products Card -->
+      <div class="card-sharp" style="grid-column: span 2;">
+        <div class="card-header flex-align justify-between mb-3">
+          <h3 class="card-title mb-0">Add Products to Bill</h3>
+        </div>
+
+        <div class="search-box-sharp">
+          <span class="material-symbols-outlined search-icon">qr_code_scanner</span>
+          <input type="text" placeholder="Search card by Name or SKU Code..." [ngModel]="productSearchTerm()"
+            (ngModelChange)="productSearchTerm.set($event); showProductDropdownDrawer.set(true)"
+            (focus)="showProductDropdownDrawer.set(true)" class="search-input">
+          <button class="btn-clear" *ngIf="productSearchTerm()"
+            (click)="productSearchTerm.set(''); showProductDropdownDrawer.set(true)">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Floating Product Dropdown -->
+        <div class="dropdown-menu-sharp" *ngIf="showProductDropdownDrawer() && productSearchTerm()">
+          <div class="dropdown-header flex-align justify-between">
+            <span>Matches ({{ filteredProductsDrawer().length }})</span>
+            <button class="btn-close-mini" (click)="showProductDropdownDrawer.set(false)">Close</button>
+          </div>
+          <div class="dropdown-list">
+            <div class="dropdown-item-row" *ngFor="let prod of filteredProductsDrawer()"
+              (click)="addProductToBill(prod)">
+              <div class="flex-align gap-3 flex-1 min-w-0">
+                <div class="prod-thumb">
+                  <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <strong class="text-slate-800 d-block text-sm truncate font-bold">{{ prod.name }}</strong>
+                  <div class="flex-align gap-2 mt-1">
+                    <span class="sku-badge">{{ prod.sku }}</span>
+                    <span class="stock-badge" [class.stock-danger]="prod.stock < 10">Stock: {{ prod.stock }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-align gap-3">
+                <div class="text-right">
+                  <div class="text-xxs text-slate-400 font-bold">RATE (₹)</div>
+                  <div class="flex-align gap-1 mt-1">
+                    <span class="rate-pill-buy">Buy ₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
+                    <span class="rate-pill-sell">Sell ₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
+                  </div>
+                </div>
+                <button class="btn-add-icon">
+                  <span class="material-symbols-outlined">add_circle</span>
+                </button>
+              </div>
+            </div>
+            <div class="empty-list-msg" *ngIf="filteredProductsDrawer().length === 0">
+              No matching products found.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Main Table & Summary -->
+    <div class="card-sharp">
+      <div class="flex-align justify-between pb-3 mb-4 border-bottom-sharp">
+        <div>
+          <h3 class="card-title mb-1">Bill Line Items</h3>
+        </div>
+        <div class="flex-align gap-3">
+          <span class="badge-sharp badge-primary font-bold px-3 py-1">{{ editableItems().length }} Cards Added</span>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container-sharp mb-5">
+        <table class="table-sharp">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-desc">PRODUCT DESCRIPTION & SKU</th>
+              <th class="col-avail text-center">AVAIL</th>
+              <th class="col-qty text-center">QTY</th>
+              <th class="col-rate text-right">SELLING RATE (₹)</th>
+              <th class="col-amt text-right">AMOUNT (₹)</th>
+              <th class="col-act text-center"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of editableItems(); let i = index">
+              <td class="text-center font-bold text-slate-400 text-xs">{{ i + 1 }}</td>
+              <td>
+                <div class="font-bold text-slate-900 text-sm">{{ getProductName(item.productId) }}</div>
+                <div class="flex-align gap-2 mt-1">
+                  <span class="sku-badge text-xxs">SKU: {{ getProductSku(item.productId) }}</span>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge-sharp" [class.badge-warning]="getProductStock(item.productId) <= 5"
+                  [class.badge-success]="getProductStock(item.productId) > 5">
+                  {{ getProductStock(item.productId) }}
+                </span>
+              </td>
+              <td>
+                <div class="flex-align justify-center gap-1">
+                  <input type="number" class="input-table-qty"
+                    [class.input-error]="item.quantity > getProductStock(item.productId) || !item.quantity"
+                    [ngModel]="item.quantity" (ngModelChange)="updateItemQty(i, $event)" min="1">
+                  <span class="text-xs font-bold text-slate-500">Pcs</span>
+                </div>
+              </td>
+              <td class="text-right">
+                <div class="flex-align justify-end gap-1">
+                  <span class="text-xs text-slate-400 font-bold">₹</span>
+                  <input type="number" class="input-table-rate"
+                    [class.input-error]="!item.sellingRate || item.sellingRate < 0" [ngModel]="item.sellingRate"
+                    (ngModelChange)="updateItemRate(i, $event)" min="0">
+                </div>
+              </td>
+              <td class="text-right font-bold text-slate-900 text-base">
+                ₹{{ (item.quantity * (item.sellingRate || 0)) | number:'1.2-2' }}
+              </td>
+              <td class="text-center">
+                <button class="btn-delete-sharp" (click)="removeItem(i)" title="Remove Item">
+                  <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Grid: Generate Button (Left) | Summary (Right) -->
+      <div class="grid-footer-2col pt-4 border-top-sharp">
+        <div class="footer-actions-left flex flex-col justify-between">
+          <div *ngIf="editableItems().length > 0">
+            <button class="btn-generate-sharp w-100" [disabled]="isGenerating()" (click)="updateBill()">
+              <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
+                <span class="material-symbols-outlined">save</span>
+                <span>Save Changes</span>
+              </span>
+              <span *ngIf="isGenerating()" class="flex-align justify-center gap-2">
+                <span class="loader" style="width: 20px; height: 20px;"></span>
+                <span>Saving Bill...</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="summary-panel-sharp">
+          <div class="summary-panel-header flex-align justify-between pb-3 mb-3 border-bottom-sharp">
+            <span class="font-bold text-xs uppercase tracking-wider text-slate-600 flex-align gap-1">
+              <span class="material-symbols-outlined text-base text-maroon">calculate</span> Financial Estimate
+              Breakdown
+            </span>
+          </div>
+
+          <div class="summary-panel-body">
+            <div class="summary-line">
+              <span class="line-label">Products Subtotal:</span>
+              <span class="line-val font-bold text-slate-900">₹{{ subTotal() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="summary-line-badha my-2 py-2 px-3">
+              <span class="line-label flex-align gap-1 font-bold text-amber-800 text-xs">
+                <span class="material-symbols-outlined text-base text-amber-600">local_shipping</span>
+                Badha (भाड़ा / Freight Charges):
+              </span>
+              <div class="badha-input-group flex-align">
+                <span class="prefix text-xs font-bold text-slate-400">₹</span>
+                <input type="number" class="badha-input" [ngModel]="badha()" (ngModelChange)="badha.set($event)"
+                  placeholder="0.00" step="1" min="0">
+              </div>
+            </div>
+
+            <div class="summary-line pt-2 mt-1 border-top-sharp">
+              <span class="line-label font-bold text-slate-800">Current Bill Amount (Balance):</span>
+              <span class="line-val font-bold text-slate-900 text-base">₹{{ totalBillAmount() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="summary-line">
+              <span class="line-label font-medium text-slate-600" *ngIf="originalPreviousBalance() >= 0">Old Balance
+                (पुराना बकाया):</span>
+              <span class="line-label font-medium text-emerald-700" *ngIf="originalPreviousBalance() < 0">Advance
+                Balance (अग्रिम राशि जमा):</span>
+              <span class="line-val font-bold" [class.text-danger]="originalPreviousBalance() > 0"
+                [class.text-success]="originalPreviousBalance() < 0">
+                <ng-container *ngIf="originalPreviousBalance() >= 0">₹{{ originalPreviousBalance() | number:'1.2-2'
+                  }}</ng-container>
+                <ng-container *ngIf="originalPreviousBalance() < 0">- ₹{{ -originalPreviousBalance() | number:'1.2-2' }}
+                  (CR)</ng-container>
+              </span>
+            </div>
+
+            <div class="divider-line-sharp my-3"></div>
+
+            <div class="summary-line grand-total-line py-1">
+              <span class="line-label font-extrabold text-slate-900 text-sm">Grand Total Balance (कुल देय राशि):</span>
+              <span class="line-val font-extrabold text-maroon text-2xl tracking-tight">₹{{ netPayable() |
+                number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-message mt-4" *ngIf="showSuccessAnim()">
+      <span class="material-symbols-outlined text-success" style="font-size: 3rem;">check_circle</span>
+      <h4>Bill Updated Successfully</h4>
+      <p class="text-muted">Inventory and customer balance have been updated automatically.</p>
+    </div>
+  </div>
+</app-side-drawer>

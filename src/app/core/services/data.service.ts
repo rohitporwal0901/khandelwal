@@ -318,6 +318,90 @@ export class DataService {
     }
   }
 
+  async updateGeneratedBill(
+    orderId: string,
+    updatedItems: OrderItem[],
+    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number }
+  ) {
+    try {
+      const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
+      const orderDoc = await getDoc(orderRef);
+      if (!orderDoc.exists()) return;
+
+      const oldOrderData = orderDoc.data() as Order;
+      
+      // 1. Calculate stock difference
+      const oldItemsMap = new Map<string, number>();
+      for (const item of oldOrderData.items) {
+        oldItemsMap.set(item.productId, item.quantity);
+      }
+
+      const newItemsMap = new Map<string, number>();
+      for (const item of updatedItems) {
+        newItemsMap.set(item.productId, item.quantity);
+      }
+      
+      const allProductIds = new Set([...oldItemsMap.keys(), ...newItemsMap.keys()]);
+      
+      for (const productId of allProductIds) {
+        const oldQty = oldItemsMap.get(productId) || 0;
+        const newQty = newItemsMap.get(productId) || 0;
+        
+        if (oldQty !== newQty) {
+          const productRef = doc(this.firestore, `products-kh/${productId}`);
+          const productDoc = await getDoc(productRef);
+          if (productDoc.exists()) {
+            const currentStock = productDoc.data()['stock'] || 0;
+            const newStock = Math.max(0, currentStock + oldQty - newQty);
+            await updateDoc(productRef, { stock: newStock });
+          }
+        }
+      }
+
+      // 2. Update customer balance using diff
+      if (oldOrderData.uid) {
+        try {
+          const userRef = doc(this.firestore, `users-kh/${oldOrderData.uid}`);
+          const userDoc = await getDoc(userRef);
+          if (userDoc.exists()) {
+            const currentBalance = userDoc.data()['balance'] || 0;
+            const oldNetPayable = oldOrderData.netPayable || ((oldOrderData.totalAmount || 0) + (oldOrderData.previousBalance || 0));
+            const newNetPayable = billingSummary.netPayable;
+            const balanceDiff = newNetPayable - oldNetPayable;
+            
+            await updateDoc(userRef, { balance: currentBalance + balanceDiff });
+          }
+        } catch (e) {
+          console.error(`Failed to update user balance for ${oldOrderData.uid}:`, e);
+        }
+      }
+
+      // 3. Update the order document
+      const updatedOrderData = {
+        items: updatedItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          purchaseRate: item.purchaseRate || 0,
+          sellingRate: item.sellingRate || 0,
+          total: item.total || (item.quantity * (item.sellingRate || 0))
+        })),
+        subTotal: billingSummary.subTotal || 0,
+        badha: billingSummary.badha || 0,
+        totalAmount: billingSummary.totalAmount || 0,
+        previousBalance: billingSummary.previousBalance || 0,
+        netPayable: billingSummary.netPayable || 0
+      };
+
+      await updateDoc(orderRef, updatedOrderData);
+
+      return { ...oldOrderData, ...updatedOrderData, id: orderId } as Order;
+
+    } catch (error) {
+      console.error("Error updating generated bill:", error);
+      throw error;
+    }
+  }
+
   // ─── POS Billing Methods (Sequential Bill No & Instant Stock Reduction) ───
   async getNextBillNumber(): Promise<string> {
     try {
