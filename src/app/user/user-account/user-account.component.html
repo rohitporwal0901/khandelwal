@@ -1,66 +1,82 @@
 <div class="account-page">
 
-      <!-- ─── Premium Member Card ─── -->
-      <div class="member-card-container">
-        <div class="member-card">
-          <!-- Top: Profile Info -->
-          <div class="mc-top">
-            <div class="avatar-wrap">
-              <div class="profile-avatar" [class.uploading]="photoUploading()">
-                <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
-                <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
-
-                <div class="spinner-overlay" *ngIf="photoUploading()">
-                  <div class="spinner"></div>
+      <!-- ─── Premium Leather Wallet Card ─── -->
+      <div class="wallet-card-container">
+        <div class="wallet-card">
+          <div class="wallet-stitch-border">
+            
+            <!-- Left: Profile Info -->
+            <div class="wallet-left">
+              <div class="avatar-wrap">
+                <div class="profile-avatar" [class.uploading]="photoUploading()">
+                  <img *ngIf="profile()?.photoUrl" [src]="profile()?.photoUrl" alt="Profile" class="profile-img">
+                  <span *ngIf="!profile()?.photoUrl" class="initial-text">{{ getInitial() }}</span>
+                  <div class="spinner-overlay" *ngIf="photoUploading()">
+                    <div class="spinner"></div>
+                  </div>
                 </div>
+                <!-- Tick Badge -->
+                <div class="tick-badge">
+                  <span class="material-symbols-outlined">check</span>
+                </div>
+                
+                <!-- Camera Badge -->
+                <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
+                  <span class="material-symbols-outlined icon">photo_camera</span>
+                </button>
+                <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
               </div>
-
-              <button class="camera-badge" (click)="fileInput.click()" [disabled]="photoUploading()" title="Upload Photo">
-                <span class="material-symbols-outlined icon">photo_camera</span>
-              </button>
-              <input #fileInput type="file" accept="image/*" class="hidden-input" (change)="onFileSelected($event)">
-            </div>
-
-            <div class="profile-details">
-              <div class="verified-tag">
-                <span class="material-symbols-outlined icon-ver">verified</span>
-                <span>Verified Wholesale Client</span>
-              </div>
+              
               <h2 class="user-name">{{ profile()?.name || 'Member Account' }}</h2>
               <p class="user-phone">🇮🇳 +91-{{ profile()?.phone }}</p>
-
-              <div class="status-badge-clean">
+              
+              <div class="verified-tag">
+                <span class="material-symbols-outlined icon-ver">verified_user</span>
+                <span>Verified Wholesale Client</span>
+              </div>
+            </div>
+            
+            <div class="wallet-divider"></div>
+            
+            <!-- Right: Ledger Balance -->
+            <div class="wallet-right">
+              <span class="bc-title">WALLET BALANCE</span>
+              
+              <!-- Due State -->
+              <ng-container *ngIf="(profile()?.balance || 0) > 0">
+                <div class="bc-amount text-white">₹{{ profile()?.balance | number:'1.2-2' }}</div>
+                <div class="bc-sub text-danger">(Due / बकाया)</div>
+              </ng-container>
+              
+              <!-- Advance State -->
+              <ng-container *ngIf="(profile()?.balance || 0) < 0">
+                <div class="bc-amount text-white">₹{{ ((profile()?.balance || 0) * -1) | number:'1.2-2' }}</div>
+                <div class="bc-sub text-success">(Advance / जमा)</div>
+              </ng-container>
+              
+              <!-- Settled State -->
+              <ng-container *ngIf="(profile()?.balance || 0) === 0">
+                <div class="bc-amount text-white">₹0.00</div>
+                <div class="bc-sub text-success">(Settled)</div>
+              </ng-container>
+              
+              <button class="view-statement-btn" (click)="router.navigate(['/shop/ledger'])">
+                <span class="material-symbols-outlined icon-left">receipt_long</span>
+                View Statement
+                <span class="material-symbols-outlined icon-right">chevron_right</span>
+              </button>
+              
+              <div class="status-badge-clean mt-2">
                 <span class="dot-green"></span>
                 <span>Active Wholesale Access</span>
               </div>
             </div>
-          </div>
-          
-          <!-- Bottom: Ledger Balance -->
-          <div class="mc-bottom" [class.is-due]="(profile()?.balance || 0) > 0" [class.is-advance]="(profile()?.balance || 0) < 0" (click)="router.navigate(['/shop/ledger'])">
-            <div class="mc-bal-info">
-              <span class="bc-title">Account Ledger Balance</span>
-              
-              <!-- Due State -->
-              <span *ngIf="(profile()?.balance || 0) > 0" class="bc-amount text-danger">
-                ₹{{ profile()?.balance | number:'1.2-2' }} <span class="bc-sub">(Due / बकाया)</span>
-              </span>
-              
-              <!-- Advance State -->
-              <span *ngIf="(profile()?.balance || 0) < 0" class="bc-amount text-success">
-                ₹{{ ((profile()?.balance || 0) * -1) | number:'1.2-2' }} <span class="bc-sub">(Advance / जमा)</span>
-              </span>
-              
-              <!-- Settled State -->
-              <span *ngIf="(profile()?.balance || 0) === 0" class="bc-amount text-success">
-                ₹0.00 <span class="bc-sub">(Settled)</span>
-              </span>
+            
+            <!-- Flap -->
+            <div class="wallet-flap">
+              <div class="wallet-button"></div>
             </div>
             
-            <div class="mc-action">
-              <span class="view-text">View Statement</span>
-              <span class="material-symbols-outlined bc-arrow">arrow_forward</span>
-            </div>
           </div>
         </div>
       </div>
