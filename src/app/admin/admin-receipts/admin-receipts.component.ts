@@ -82,7 +82,7 @@ export class AdminReceiptsComponent implements OnInit {
   filteredCustomers = computed(() => {
     const term = this.customerSearchTerm().toLowerCase().trim();
     if (!term) return this.users().slice(0, 30);
-    return this.users().filter(u => 
+    return this.users().filter(u =>
       u.name.toLowerCase().includes(term) ||
       (u.phone && u.phone.includes(term)) ||
       (u.address && u.address.toLowerCase().includes(term)) ||
@@ -253,7 +253,7 @@ export class AdminReceiptsComponent implements OnInit {
       this.referenceNumber.set('');
       this.notes.set('');
 
-      alert(`✅ Payment Receipt Voucher (${receipt.receiptNumber}) generated successfully!\n\nOld Balance: ₹${prevBal.toFixed(2)}\nAmount Received: ₹${amount.toFixed(2)}\nNew Balance: ₹${Math.abs(newBal).toFixed(2)} (${newBal < 0 ? 'Advance Credit 🎉' : 'Remaining Due'})`);
+      // alert(`✅ Payment Receipt Voucher (${receipt.receiptNumber}) generated successfully!\n\nOld Balance: ₹${prevBal.toFixed(2)}\nAmount Received: ₹${amount.toFixed(2)}\nNew Balance: ₹${Math.abs(newBal).toFixed(2)} (${newBal < 0 ? 'Advance Credit 🎉' : 'Remaining Due'})`);
     } catch (err) {
       console.error('Failed to generate receipt:', err);
       alert('⚠️ Error generating receipt. Please check console.');

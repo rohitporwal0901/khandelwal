@@ -150,7 +150,7 @@ export class AdminOldBillsComponent implements OnInit {
 
   filteredOrders = computed(() => {
     // Get all completed/billed orders
-    let list = this.dataService.orders().filter(o => o.status === 'completed' && o.billNumber);
+    let list = this.dataService.orders().filter(o => o.status === 'completed' || o.billNumber);
 
     // Date filter
     const from = new Date(this.fromDate()).getTime();
