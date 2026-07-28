@@ -133,4 +133,87 @@
     </div>
   </div>
 
+  <!-- ─── Change PIN Bottom Sheet (Rapido Style) ──────── -->
+  <div class="overlay" *ngIf="showChangePinSheet()" (click)="showChangePinSheet.set(false)"></div>
+  <div class="bottom-sheet" [class.open]="showChangePinSheet()">
+    <div class="sheet-handle"></div>
+    
+    <div class="sheet-top-row">
+      <div>
+        <div class="sheet-header-badge">🔐 Security Settings</div>
+        <h3 class="sheet-title mt-1">Change Access PIN</h3>
+      </div>
+      <button class="btn-close-rapido" (click)="showChangePinSheet.set(false)" title="Close">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <p class="sheet-sub">Enter your current 6-digit PIN and set a new security PIN below.</p>
+
+    <div class="form-group mt-2">
+      <label class="form-label">Current PIN</label>
+      <div class="pin-boxes">
+        <input *ngFor="let i of [0,1,2,3,4,5]"
+          type="password" class="pin-box" [class.filled]="currentPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
+          [id]="'cur-pin-' + i"
+          [(ngModel)]="currentPinDigits[i]"
+          (input)="onPinInput($event, i, 'current')"
+          (keydown.backspace)="onPinBackspace($event, i, 'current')">
+      </div>
+    </div>
+
+    <div class="form-group mt-2">
+      <label class="form-label">New PIN</label>
+      <div class="pin-boxes">
+        <input *ngFor="let i of [0,1,2,3,4,5]"
+          type="password" class="pin-box" [class.filled]="newPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
+          [id]="'chg-new-pin-' + i"
+          [(ngModel)]="newPinDigits[i]"
+          (input)="onPinInput($event, i, 'new')"
+          (keydown.backspace)="onPinBackspace($event, i, 'new')">
+      </div>
+    </div>
+
+    <div class="form-group mt-2">
+      <label class="form-label">Confirm New PIN</label>
+      <div class="pin-boxes">
+        <input *ngFor="let i of [0,1,2,3,4,5]"
+          type="password" class="pin-box" [class.filled]="confirmNewPinDigits[i] !== ''" maxlength="1" inputmode="numeric"
+          [id]="'chg-conf-pin-' + i"
+          [(ngModel)]="confirmNewPinDigits[i]"
+          (input)="onPinInput($event, i, 'confirm')"
+          (keydown.backspace)="onPinBackspace($event, i, 'confirm')">
+      </div>
+    </div>
+
+    <div class="error-msg" *ngIf="changePinError()">
+      <span class="material-symbols-outlined">error</span> {{ changePinError() }}
+    </div>
+    <div class="success-msg" *ngIf="changePinSuccess()">
+      <span class="material-symbols-outlined">check_circle</span> PIN changed successfully!
+    </div>
+
+    <button class="btn-rapido-update mt-3" (click)="changePin()"
+            [disabled]="changePinLoading() || currentPinDigits.join('').length !== 6 || newPinDigits.join('').length !== 6 || confirmNewPinDigits.join('').length !== 6">
+      <span *ngIf="!changePinLoading()">Update Security PIN</span>
+      <span class="btn-spinner" *ngIf="changePinLoading()"></span>
+    </button>
+  </div>
+
+  <!-- ─── Logout Confirm Dialog ──────── -->
+  <div class="overlay" *ngIf="confirmLogout()" (click)="confirmLogout.set(false)"></div>
+  <div class="confirm-dialog" [class.open]="confirmLogout()">
+    <div class="dialog-icon">
+      <span class="material-symbols-outlined">logout</span>
+    </div>
+    <h3>Sign Out?</h3>
+    <p>Are you sure you want to sign out from your Khandelwal Cards wholesale account?</p>
+    <div class="dialog-actions">
+      <button class="btn-cancel" (click)="confirmLogout.set(false)">Stay Logged In</button>
+      <button class="btn-logout-confirm" (click)="logout()" [disabled]="logoutLoading()">
+        <span *ngIf="!logoutLoading()">Sign Out</span>
+        <span class="btn-spinner-dark" *ngIf="logoutLoading()"></span>
+      </button>
+    </div>
+  </div>
+
 </div>
