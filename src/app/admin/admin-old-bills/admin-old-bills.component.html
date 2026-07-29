@@ -141,6 +141,10 @@
 
         <!-- Bills Column -->
         <div class="bills-column">
+          <div *ngIf="isFetchingData()" class="p-4 text-center mt-4">
+            <div class="spinner-border text-slate-300" style="width: 20px; height: 20px;"></div>
+          </div>
+
           <div *ngIf="!isFetchingData() && billsForSelectedDate().length === 0" class="empty-state">
             No bills found.
           </div>

@@ -29,7 +29,7 @@ export class AdminOldBillsComponent implements OnInit {
 
   customers = signal<UserProfile[]>([]);
   isLoading = signal(true);
-  isFetchingData = signal(false);
+  isFetchingData = signal(true);
 
   // Edit Bill Drawer States
   isDrawerOpen = signal(false);
