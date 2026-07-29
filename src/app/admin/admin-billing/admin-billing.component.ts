@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { DataService, Product, OrderItem, Order } from '../../core/services/data.service';
 import { AuthService, UserProfile } from '../../core/services/auth.service';
 import { InvoiceService } from '../../core/services/invoice.service';
+import { NetworkService } from '../../core/services/network.service';
+import { OfflineSyncService } from '../../core/services/offline-sync.service';
 
 interface BillGridItem {
   product: Product;
@@ -26,6 +28,10 @@ export class AdminBillingComponent implements OnInit {
   private invoiceService = inject(InvoiceService);
   private elementRef = inject(ElementRef);
 
+  // ─── Offline / Sync Services ──────────────────────────────────────────────
+  networkService = inject(NetworkService);
+  offlineSync = inject(OfflineSyncService);
+
   Math = Math; // For template math
 
   // Signals for state
@@ -46,6 +52,7 @@ export class AdminBillingComponent implements OnInit {
   isGenerating = signal<boolean>(false);
   showSuccessModal = signal<boolean>(false);
   lastGeneratedBillNumber = signal<string>('');
+  lastBillWasOffline = signal<boolean>(false);  // Track if last bill was offline
 
   // Toast Notification Signal (Top Sliding UI)
   toastMessage = signal<{ text: string; type: 'error' | 'warning' | 'success' | 'info' } | null>(null);
@@ -71,7 +78,7 @@ export class AdminBillingComponent implements OnInit {
   newCustPhone = '';
   newCustPincode = '';
   newCustCity = '';
-  newCustAddress = '';
+  newCustAddress = '';;
   newCustBalType: 'due' | 'advance' = 'due';
   newCustBalAmount = 0;
 
@@ -85,6 +92,8 @@ export class AdminBillingComponent implements OnInit {
 
   ngOnInit() {
     this.loadUsers();
+    // Register DataService in NetworkService for auto-sync on reconnect
+    this.networkService.registerDataService(this.dataService);
   }
 
   async loadUsers() {
@@ -349,12 +358,13 @@ export class AdminBillingComponent implements OnInit {
       this.closeAddCustomerModal();
     } catch (e) {
       console.error('Error adding customer:', e);
+      this.showToast('Failed to add customer. Please check your internet connection and try again.', 'error');
     } finally {
       this.isSavingCust.set(false);
     }
   }
 
-  // Generate Bill & Print
+  // ─── Generate Bill & Print ────────────────────────────────────────────────
   async onGenerateBill() {
     const cust = this.selectedCustomer();
     if (!cust || this.billItems().length === 0) return;
@@ -364,6 +374,17 @@ export class AdminBillingComponent implements OnInit {
       return;
     }
 
+    const isOnline = this.networkService.isOnline();
+
+    if (isOnline) {
+      await this._generateOnlineBill(cust);
+    } else {
+      await this._generateOfflineBill(cust);
+    }
+  }
+
+  /** Online path: same as before — hits Firestore directly */
+  private async _generateOnlineBill(cust: UserProfile) {
     this.isGenerating.set(true);
     try {
       const orderItems: OrderItem[] = this.billItems().map(item => ({
@@ -399,6 +420,7 @@ export class AdminBillingComponent implements OnInit {
 
       // Update local state
       this.lastGeneratedBillNumber.set(createdOrder.billNumber || createdOrder.id);
+      this.lastBillWasOffline.set(false);
       this.showSuccessModal.set(true);
       
       // Refresh users list so balance updates locally
@@ -406,8 +428,117 @@ export class AdminBillingComponent implements OnInit {
       this.resetBill();
     } catch (error) {
       console.error('Failed to generate POS bill:', error);
+      this.showToast('Bill generation failed! Please check your internet connection or try again.', 'error');
     } finally {
       this.isGenerating.set(false);
+    }
+  }
+
+  /**
+   * Offline path:
+   * 1. Save bill to localStorage queue with temp ID
+   * 2. Optimistically update local stock signal (so UI stays accurate)
+   * 3. Generate PDF with OFFLINE-XXXX bill number
+   * 4. Show success modal — user can keep working normally
+   * 5. When internet comes back → NetworkService auto-syncs to Firestore
+   */
+  private async _generateOfflineBill(cust: UserProfile) {
+    this.isGenerating.set(true);
+    try {
+      const offlineId = this.offlineSync.generateOfflineId();
+      const orderItems: OrderItem[] = this.billItems().map(item => ({
+        productId: item.product.id,
+        quantity: Number(item.quantity) || 0,
+        purchaseRate: Number(item.purchaseRate) || 0,
+        sellingRate: Number(item.sellingRate) || 0,
+        total: (Number(item.quantity) || 0) * (Number(item.sellingRate) || 0)
+      }));
+
+      const billingSummary = {
+        subTotal: this.subTotal(),
+        badha: Number(this.badha()) || 0,
+        totalAmount: this.currentBillTotal(),
+        previousBalance: cust.balance || 0,
+        netPayable: this.netPayable()
+      };
+
+      // 1. Enqueue in local offline queue
+      this.offlineSync.enqueue({
+        offlineId,
+        createdAt: new Date().toISOString(),
+        customerData: {
+          name: cust.name,
+          phone: cust.phone,
+          email: cust.email,
+          address: cust.address || '',
+          pincode: cust.pincode || '',
+          uid: cust.uid
+        },
+        items: orderItems,
+        billingSummary,
+        notes: this.billNotes()
+      });
+
+      // 2. Optimistically deduct stock from local products signal
+      //    so the next offline bill won't show wrong stock
+      this._deductLocalStock(orderItems);
+
+      // 3. Build a fake Order object for PDF generation with offline bill number
+      const fakeOrder: any = {
+        id: offlineId,
+        billNumber: offlineId,
+        customerName: cust.name,
+        phone: cust.phone,
+        address: cust.address || '',
+        pincode: cust.pincode || '',
+        date: new Date().toISOString(),
+        items: orderItems,
+        notes: this.billNotes(),
+        ...billingSummary
+      };
+
+      // 4. Generate PDF normally (OFFLINE number will appear on slip)
+      this.invoiceService.generateInvoice(fakeOrder, this.products());
+
+      // 5. Show success modal
+      this.lastGeneratedBillNumber.set(offlineId);
+      this.lastBillWasOffline.set(true);
+      this.showSuccessModal.set(true);
+
+      this.resetBill();
+
+    } catch (error) {
+      console.error('[Offline] Failed to save offline bill:', error);
+      this.showToast('Offline bill save failed! Please try again.', 'error');
+    } finally {
+      this.isGenerating.set(false);
+    }
+  }
+
+  /**
+   * Optimistically deduct stock from the in-memory products signal.
+   * This prevents the operator from double-selling the same stock
+   * in subsequent offline bills during the same offline session.
+   */
+  private _deductLocalStock(items: OrderItem[]) {
+    const currentProducts = [...this.products()];
+    let changed = false;
+
+    for (const item of items) {
+      const prodIndex = currentProducts.findIndex(p => p.id === item.productId);
+      if (prodIndex !== -1) {
+        const currentStock = currentProducts[prodIndex].stock || 0;
+        currentProducts[prodIndex] = {
+          ...currentProducts[prodIndex],
+          stock: Math.max(0, currentStock - item.quantity)
+        };
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      // Update the products signal so the product search shows correct stock immediately
+      this.dataService.products.set(currentProducts);
     }
   }
 }

@@ -17,6 +17,41 @@
     </button>
   </div>
 
+  <!-- ════ OFFLINE MODE STATUS BANNER ════ -->
+  <div class="offline-banner" *ngIf="!networkService.isOnline()">
+    <div class="offline-banner-left flex-align gap-3">
+      <span class="offline-dot"></span>
+      <div>
+        <strong class="text-sm d-block">🔴 Offline Mode Active — इंटरनेट नहीं है</strong>
+        <span class="text-xxs opacity-90">Bills will be saved locally and auto-synced to server when internet reconnects.</span>
+      </div>
+    </div>
+    <div class="flex-align gap-2">
+      <span class="offline-queue-badge" *ngIf="offlineSync.pendingCount() > 0">
+        <span class="material-symbols-outlined text-sm mr-1">cloud_upload</span>
+        {{ offlineSync.pendingCount() }} Pending Sync
+      </span>
+    </div>
+  </div>
+
+  <!-- ════ SYNC IN PROGRESS OVERLAY BLOCKER ════ -->
+  <div class="sync-blocking-overlay" *ngIf="offlineSync.isSyncing()">
+    <div class="sync-overlay-card">
+      <div class="sync-spinner-large mb-3"></div>
+      <h3 class="text-xl font-bold mb-2 text-slate-900">Syncing Offline Data...</h3>
+      <p class="text-sm text-slate-600 mb-0">Please wait while we synchronize your local bills with the server.<br><strong class="text-danger">Do not close or reload this tab.</strong></p>
+    </div>
+  </div>
+
+  <!-- ════ SYNC SUCCESS BANNER ════ -->
+  <div class="sync-success-banner" *ngIf="offlineSync.lastSyncResult() as result">
+    <span class="material-symbols-outlined text-base mr-2">cloud_done</span>
+    <span class="text-sm">
+      Sync Complete: <strong>{{ result.success }} bill(s) synced</strong>
+      <span *ngIf="result.failed > 0" class="text-orange-200 ml-2">• {{ result.failed }} failed (will retry)</span>
+    </span>
+  </div>
+
   <!-- Top Header -->
   <div class="page-header flex-align justify-between mb-4 pb-3 border-bottom-sharp">
     <div class="header-title flex-align">
@@ -29,6 +64,11 @@
       </div>
     </div>
     <div class="header-actions flex-align gap-3">
+      <!-- Pending sync indicator in header -->
+      <div class="flex-align gap-1 text-xs font-bold" *ngIf="networkService.isOnline() && offlineSync.pendingCount() > 0">
+        <span class="material-symbols-outlined text-base text-amber-600">cloud_upload</span>
+        <span class="text-amber-700">{{ offlineSync.pendingCount() }} bills pending sync</span>
+      </div>
       <button class="btn-secondary flex-align" (click)="resetBill()" title="Clear Form & Reset">
         <span class="material-symbols-outlined mr-1 text-sm">refresh</span> Reset Bill
       </button>
@@ -306,7 +346,8 @@
             <input type="text" class="input-sharp w-100" placeholder="e.g. Under Nagda Jurisdiction / Transport delivery via Indore..." [ngModel]="billNotes()" (ngModelChange)="billNotes.set($event)">
           </div>
 
-          <div class="info-banner-sharp mb-4">
+          <!-- Online mode info banner -->
+          <div class="info-banner-sharp mb-4" *ngIf="networkService.isOnline()">
             <div class="flex-align gap-3">
               <span class="material-symbols-outlined text-maroon text-2xl">verified</span>
               <div>
@@ -315,9 +356,22 @@
               </div>
             </div>
           </div>
+
+          <!-- Offline mode info banner -->
+          <div class="info-banner-offline mb-4" *ngIf="!networkService.isOnline()">
+            <div class="flex-align gap-3">
+              <span class="material-symbols-outlined text-orange-700 text-2xl">wifi_off</span>
+              <div>
+                <strong class="text-orange-900 text-xs d-block mb-1">⚡ Offline Bill — Local Save Mode</strong>
+                <p class="text-xxs text-orange-800 mb-0 leading-normal">Bill will be saved locally with an OFFLINE-XXXX number. PDF will print immediately. Real KH-XXX number will be assigned automatically when internet reconnects.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
+        <!-- Online Generate Button -->
         <button class="btn-generate-sharp w-100" 
+                *ngIf="networkService.isOnline()"
                 [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()" 
                 (click)="onGenerateBill()">
           <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
@@ -327,6 +381,21 @@
           <span *ngIf="isGenerating()" class="flex-align justify-center gap-2">
             <span class="spinner-border"></span> 
             <span>Generating KH001 Invoice...</span>
+          </span>
+        </button>
+
+        <!-- Offline Generate Button -->
+        <button class="btn-generate-offline w-100" 
+                *ngIf="!networkService.isOnline()"
+                [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()" 
+                (click)="onGenerateBill()">
+          <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
+            <span class="material-symbols-outlined">download</span> 
+            <span>Save Offline & Print Estimate (Auto-Sync Later)</span>
+          </span>
+          <span *ngIf="isGenerating()" class="flex-align justify-center gap-2">
+            <span class="spinner-border"></span> 
+            <span>Saving Offline Bill...</span>
           </span>
         </button>
       </div>
@@ -480,11 +549,47 @@
 <!-- Success Animation Modal -->
 <div class="modal-overlay" *ngIf="showSuccessModal()">
   <div class="success-modal-card">
-    <div class="success-icon-wrap mb-3">
-      <span class="material-symbols-outlined text-6xl text-success">check_circle</span>
-    </div>
-    <h3 class="text-slate-900 font-extrabold text-xl mb-2">Estimate Generated!</h3>
-    <p class="text-slate-500 text-sm mb-4">Invoice <strong class="text-slate-800">{{ lastGeneratedBillNumber() }}</strong> created successfully. Stock deducted and Pink Slip PDF downloaded.</p>
+
+    <!-- Online Success -->
+    <ng-container *ngIf="!lastBillWasOffline()">
+      <div class="success-icon-wrap mb-3">
+        <span class="material-symbols-outlined text-6xl text-success">check_circle</span>
+      </div>
+      <h3 class="text-slate-900 font-extrabold text-xl mb-2">Estimate Generated! ✅</h3>
+      <p class="text-slate-500 text-sm mb-4">Invoice <strong class="text-slate-800">{{ lastGeneratedBillNumber() }}</strong> saved to server. Stock deducted and Pink Slip PDF printed.</p>
+    </ng-container>
+
+    <!-- Offline Success -->
+    <ng-container *ngIf="lastBillWasOffline()">
+      <div class="success-icon-wrap mb-3">
+        <span class="material-symbols-outlined text-6xl" style="color: #d97706">cloud_upload</span>
+      </div>
+      <h3 class="text-slate-900 font-extrabold text-xl mb-2">Offline Bill Saved! 📋</h3>
+      <div class="offline-success-info mb-4">
+        <p class="text-slate-700 text-sm mb-2">
+          Bill ID: <strong class="text-orange-700 font-mono text-xs">{{ lastGeneratedBillNumber() }}</strong>
+        </p>
+        <div class="offline-success-steps">
+          <div class="step-row">
+            <span class="material-symbols-outlined text-green-600 text-base">check</span>
+            <span class="text-xs text-slate-700">Bill saved locally to your device</span>
+          </div>
+          <div class="step-row">
+            <span class="material-symbols-outlined text-green-600 text-base">check</span>
+            <span class="text-xs text-slate-700">Stock deducted from local inventory</span>
+          </div>
+          <div class="step-row">
+            <span class="material-symbols-outlined text-green-600 text-base">check</span>
+            <span class="text-xs text-slate-700">Pink Slip PDF printed with OFFLINE number</span>
+          </div>
+          <div class="step-row">
+            <span class="material-symbols-outlined text-amber-600 text-base">schedule</span>
+            <span class="text-xs text-amber-700 font-bold">KH-XXXX number will be assigned when internet reconnects</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
     <button class="btn-primary w-100 text-sm py-3" (click)="showSuccessModal.set(false)">Create Another Bill</button>
   </div>
 </div>
