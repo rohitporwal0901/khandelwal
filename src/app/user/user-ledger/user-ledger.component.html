@@ -9,7 +9,7 @@
 
   <!-- ─── Ledger Summary & Action ──── -->
   <div class="ledger-summary" *ngIf="userProfile()">
-    <div class="wallet-card-container" style="padding: 0 0 16px 0;">
+    <div class="wallet-card-container">
       <div class="wallet-card">
         <div class="wallet-stitch-border">
 
@@ -73,15 +73,18 @@
 
         </div>
       </div>
+      <div style="margin-top: 10px;" class="mt-2">
+
+        <button class="btn-download-ledger" (click)="downloadFullLedger()" [disabled]="isGeneratingLedger()">
+          <div class="left-content">
+            <span class="material-symbols-outlined">picture_as_pdf</span>
+            <span>{{ isGeneratingLedger() ? 'Generating...' : 'Download Full PDF Statement' }}</span>
+          </div>
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
     </div>
 
-    <button class="btn-download-ledger" (click)="downloadFullLedger()" [disabled]="isGeneratingLedger()">
-      <div class="left-content">
-        <span class="material-symbols-outlined">picture_as_pdf</span>
-        <span>{{ isGeneratingLedger() ? 'Generating...' : 'Download Full PDF Statement' }}</span>
-      </div>
-      <span class="material-symbols-outlined">chevron_right</span>
-    </button>
   </div>
 
   <!-- ─── Statement Timeline ───────── -->

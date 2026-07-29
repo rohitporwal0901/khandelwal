@@ -32,7 +32,7 @@ export class UserLedgerComponent implements OnInit {
   invoiceService = inject(InvoiceService);
 
   Math = Math;
-  
+
   userProfile = this.authService.currentUserProfile;
   isLoading = signal(true);
   isGeneratingLedger = signal(false);
@@ -130,7 +130,7 @@ export class UserLedgerComponent implements OnInit {
   downloadFullLedger() {
     const cust = this.userProfile();
     if (!cust) return;
-    
+
     this.isGeneratingLedger.set(true);
     setTimeout(() => {
       try {
@@ -138,7 +138,7 @@ export class UserLedgerComponent implements OnInit {
         const endStr = d.toISOString().split('T')[0];
         d.setFullYear(d.getFullYear() - 1);
         const startStr = d.toISOString().split('T')[0];
-        
+
         // Re-calculate chronological entries for the PDF (oldest first)
         const entriesDesc = [...this.ledgerEntries()];
         const entriesAsc = entriesDesc.reverse(); // oldest first
