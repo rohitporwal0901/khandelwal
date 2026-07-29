@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
+import { NetworkService } from '../../core/services/network.service';
 
 @Component({
   selector: 'app-user-layout',
@@ -15,6 +16,7 @@ export class UserLayoutComponent {
   dataService = inject(DataService);
   authService = inject(AuthService);
   router = inject(Router);
+  networkService = inject(NetworkService);
   isScrolled = signal(false);
 
   cartCount = () => this.dataService.cart().length;

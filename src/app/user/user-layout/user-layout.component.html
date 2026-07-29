@@ -44,3 +44,12 @@
         </a>
       </nav>
     </div>
+
+    <!-- User Offline Overlay -->
+    <div class="user-offline-overlay" *ngIf="!networkService.isOnline()">
+      <div class="offline-popup-card text-center p-4">
+        <span class="material-symbols-outlined text-danger mb-2" style="font-size: 3rem;">wifi_off</span>
+        <h2 class="text-xl font-bold mb-2" style="color: #333;">No Internet Connection</h2>
+        <p class="text-sm" style="color: #666;">Please check your network settings. The app requires an internet connection to work properly.</p>
+      </div>
+    </div>

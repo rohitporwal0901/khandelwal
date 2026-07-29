@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfirmationModalComponent } from '../../shared/confirmation-modal/confirmation-modal.component';
 import { DataService } from '../../core/services/data.service';
+import { NetworkService } from '../../core/services/network.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -16,11 +17,12 @@ export class AdminLayoutComponent {
   authService = inject(AuthService);
   router = inject(Router);
   dataService = inject(DataService);
-  
+  networkService = inject(NetworkService); // Track network status
+
   currentDate = new Date();
   isLogoutModalOpen = false;
 
-  pendingOrdersCount = computed(() => 
+  pendingOrdersCount = computed(() =>
     this.dataService.orders().filter(o => o.status === 'pending').length
   );
 
@@ -33,6 +35,11 @@ export class AdminLayoutComponent {
   isBillingRoute(): boolean {
     const url = this.router.url;
     return url.includes('/admin/billing') || url.includes('/admin/receipts') || url.includes('/admin/old-bills');
+  }
+
+  isBillingNetRoute(): boolean {
+    const url = this.router.url;
+    return url.includes('/admin/billing');
   }
 
   promptLogout() {
