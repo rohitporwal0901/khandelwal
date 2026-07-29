@@ -23,7 +23,7 @@ export class AdminLayoutComponent {
   isLogoutModalOpen = false;
 
   pendingOrdersCount = computed(() =>
-    this.dataService.orders().filter(o => o.status === 'pending').length
+    this.dataService.orders().filter(o => o.status === 'pending' && !o.billNumber).length
   );
 
   isBillingMenuOpen = signal(true);

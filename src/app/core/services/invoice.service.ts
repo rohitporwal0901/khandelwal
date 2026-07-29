@@ -133,7 +133,7 @@ export class InvoiceService {
     }
     
     // Add empty rows to match the visual padding of a physical estimate book
-    const minRows = 10;
+    const minRows = 7;
     while (tableData.length < minRows) {
       tableData.push(['', '', '', '', '']);
     }
@@ -143,7 +143,7 @@ export class InvoiceService {
     const prevBalVal = order.previousBalance || 0;
     const netPayableVal = order.netPayable !== undefined ? order.netPayable : (totalAmountVal + prevBalVal);
 
-    currentY = Math.max(currentY + 12 + (splitAddr.length * 4), currentY + 18);
+    currentY = Math.max(currentY + 12 + (splitAddr.length * 3.5), currentY + 16);
 
     autoTable(doc, {
       startY: currentY,
@@ -151,10 +151,10 @@ export class InvoiceService {
       body: tableData,
       foot: [['Total', '', totalQty.toString(), '', totalAmountVal.toFixed(2)]],
       theme: 'grid',
-      margin: { left: m, right: m },
-      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 4, lineWidth: 0.3, lineColor: [0, 0, 0], halign: 'center' },
-      footStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 4, lineWidth: 0.3, lineColor: [0, 0, 0] },
-      bodyStyles: { fontSize: 9, cellPadding: 4, textColor: textBlack, lineWidth: { top: 0, bottom: 0, left: 0.3, right: 0.3 }, lineColor: [0, 0, 0] },
+      margin: { left: m, right: m, bottom: m },
+      headStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 2, lineWidth: 0.3, lineColor: [0, 0, 0], halign: 'center' },
+      footStyles: { fillColor: [255, 255, 255], textColor: textBlack, fontStyle: 'bold', fontSize: 9, cellPadding: 2, lineWidth: 0.3, lineColor: [0, 0, 0] },
+      bodyStyles: { fontSize: 9, cellPadding: 2, textColor: textBlack, lineWidth: { top: 0, bottom: 0, left: 0.3, right: 0.3 }, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 12, halign: 'center' },
         1: { cellWidth: 'auto', halign: 'left' },
@@ -167,19 +167,19 @@ export class InvoiceService {
     const finalY = (doc as any).lastAutoTable.finalY;
     
     // Left text
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Under Nagda Jurisdiction. For - Estimate', leftX, finalY + 10);
+    doc.text('Under Nagda Jurisdiction. For - Estimate', leftX, finalY + 6);
     
     // Signature Box
     doc.setLineWidth(0.3);
-    doc.rect(m, finalY + 14, 75, 25);
+    doc.rect(m, finalY + 8, 65, 18);
     doc.setFont('helvetica', 'bold');
-    doc.text('Signature Purchaser', m + 3, finalY + 19);
+    doc.text('Signature Purchaser', m + 3, finalY + 12);
 
     // Right table
     autoTable(doc, {
-      startY: finalY + 5,
+      startY: finalY + 3,
       margin: { left: pageWidth - m - 62, right: m },
       body: [
         ['Balance', totalAmountVal.toFixed(2)],
@@ -187,7 +187,7 @@ export class InvoiceService {
         ['Grand Total Balance', netPayableVal.toFixed(2)]
       ],
       theme: 'grid',
-      bodyStyles: { fillColor: [255, 255, 255], fontSize: 9, cellPadding: 4, textColor: textBlack, lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: 'bold' },
+      bodyStyles: { fillColor: [255, 255, 255], fontSize: 9, cellPadding: 2.5, textColor: textBlack, lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: 'bold' },
       columnStyles: {
         0: { cellWidth: 38, halign: 'left' },
         1: { cellWidth: 24, halign: 'center' } // matches Amount column width perfectly
