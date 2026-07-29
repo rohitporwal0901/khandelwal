@@ -110,8 +110,15 @@
   </div>
   
   <div class="widget card">
-    <div class="widget-header">
+    <div class="widget-header" style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
       <h3>Low Stock Alert</h3>
+      <div class="search-box" style="flex: 1; max-width: 150px;">
+        <input type="text" placeholder="Search SKU..." 
+               [(ngModel)]="skuSearchTerm"
+               style="width: 100%; padding: 6px 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-size: 0.85rem; outline: none; transition: border-color 0.2s;"
+               onfocus="this.style.borderColor='var(--primary)'" 
+               onblur="this.style.borderColor='rgba(0,0,0,0.1)'">
+      </div>
     </div>
     <div class="low-stock-list">
       <ng-container *ngIf="isLoading()">
