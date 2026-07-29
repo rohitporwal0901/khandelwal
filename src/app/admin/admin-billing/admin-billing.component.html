@@ -2,13 +2,15 @@
   <!-- Top Sliding Premium Toast Notification -->
   <div class="toast-popup-sharp" *ngIf="toastMessage() as toast" [ngClass]="'toast-' + toast.type">
     <div class="toast-icon-wrap">
-      <span class="material-symbols-outlined text-2xl" *ngIf="toast.type === 'warning' || toast.type === 'error'">error</span>
+      <span class="material-symbols-outlined text-2xl"
+        *ngIf="toast.type === 'warning' || toast.type === 'error'">error</span>
       <span class="material-symbols-outlined text-2xl" *ngIf="toast.type === 'success'">check_circle</span>
       <span class="material-symbols-outlined text-2xl" *ngIf="toast.type === 'info'">info</span>
     </div>
     <div class="toast-content">
       <h4 class="toast-title mb-1">
-        {{ toast.type === 'error' ? 'Validation Error' : (toast.type === 'warning' ? 'Stock / Input Limit Alert' : (toast.type === 'success' ? 'Success' : 'Notice')) }}
+        {{ toast.type === 'error' ? 'Validation Error' : (toast.type === 'warning' ? 'Stock / Input Limit Alert' :
+        (toast.type === 'success' ? 'Success' : 'Notice')) }}
       </h4>
       <p class="toast-text m-0">{{ toast.text }}</p>
     </div>
@@ -23,7 +25,8 @@
       <span class="offline-dot"></span>
       <div>
         <strong class="text-sm d-block">🔴 Offline Mode Active — इंटरनेट नहीं है</strong>
-        <span class="text-xxs opacity-90">Bills will be saved locally and auto-synced to server when internet reconnects.</span>
+        <span class="text-xxs opacity-90">Bills will be saved locally and auto-synced to server when internet
+          reconnects.</span>
       </div>
     </div>
     <div class="flex-align gap-2">
@@ -39,7 +42,8 @@
     <div class="sync-overlay-card">
       <div class="sync-spinner-large mb-3"></div>
       <h3 class="text-xl font-bold mb-2 text-slate-900">Syncing Offline Data...</h3>
-      <p class="text-sm text-slate-600 mb-0">Please wait while we synchronize your local bills with the server.<br><strong class="text-danger">Do not close or reload this tab.</strong></p>
+      <p class="text-sm text-slate-600 mb-0">Please wait while we synchronize your local bills with the
+        server.<br><strong class="text-danger">Do not close or reload this tab.</strong></p>
     </div>
   </div>
 
@@ -60,12 +64,14 @@
       </div>
       <div>
         <h1 class="text-xl font-bold mb-1 text-slate-900">POS Billing & Wholesale Invoicing</h1>
-        <p class="text-xs text-slate-500 mb-0 font-medium">Fast 6-6 Side-by-Side Selector • Automatic Inventory Deduction • Pink Slip Estimate Generation</p>
+        <p class="text-xs text-slate-500 mb-0 font-medium">Fast 6-6 Side-by-Side Selector • Automatic Inventory
+          Deduction • Pink Slip Estimate Generation</p>
       </div>
     </div>
     <div class="header-actions flex-align gap-3">
       <!-- Pending sync indicator in header -->
-      <div class="flex-align gap-1 text-xs font-bold" *ngIf="networkService.isOnline() && offlineSync.pendingCount() > 0">
+      <div class="flex-align gap-1 text-xs font-bold"
+        *ngIf="networkService.isOnline() && offlineSync.pendingCount() > 0">
         <span class="material-symbols-outlined text-base text-amber-600">cloud_upload</span>
         <span class="text-amber-700">{{ offlineSync.pendingCount() }} bills pending sync</span>
       </div>
@@ -88,7 +94,8 @@
           <h3 class="card-title mb-0">Customer Selection</h3>
         </div>
         <div>
-          <button *ngIf="!selectedCustomer()" class="btn-link-sharp" (click)="openAddCustomerModal(); showCustomerDropdown.set(false)">
+          <button *ngIf="!selectedCustomer()" class="btn-link-sharp"
+            (click)="openAddCustomerModal(); showCustomerDropdown.set(false)">
             + Register New Customer
           </button>
           <span *ngIf="selectedCustomer()" class="badge-sharp badge-success">Active Member</span>
@@ -98,13 +105,11 @@
       <!-- Search Input -->
       <div class="search-box-sharp" *ngIf="!selectedCustomer()">
         <span class="material-symbols-outlined search-icon">person_search</span>
-        <input type="text" 
-               placeholder="Search member by mobile, business name, or city..." 
-               [ngModel]="customerSearchTerm()" 
-               (ngModelChange)="onCustomerSearchChange($event)"
-               (focus)="showCustomerDropdown.set(true); showProductDropdown.set(false)"
-               class="search-input">
-        <button class="btn-clear" *ngIf="customerSearchTerm()" (click)="customerSearchTerm.set(''); showCustomerDropdown.set(true)">
+        <input type="text" placeholder="Search member by mobile, business name, or city..."
+          [ngModel]="customerSearchTerm()" (ngModelChange)="onCustomerSearchChange($event)"
+          (focus)="showCustomerDropdown.set(true); showProductDropdown.set(false)" class="search-input">
+        <button class="btn-clear" *ngIf="customerSearchTerm()"
+          (click)="customerSearchTerm.set(''); showCustomerDropdown.set(true)">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -116,25 +121,24 @@
           <button class="btn-close-mini" (click)="showCustomerDropdown.set(false)">Close</button>
         </div>
         <div class="dropdown-list">
-          <div class="dropdown-item-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust)">
-            <div class="item-info">
-              <strong class="text-slate-800 d-block">{{ cust.name }}</strong>
-              <div class="flex-align gap-2 mt-1">
-                <span class="phone-badge">+91 {{ cust.phone }}</span>
-                <span class="text-xs text-slate-500" *ngIf="cust.address || cust.pincode">
-                  {{ cust.address }} {{ cust.pincode ? '(Pin: ' + cust.pincode + ')' : '' }}
-                </span>
-              </div>
+          <div class="cust-dropdown-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust)">
+            <div class="cust-mini-avatar">
+              <img *ngIf="cust.photoUrl" [src]="cust.photoUrl" alt="" class="cust-mini-photo">
+              <span *ngIf="!cust.photoUrl" class="cust-mini-initials">{{ cust.name.charAt(0) | uppercase }}</span>
             </div>
-            <div class="item-badge">
-              <span *ngIf="(cust.balance || 0) > 0" class="badge-sharp badge-danger">Due: ₹{{ cust.balance }}</span>
-              <span *ngIf="(cust.balance || 0) < 0" class="badge-sharp badge-success">Adv: ₹{{ Math.abs(cust.balance || 0) }} CR</span>
-              <span *ngIf="!(cust.balance)" class="badge-sharp badge-neutral">No Balance</span>
+            <div class="cust-mini-info">
+              <span class="cust-mini-name">{{ cust.name }}</span>
+              <span class="cust-mini-phone">+91 {{ cust.phone }}</span>
+            </div>
+            <div class="cust-mini-badge">
+              <span *ngIf="(cust.balance || 0) > 0" class="badge-sharp badge-danger">₹{{ cust.balance }}</span>
+              <span *ngIf="(cust.balance || 0) < 0" class="badge-sharp badge-success">CR</span>
             </div>
           </div>
           <div class="empty-list-msg" *ngIf="filteredCustomers().length === 0">
-            No wholesale member found for "{{ customerSearchTerm() }}". 
-            <a href="javascript:void(0)" class="d-block mt-1 font-bold text-maroon" (click)="openAddCustomerModal(); showCustomerDropdown.set(false)">+ Register New Customer</a>
+            No wholesale member found for "{{ customerSearchTerm() }}".
+            <a href="javascript:void(0)" class="d-block mt-1 font-bold text-maroon"
+              (click)="openAddCustomerModal(); showCustomerDropdown.set(false)">+ Register New Customer</a>
           </div>
         </div>
       </div>
@@ -152,7 +156,7 @@
             <p class="text-xs text-slate-500 mb-0 mt-1" *ngIf="cust.address">{{ cust.address }}</p>
           </div>
         </div>
-        
+
         <div class="text-right">
           <span class="text-xxs text-slate-400 uppercase font-bold d-block mb-1">Current Account</span>
           <div *ngIf="(cust.balance || 0) > 0">
@@ -160,7 +164,8 @@
             <span class="text-xxs font-bold text-danger">Old Due (पुराना बकाया)</span>
           </div>
           <div *ngIf="(cust.balance || 0) < 0">
-            <strong class="text-success font-bold text-lg d-block">₹{{ Math.abs(cust.balance || 0) | number:'1.2-2' }} CR</strong>
+            <strong class="text-success font-bold text-lg d-block">₹{{ Math.abs(cust.balance || 0) | number:'1.2-2' }}
+              CR</strong>
             <span class="text-xxs font-bold text-success">Advance (अग्रिम राशि)</span>
           </div>
           <div *ngIf="!(cust.balance)">
@@ -187,14 +192,12 @@
       <!-- Search Input -->
       <div class="search-box-sharp">
         <span class="material-symbols-outlined search-icon">qr_code_scanner</span>
-        <input type="text" 
-               placeholder="Search card by Name or SKU Code (e.g. MOCK-1001)..." 
-               [ngModel]="productSearchTerm()" 
-               (ngModelChange)="onProductSearchChange($event)"
-               (focus)="showProductDropdown.set(true); showCustomerDropdown.set(false)"
-               [disabled]="!selectedCustomer()"
-               class="search-input">
-        <button class="btn-clear" *ngIf="productSearchTerm()" (click)="productSearchTerm.set(''); showProductDropdown.set(true)">
+        <input type="text" placeholder="Search card by Name or SKU Code (e.g. MOCK-1001)..."
+          [ngModel]="productSearchTerm()" (ngModelChange)="onProductSearchChange($event)"
+          (focus)="showProductDropdown.set(true); showCustomerDropdown.set(false)" [disabled]="!selectedCustomer()"
+          class="search-input">
+        <button class="btn-clear" *ngIf="productSearchTerm()"
+          (click)="productSearchTerm.set(''); showProductDropdown.set(true)">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -206,32 +209,22 @@
           <button class="btn-close-mini" (click)="showProductDropdown.set(false)">Close</button>
         </div>
         <div class="dropdown-list">
-          <div class="dropdown-item-row" *ngFor="let prod of filteredProducts()" (click)="addProductToBill(prod)">
-            <div class="flex-align gap-3 flex-1 min-w-0">
-              <div class="prod-thumb">
-                <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
-                <span *ngIf="!prod.images || prod.images.length === 0" class="material-symbols-outlined text-slate-400">image</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <strong class="text-slate-800 d-block text-sm truncate font-bold">{{ prod.name }}</strong>
-                <div class="flex-align gap-2 mt-1">
-                  <span class="sku-badge">{{ prod.sku }}</span>
-                  <span class="stock-badge" [class.stock-danger]="prod.stock < 10">Stock: {{ prod.stock }}</span>
-                </div>
+          <div class="prod-dropdown-row" *ngFor="let prod of filteredProducts()" (click)="addProductToBill(prod); showProductDropdown.set(false)">
+            <div class="prod-mini-avatar">
+              <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
+              <span *ngIf="!prod.images || prod.images.length === 0" class="material-symbols-outlined text-slate-400">image</span>
+            </div>
+            <div class="prod-mini-info flex-1 min-w-0">
+              <span class="prod-mini-name truncate">{{ prod.name }}</span>
+              <div class="flex-align gap-2 mt-1">
+                <span class="sku-badge">{{ prod.sku }}</span>
+                <span class="stock-badge" [class.stock-danger]="prod.stock < 10">Stock: {{ prod.stock }}</span>
               </div>
             </div>
-            
-            <div class="flex-align gap-3">
-              <div class="text-right">
-                <div class="text-xxs text-slate-400 font-bold">RATE (₹)</div>
-                <div class="flex-align gap-1 mt-1">
-                  <span class="rate-pill-buy" title="Cost Price">Buy ₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
-                  <span class="rate-pill-sell" title="Default Selling Price">Sell ₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
-                </div>
-              </div>
-              <button class="btn-add-icon" title="Add to Bill Table">
-                <span class="material-symbols-outlined">add_circle</span>
-              </button>
+
+            <div class="prod-mini-rates flex-align gap-1">
+              <span class="rate-pill-sell">₹{{ prod.sellingRate || 0 | number:'1.0-0' }}</span>
+              <span class="material-symbols-outlined text-maroon" style="font-size:1.3rem">add_circle</span>
             </div>
           </div>
           <div class="empty-list-msg" *ngIf="filteredProducts().length === 0">
@@ -250,12 +243,14 @@
         <span class="step-pill mr-2">STEP 3</span>
         <div>
           <h3 class="card-title mb-1">Bill Line Items & Wholesale Estimate Breakdown</h3>
-          <p class="text-xs text-slate-500 mb-0 font-medium">Review quantities, customize rates, add Badha freight, and generate instant invoice</p>
+          <p class="text-xs text-slate-500 mb-0 font-medium">Review quantities, customize rates, add Badha freight, and
+            generate instant invoice</p>
         </div>
       </div>
       <div class="flex-align gap-3">
         <span class="badge-sharp badge-primary font-bold px-3 py-1">{{ billItems().length }} Cards Added</span>
-        <button class="btn-secondary text-xs py-1 px-3" *ngIf="billItems().length > 0" (click)="billItems.set([])" title="Clear table items">
+        <button class="btn-secondary text-xs py-1 px-3" *ngIf="billItems().length > 0" (click)="billItems.set([])"
+          title="Clear table items">
           Clear Table
         </button>
       </div>
@@ -286,32 +281,25 @@
               </div>
             </td>
             <td class="text-center">
-              <span class="badge-sharp" [class.badge-warning]="item.availableStock <= 5" [class.badge-success]="item.availableStock > 5">
+              <span class="badge-sharp" [class.badge-warning]="item.availableStock <= 5"
+                [class.badge-success]="item.availableStock > 5">
                 {{ item.availableStock }}
               </span>
             </td>
             <td>
               <div class="flex-align justify-center gap-1">
-                <input type="number" 
-                       class="input-table-qty" 
-                       [ngModel]="item.quantity" 
-                       (ngModelChange)="updateQty(i, $event)"
-                       (keydown)="preventNegativeInput($event)"
-                       min="1" [max]="item.availableStock"
-                       placeholder="0">
+                <input type="number" class="input-table-qty" [ngModel]="item.quantity"
+                  (ngModelChange)="updateQty(i, $event)" (keydown)="preventNegativeInput($event)" min="1"
+                  [max]="item.availableStock" placeholder="0">
                 <span class="text-xs font-bold text-slate-500">Pcs</span>
               </div>
             </td>
             <td class="text-right">
               <div class="flex-align justify-end gap-1">
                 <span class="text-xs text-slate-400 font-bold">₹</span>
-                <input type="number" 
-                       class="input-table-rate" 
-                       [ngModel]="item.sellingRate" 
-                       (ngModelChange)="updateSellingRate(i, $event)"
-                       (keydown)="preventNegativeInput($event)"
-                       step="0.01" min="0"
-                       placeholder="0.00">
+                <input type="number" class="input-table-rate" [ngModel]="item.sellingRate"
+                  (ngModelChange)="updateSellingRate(i, $event)" (keydown)="preventNegativeInput($event)" step="0.01"
+                  min="0" placeholder="0.00">
               </div>
             </td>
             <td class="text-right font-bold text-slate-900 text-base">
@@ -329,7 +317,8 @@
                 <span class="material-symbols-outlined text-4xl text-slate-300">receipt_long</span>
               </div>
               <div class="font-bold text-slate-600 mb-1">No cards added to bill table yet</div>
-              <p class="text-xs text-slate-400 mb-0">Use the search box in STEP 2 above to select and add products to this estimate.</p>
+              <p class="text-xs text-slate-400 mb-0">Use the search box in STEP 2 above to select and add products to
+                this estimate.</p>
             </td>
           </tr>
         </tbody>
@@ -343,7 +332,9 @@
         <div>
           <div class="form-group mb-4">
             <label class="label-sharp mb-2 d-block">Bill Note / Delivery Instruction (Optional):</label>
-            <input type="text" class="input-sharp w-100" placeholder="e.g. Under Nagda Jurisdiction / Transport delivery via Indore..." [ngModel]="billNotes()" (ngModelChange)="billNotes.set($event)">
+            <input type="text" class="input-sharp w-100"
+              placeholder="e.g. Under Nagda Jurisdiction / Transport delivery via Indore..." [ngModel]="billNotes()"
+              (ngModelChange)="billNotes.set($event)">
           </div>
 
           <!-- Online mode info banner -->
@@ -351,8 +342,10 @@
             <div class="flex-align gap-3">
               <span class="material-symbols-outlined text-maroon text-2xl">verified</span>
               <div>
-                <strong class="text-slate-900 text-xs d-block mb-1">Authentic Wholesale Estimate (KH001 Counter)</strong>
-                <p class="text-xxs text-slate-600 mb-0 leading-normal">Generating this invoice will instantly deduct product stock in real-time and download the official Pink Slip PDF estimate.</p>
+                <strong class="text-slate-900 text-xs d-block mb-1">Authentic Wholesale Estimate (KH001
+                  Counter)</strong>
+                <p class="text-xxs text-slate-600 mb-0 leading-normal">Generating this invoice will instantly deduct
+                  product stock in real-time and download the official Pink Slip PDF estimate.</p>
               </div>
             </div>
           </div>
@@ -363,38 +356,38 @@
               <span class="material-symbols-outlined text-orange-700 text-2xl">wifi_off</span>
               <div>
                 <strong class="text-orange-900 text-xs d-block mb-1">⚡ Offline Bill — Local Save Mode</strong>
-                <p class="text-xxs text-orange-800 mb-0 leading-normal">Bill will be saved locally with an OFFLINE-XXXX number. PDF will print immediately. Real KH-XXX number will be assigned automatically when internet reconnects.</p>
+                <p class="text-xxs text-orange-800 mb-0 leading-normal">Bill will be saved locally with an OFFLINE-XXXX
+                  number. PDF will print immediately. Real KH-XXX number will be assigned automatically when internet
+                  reconnects.</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Online Generate Button -->
-        <button class="btn-generate-sharp w-100" 
-                *ngIf="networkService.isOnline()"
-                [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()" 
-                (click)="onGenerateBill()">
+        <button class="btn-generate-sharp w-100" *ngIf="networkService.isOnline()"
+          [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()"
+          (click)="onGenerateBill()">
           <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
-            <span class="material-symbols-outlined">print</span> 
+            <span class="material-symbols-outlined">print</span>
             <span>Generate Bill, Deduct Stock & Print Estimate</span>
           </span>
           <span *ngIf="isGenerating()" class="flex-align justify-center gap-2">
-            <span class="spinner-border"></span> 
+            <span class="spinner-border"></span>
             <span>Generating KH001 Invoice...</span>
           </span>
         </button>
 
         <!-- Offline Generate Button -->
-        <button class="btn-generate-offline w-100" 
-                *ngIf="!networkService.isOnline()"
-                [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()" 
-                (click)="onGenerateBill()">
+        <button class="btn-generate-offline w-100" *ngIf="!networkService.isOnline()"
+          [disabled]="!selectedCustomer() || billItems().length === 0 || isGenerating() || hasInvalidItems()"
+          (click)="onGenerateBill()">
           <span *ngIf="!isGenerating()" class="flex-align justify-center gap-2">
-            <span class="material-symbols-outlined">download</span> 
+            <span class="material-symbols-outlined">download</span>
             <span>Save Offline & Print Estimate (Auto-Sync Later)</span>
           </span>
           <span *ngIf="isGenerating()" class="flex-align justify-center gap-2">
-            <span class="spinner-border"></span> 
+            <span class="spinner-border"></span>
             <span>Saving Offline Bill...</span>
           </span>
         </button>
@@ -408,7 +401,7 @@
           </span>
           <span class="badge-sharp badge-neutral text-xxs">Wholesale Rates</span>
         </div>
-        
+
         <div class="summary-panel-body">
           <!-- Total Quantities -->
           <div class="summary-line">
@@ -425,17 +418,13 @@
           <!-- Badha / Freight Input Row (Sharp & Clean, NOT in a bulky yellow box) -->
           <div class="summary-line-badha my-2 py-2 px-3">
             <span class="line-label flex-align gap-1 font-bold text-amber-800 text-xs">
-              <span class="material-symbols-outlined text-base text-amber-600">local_shipping</span> 
+              <span class="material-symbols-outlined text-base text-amber-600">local_shipping</span>
               Badha (भाड़ा / Freight Charges):
             </span>
             <div class="badha-input-group flex-align">
               <span class="prefix text-xs font-bold text-slate-400">₹</span>
-              <input type="number" 
-                     class="badha-input" 
-                     [ngModel]="badha()" 
-                     (ngModelChange)="updateBadha($event)"
-                     (keydown)="preventNegativeInput($event)"
-                     placeholder="0.00" step="1" min="0">
+              <input type="number" class="badha-input" [ngModel]="badha()" (ngModelChange)="updateBadha($event)"
+                (keydown)="preventNegativeInput($event)" placeholder="0.00" step="1" min="0">
             </div>
           </div>
 
@@ -453,9 +442,11 @@
             <span class="line-label font-medium text-emerald-700" *ngIf="(cust.balance || 0) < 0">
               Advance Balance (अग्रिम राशि जमा):
             </span>
-            <span class="line-val font-bold" [class.text-danger]="(cust.balance || 0) > 0" [class.text-success]="(cust.balance || 0) < 0">
+            <span class="line-val font-bold" [class.text-danger]="(cust.balance || 0) > 0"
+              [class.text-success]="(cust.balance || 0) < 0">
               <ng-container *ngIf="(cust.balance || 0) >= 0">₹{{ cust.balance || 0 | number:'1.2-2' }}</ng-container>
-              <ng-container *ngIf="(cust.balance || 0) < 0">- ₹{{ Math.abs(cust.balance || 0) | number:'1.2-2' }} (CR)</ng-container>
+              <ng-container *ngIf="(cust.balance || 0) < 0">- ₹{{ Math.abs(cust.balance || 0) | number:'1.2-2' }}
+                (CR)</ng-container>
             </span>
           </div>
 
@@ -464,7 +455,8 @@
           <!-- Grand Total Balance -->
           <div class="summary-line grand-total-line py-1">
             <span class="line-label font-extrabold text-slate-900 text-sm">Grand Total Balance (कुल देय राशि):</span>
-            <span class="line-val font-extrabold text-maroon text-2xl tracking-tight">₹{{ netPayable() | number:'1.2-2' }}</span>
+            <span class="line-val font-extrabold text-maroon text-2xl tracking-tight">₹{{ netPayable() | number:'1.2-2'
+              }}</span>
           </div>
         </div>
       </div>
@@ -487,27 +479,31 @@
       <div class="info-banner-sharp mb-4">
         <div class="flex-align gap-2">
           <span class="material-symbols-outlined text-maroon text-lg">info</span>
-          <span class="text-xs text-slate-700 font-medium">Mobile number must be unique. Duplicate numbers are restricted.</span>
+          <span class="text-xs text-slate-700 font-medium">Mobile number must be unique. Duplicate numbers are
+            restricted.</span>
         </div>
       </div>
 
       <div class="form-group mb-3">
         <label class="label-sharp mb-1 d-block">Business / Customer Name <span class="text-danger">*</span></label>
-        <input type="text" class="input-sharp w-100" [(ngModel)]="newCustName" placeholder="e.g. M/S Alankar (Abhi Enterprises)">
+        <input type="text" class="input-sharp w-100" [(ngModel)]="newCustName"
+          placeholder="e.g. M/S Alankar (Abhi Enterprises)">
       </div>
 
       <div class="form-group mb-3">
         <label class="label-sharp mb-1 d-block">Mobile Number (10 Digits) <span class="text-danger">*</span></label>
         <div class="input-group-sharp">
           <span class="prefix">+91</span>
-          <input type="text" class="input-sharp flex-1" [(ngModel)]="newCustPhone" placeholder="9826474254" maxlength="10">
+          <input type="text" class="input-sharp flex-1" [(ngModel)]="newCustPhone" placeholder="9826474254"
+            maxlength="10">
         </div>
       </div>
 
       <div class="grid-2-col mb-3">
         <div class="form-group">
           <label class="label-sharp mb-1 d-block">PIN Code (6 Digits)</label>
-          <input type="text" class="input-sharp w-100" [(ngModel)]="newCustPincode" placeholder="e.g. 456335" maxlength="6">
+          <input type="text" class="input-sharp w-100" [(ngModel)]="newCustPincode" placeholder="e.g. 456335"
+            maxlength="6">
         </div>
         <div class="form-group">
           <label class="label-sharp mb-1 d-block">City / Town</label>
@@ -517,7 +513,8 @@
 
       <div class="form-group mb-3">
         <label class="label-sharp mb-1 d-block">Complete Street Address</label>
-        <textarea class="input-sharp w-100" [(ngModel)]="newCustAddress" rows="2" placeholder="e.g. 121, Ram Sahay Marg, Nagda"></textarea>
+        <textarea class="input-sharp w-100" [(ngModel)]="newCustAddress" rows="2"
+          placeholder="e.g. 121, Ram Sahay Marg, Nagda"></textarea>
       </div>
 
       <div class="form-group mb-2">
@@ -527,7 +524,8 @@
             <input type="radio" name="balType" [(ngModel)]="newCustBalType" value="due"> Old Due (पुराना बकाया)
           </label>
           <label class="radio-label flex-align gap-1 font-bold text-xs text-success cursor-pointer">
-            <input type="radio" name="balType" [(ngModel)]="newCustBalType" value="advance"> Advance Credit (अग्रिम राशि)
+            <input type="radio" name="balType" [(ngModel)]="newCustBalType" value="advance"> Advance Credit (अग्रिम
+            राशि)
           </label>
         </div>
         <div class="input-group-sharp">
@@ -537,8 +535,10 @@
       </div>
     </div>
     <div class="modal-footer flex-align justify-end gap-3">
-      <button class="btn-secondary text-xs" (click)="closeAddCustomerModal()" [disabled]="isSavingCust()">Cancel</button>
-      <button class="btn-primary text-xs" (click)="submitNewCustomer()" [disabled]="!newCustName || !newCustPhone || isSavingCust()">
+      <button class="btn-secondary text-xs" (click)="closeAddCustomerModal()"
+        [disabled]="isSavingCust()">Cancel</button>
+      <button class="btn-primary text-xs" (click)="submitNewCustomer()"
+        [disabled]="!newCustName || !newCustPhone || isSavingCust()">
         <span *ngIf="!isSavingCust()">Save & Auto-Select</span>
         <span *ngIf="isSavingCust()">Checking & Saving...</span>
       </button>
@@ -556,7 +556,8 @@
         <span class="material-symbols-outlined text-6xl text-success">check_circle</span>
       </div>
       <h3 class="text-slate-900 font-extrabold text-xl mb-2">Estimate Generated! ✅</h3>
-      <p class="text-slate-500 text-sm mb-4">Invoice <strong class="text-slate-800">{{ lastGeneratedBillNumber() }}</strong> saved to server. Stock deducted and Pink Slip PDF printed.</p>
+      <p class="text-slate-500 text-sm mb-4">Invoice <strong class="text-slate-800">{{ lastGeneratedBillNumber()
+          }}</strong> saved to server. Stock deducted and Pink Slip PDF printed.</p>
     </ng-container>
 
     <!-- Offline Success -->
@@ -584,7 +585,8 @@
           </div>
           <div class="step-row">
             <span class="material-symbols-outlined text-amber-600 text-base">schedule</span>
-            <span class="text-xs text-amber-700 font-bold">KH-XXXX number will be assigned when internet reconnects</span>
+            <span class="text-xs text-amber-700 font-bold">KH-XXXX number will be assigned when internet
+              reconnects</span>
           </div>
         </div>
       </div>
