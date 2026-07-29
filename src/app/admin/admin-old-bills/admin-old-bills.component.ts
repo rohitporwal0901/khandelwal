@@ -40,6 +40,13 @@ export class AdminOldBillsComponent implements OnInit {
   badha = signal(0);
   originalPreviousBalance = signal(0);
 
+  currentCustomerBalance = computed(() => {
+    const order = this.selectedOrder();
+    if (!order || !order.uid) return 0;
+    const cust = this.customers().find(c => c.uid === order.uid);
+    return cust?.balance || 0;
+  });
+
   subTotal = computed(() => {
     return this.editableItems().reduce((sum, item) => sum + (item.quantity * (item.sellingRate || 0)), 0);
   });
@@ -317,6 +324,34 @@ export class AdminOldBillsComponent implements OnInit {
   getProductStock(productId: string): number {
     const product = this.dataService.products().find(p => p.id === productId);
     return product ? product.stock : 0;
+  }
+
+  getAvailableStockForEdit(productId: string): number {
+    const currentStock = this.getProductStock(productId);
+    
+    const order = this.selectedOrder();
+    let originalQty = 0;
+    if (order && order.items) {
+      const originalItem = order.items.find(i => i.productId === productId);
+      if (originalItem) {
+        originalQty = originalItem.quantity;
+      }
+    }
+    
+    return currentStock + originalQty;
+  }
+  
+  hasInvalidItems(): boolean {
+    if (!this.selectedOrder()) return false;
+    if (this.editableItems().length === 0) return true;
+    return this.editableItems().some(item =>
+      !item.quantity ||
+      item.quantity <= 0 ||
+      item.sellingRate === undefined ||
+      item.sellingRate === null ||
+      item.sellingRate < 0 ||
+      item.quantity > this.getAvailableStockForEdit(item.productId)
+    );
   }
   
   getProductCost(productId: string): number {
