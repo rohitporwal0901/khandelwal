@@ -82,6 +82,11 @@ export class AdminOldBillsComponent implements OnInit {
         }
       }
     }, 500);
+
+    // Full page loader for 2 seconds on navigation
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 2000);
   }
 
   async fetchCustomers() {
@@ -138,7 +143,6 @@ export class AdminOldBillsComponent implements OnInit {
     // Simulate loading for UI responsiveness
     setTimeout(() => {
       this.isFetchingData.set(false);
-      this.isLoading.set(false);
 
       // Auto-select the first available date and bill when filters change
       const dates = this.allDatesInFilter();

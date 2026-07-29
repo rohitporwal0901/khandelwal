@@ -1,4 +1,14 @@
-<div class="billing-page">
+<div style="position: relative; min-height: 100vh;">
+  <!-- Full Page Loading State -->
+  <div class="full-page-loader" *ngIf="isLoading()">
+    <div class="loader-content">
+      <div class="premium-spinner"></div>
+      <h2 class="loader-title">Loading Records...</h2>
+      <p class="loader-subtitle">Fetching your previous bills and invoices</p>
+    </div>
+  </div>
+
+  <div class="billing-page">
   <!-- Top Header -->
   <div class="page-header flex-align justify-between mb-4 pb-3 border-bottom-sharp">
     <div class="header-title flex-align">
@@ -313,6 +323,7 @@
       </ng-container>
     </div>
   </div>
+</div>
 </div>
 
 <!-- Edit Bill Drawer -->
