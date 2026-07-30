@@ -19,40 +19,32 @@
     </button>
   </div>
 
-  <!-- ════ OFFLINE MODE STATUS BANNER ════ -->
-  <div class="offline-banner" *ngIf="!networkService.isOnline()">
-    <div class="offline-banner-left flex-align gap-3">
-      <span class="offline-dot"></span>
-      <div>
-        <strong class="text-sm d-block">🔴 Offline Mode Active — इंटरनेट नहीं है</strong>
-        <span class="text-xxs opacity-90">Bills will be saved locally and auto-synced to server when internet
-          reconnects.</span>
-      </div>
-    </div>
-    <div class="flex-align gap-2">
-      <span class="offline-queue-badge" *ngIf="offlineSync.pendingCount() > 0">
-        <span class="material-symbols-outlined text-sm mr-1">cloud_upload</span>
-        {{ offlineSync.pendingCount() }} Pending Sync
-      </span>
-    </div>
+  <!-- ════ OFFLINE INDICATOR — tiny pill, top-right corner, no layout space ════ -->
+  <div class="offline-pill" *ngIf="!networkService.isOnline()">
+    <span class="offline-pill-dot"></span>
+    <span>Offline — Internet नहीं है</span>
+    <span class="offline-pill-count" *ngIf="offlineSync.pendingCount() > 0">
+      {{ offlineSync.pendingCount() }} pending
+    </span>
   </div>
 
   <!-- ════ SYNC IN PROGRESS OVERLAY BLOCKER ════ -->
   <div class="sync-blocking-overlay" *ngIf="offlineSync.isSyncing()">
     <div class="sync-overlay-card">
-      <div class="sync-spinner-large mb-3"></div>
+      <div class="sync-spinner-large"></div>
       <h3 class="text-xl font-bold mb-2 text-slate-900">Syncing Offline Data...</h3>
       <p class="text-sm text-slate-600 mb-0">Please wait while we synchronize your local bills with the
-        server.<br><strong class="text-danger">Do not close or reload this tab.</strong></p>
+        server.<br><strong class="text-maroon">Do not close or reload this tab.</strong></p>
     </div>
   </div>
 
   <!-- ════ SYNC SUCCESS BANNER ════ -->
   <div class="sync-success-banner" *ngIf="offlineSync.lastSyncResult() as result">
-    <span class="material-symbols-outlined text-base mr-2">cloud_done</span>
+    <span class="material-symbols-outlined text-success" style="font-size:1.1rem">cloud_done</span>
     <span class="text-sm">
-      Sync Complete: <strong>{{ result.success }} bill(s) synced</strong>
-      <span *ngIf="result.failed > 0" class="text-orange-200 ml-2">• {{ result.failed }} failed (will retry)</span>
+      ✅ Sync Complete: <strong>{{ result.success }} bill(s) synced successfully</strong>
+      <span *ngIf="result.failed > 0" class="ml-2" style="color:#d97706">• {{ result.failed }} failed (will
+        retry)</span>
     </span>
   </div>
 
@@ -209,10 +201,12 @@
           <button class="btn-close-mini" (click)="showProductDropdown.set(false)">Close</button>
         </div>
         <div class="dropdown-list">
-          <div class="prod-dropdown-row" *ngFor="let prod of filteredProducts()" (click)="addProductToBill(prod); showProductDropdown.set(false)">
+          <div class="prod-dropdown-row" *ngFor="let prod of filteredProducts()"
+            (click)="addProductToBill(prod); showProductDropdown.set(false)">
             <div class="prod-mini-avatar">
               <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
-              <span *ngIf="!prod.images || prod.images.length === 0" class="material-symbols-outlined text-slate-400">image</span>
+              <span *ngIf="!prod.images || prod.images.length === 0"
+                class="material-symbols-outlined text-slate-400">image</span>
             </div>
             <div class="prod-mini-info flex-1 min-w-0">
               <span class="prod-mini-name truncate">{{ prod.name }}</span>
@@ -353,12 +347,12 @@
           <!-- Offline mode info banner -->
           <div class="info-banner-offline mb-4" *ngIf="!networkService.isOnline()">
             <div class="flex-align gap-3">
-              <span class="material-symbols-outlined text-orange-700 text-2xl">wifi_off</span>
+              <span class="material-symbols-outlined text-maroon text-2xl">wifi_off</span>
               <div>
-                <strong class="text-orange-900 text-xs d-block mb-1">⚡ Offline Bill — Local Save Mode</strong>
-                <p class="text-xxs text-orange-800 mb-0 leading-normal">Bill will be saved locally with an OFFLINE-XXXX
+                <strong class="text-maroon text-xs d-block mb-1">⚡ Offline Bill — Local Save Mode</strong>
+                <!-- <p class="text-xxs text-maroon mb-0 leading-normal">Bill will be saved locally with an OFFLINE-XXXX
                   number. PDF will print immediately. Real KH-XXX number will be assigned automatically when internet
-                  reconnects.</p>
+                  reconnects.</p> -->
               </div>
             </div>
           </div>

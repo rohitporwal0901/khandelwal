@@ -8,6 +8,7 @@
   margin: 0 auto;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
+  position: relative; /* anchor for .offline-pill absolute positioning */
 }
 
 /* Sharp Borders & Utilities */
@@ -1285,15 +1286,28 @@
   flex: 1;
 }
 
+/* ── Offline / Online Bill Success Modal ── */
 .success-modal-card {
   background: var(--surface);
   border-radius: var(--border-radius-lg);
-  padding: 3rem 2.5rem;
+  padding: 2.5rem 2.5rem 2rem;
   text-align: center;
-  width: 440px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  width: 460px;
+  max-width: 94vw;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.18), 0 8px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Accent bar at the top of success modal */
+.success-modal-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
 }
 
 /* Toast Notification */
@@ -1430,107 +1444,114 @@
   color: var(--text-main);
 }
 
-/* Offline / Sync Banners */
-.offline-banner {
+/* ── Offline Pill — absolute within billing page, zero layout impact ── */
+.offline-pill {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 200;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: #fff8f8;
-  border: 1px solid #fecaca;
-  border-left: 4px solid var(--primary);
-  border-radius: var(--border-radius-md);
-  padding: 12px 18px;
-  margin-bottom: 1.5rem;
-  color: var(--text-main);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  gap: 6px;
+  background: rgba(139, 0, 0, 0.88);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(139, 0, 0, 0.25);
+  letter-spacing: 0.01em;
+  animation: pillSlideIn 0.3s ease;
+  pointer-events: none;
 }
 
-.offline-banner-left {
-  flex: 1;
-}
-
-.offline-dot {
-  width: 10px;
-  height: 10px;
+.offline-pill-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--error);
+  background: #fff;
   flex-shrink: 0;
   animation: pulse-dot 1.8s infinite;
 }
 
+/* Small count badge inside pill */
+.offline-pill-count {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+@keyframes pillSlideIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @keyframes pulse-dot {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.5;
-    transform: scale(1.3);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.4); }
 }
 
-.offline-queue-badge {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(139, 0, 0, 0.08);
-  color: var(--primary);
-  border: 1px solid rgba(139, 0, 0, 0.15);
-  border-radius: 6px;
-  padding: 4px 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
+/* ── Sync Blocking Overlay (full-screen) ── */
 .sync-blocking-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* ── Sync Overlay Card ── */
 .sync-overlay-card {
   background: var(--surface);
   border: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 4px solid var(--primary);
   border-radius: var(--border-radius-lg);
-  padding: 3rem 2.5rem;
+  padding: 2.5rem 3rem;
   text-align: center;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-  max-width: 450px;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.06);
+  width: 420px;
+  max-width: 90vw;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
+/* ── Sync Spinner ── */
 .sync-spinner-large {
-  width: 54px;
-  height: 54px;
-  border: 4px solid rgba(139, 0, 0, 0.1);
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(139, 0, 0, 0.1);
   border-radius: 50%;
   border-top-color: var(--primary);
   animation: spin 1s ease-in-out infinite;
-  margin: 0 auto;
+  margin: 0 auto 1.5rem;
 }
 
+/* ── Sync Success Banner (after sync completes) ── */
 .sync-success-banner {
   display: flex;
   align-items: center;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-left: 4px solid var(--success);
+  gap: 8px;
+  background: rgba(22, 163, 74, 0.05);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-left: 3px solid var(--success);
   border-radius: var(--border-radius-md);
-  padding: 12px 18px;
-  margin-bottom: 1.5rem;
+  padding: 10px 16px;
+  margin-bottom: 1rem;
   color: var(--text-main);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .spinner-sm {
@@ -1540,12 +1561,22 @@
   border-color: #3b82f6 transparent transparent transparent !important;
 }
 
+/* Offline info banner inside the bill form — uses maroon/primary theme to match app */
 .info-banner-offline {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-left: 4px solid var(--warning);
+  background: rgba(139, 0, 0, 0.03);
+  border: 1px solid rgba(139, 0, 0, 0.12);
+  border-left: 3px solid var(--primary);
   border-radius: var(--border-radius-md);
-  padding: 14px 16px;
+  padding: 12px 14px;
+
+  /* Override child text colors to match maroon theme */
+  .text-orange-700, .text-orange-900, .text-orange-800 {
+    color: var(--primary) !important;
+  }
+
+  .material-symbols-outlined {
+    color: var(--primary) !important;
+  }
 }
 
 .btn-generate-offline {
