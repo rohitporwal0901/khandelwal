@@ -129,30 +129,205 @@
   padding: 0.75rem;
   border: 1px solid rgba(0,0,0,0.05);
   border-radius: var(--border-radius-md);
-  
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 6px;
+
   img {
     width: 48px;
     height: 48px;
     border-radius: var(--border-radius-sm);
     object-fit: cover;
+    flex-shrink: 0;
   }
-  
+
   .stock-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    
+    min-width: 0;
+
     strong {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
-  
+
   .stock-badge {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.8rem;
     font-weight: 600;
+    flex-shrink: 0;
   }
+}
+
+/* Editing row highlight */
+.stock-item--editing {
+  border-color: #800000 !important;
+  background: #fff9f9;
+}
+
+/* Clickable badge — shows edit pencil on hover */
+.stock-badge-clickable {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  .edit-hint {
+    font-size: 0.75rem;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+  }
+
+  &:hover {
+    background: #dc262620;
+    color: #dc2626;
+    padding-right: 0.65rem;
+
+    .edit-hint {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* Inline editor row (input + buttons) */
+.inline-stock-editor {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  animation: slideIn 0.15s ease-out;
+
+  /* Wrapper holds input + error tooltip */
+  .stock-input-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stock-input {
+    width: 72px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1.5px solid #800000;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1e293b;
+    text-align: center;
+    outline: none;
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(128,0,0,0.12);
+    }
+
+    /* Error state — red border + red glow */
+    &.stock-input--error {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+    }
+
+    /* Hide browser number spinners */
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button { -webkit-appearance: none; }
+  }
+
+  /* Error tooltip that appears below the input */
+  .stock-error-tip {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 4px;
+    padding: 3px 6px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 4px;
+    color: #dc2626;
+    font-size: 0.72rem;
+    font-weight: 500;
+    white-space: nowrap;
+    animation: fadeIn 0.15s ease;
+    position: absolute;
+    top: 34px;
+    left: 0;
+    z-index: 10;
+
+    .material-symbols-outlined {
+      font-size: 0.82rem;
+    }
+  }
+
+  .btn-stock-save {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: #16a34a;
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 1rem; }
+
+    &:hover:not([disabled]) { background: #15803d; transform: scale(1.08); }
+
+    /* Greyed out when invalid */
+    &[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #9ca3af;
+      transform: none;
+    }
+  }
+
+  .btn-stock-cancel {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+
+    .material-symbols-outlined { font-size: 1rem; }
+
+    &:hover:not([disabled]) { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+    &[disabled] { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  /* Mini spinner inside save button */
+  .stock-save-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .text-sm { font-size: 0.8rem; }

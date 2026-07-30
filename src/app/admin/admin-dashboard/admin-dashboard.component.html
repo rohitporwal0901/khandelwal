@@ -133,15 +133,71 @@
       </ng-container>
       
       <ng-container *ngIf="!isLoading()">
-        <div class="stock-item" *ngFor="let product of lowStockProducts()">
+        <div class="stock-item" *ngFor="let product of lowStockProducts()"
+          [class.stock-item--editing]="editingProductId() === product.id">
+
+          <!-- Product Image -->
           <img [src]="product.images[0]" alt="{{ product.name }}">
+
+          <!-- Product Info -->
           <div class="stock-details">
             <strong>{{ product.name }}</strong>
             <span class="text-muted text-sm">SKU: {{ product.sku }}</span>
           </div>
-          <div class="stock-badge badge-error">
-            {{ product.stock }} left
-          </div>
+
+          <!-- VIEW MODE: Click badge to enter edit mode -->
+          <ng-container *ngIf="editingProductId() !== product.id">
+            <div class="stock-badge badge-error stock-badge-clickable"
+              (click)="openStockEdit(product.id, product.stock)"
+              title="Click to update stock">
+              {{ product.stock }} left
+              <span class="edit-hint material-symbols-outlined">edit</span>
+            </div>
+          </ng-container>
+
+          <!-- EDIT MODE: Inline input + save/cancel -->
+          <ng-container *ngIf="editingProductId() === product.id">
+            <div class="inline-stock-editor">
+              <div class="stock-input-wrap">
+                <input
+                  type="number"
+                  class="stock-input"
+                  [class.stock-input--error]="stockInputError()"
+                  [ngModel]="editingStockValue()"
+                  (ngModelChange)="onStockValueChange($event)"
+                  (keydown)="preventInvalidStockKey($event)"
+                  (keydown.enter)="saveStock(product.id)"
+                  (keydown.escape)="cancelStockEdit()"
+                  min="0"
+                  step="1"
+                  autofocus
+                  placeholder="Qty">
+                <!-- Error tooltip -->
+                <div class="stock-error-tip" *ngIf="stockInputError()">
+                  <span class="material-symbols-outlined">error</span>
+                  {{ stockInputError() }}
+                </div>
+              </div>
+
+              <!-- Save Button / Spinner -->
+              <button class="btn-stock-save"
+                (click)="saveStock(product.id)"
+                [disabled]="isSavingStock() === product.id || !isStockInputValid"
+                title="Save (Enter)">
+                <span class="material-symbols-outlined" *ngIf="isSavingStock() !== product.id">check</span>
+                <span class="stock-save-spinner" *ngIf="isSavingStock() === product.id"></span>
+              </button>
+
+              <!-- Cancel Button -->
+              <button class="btn-stock-cancel"
+                (click)="cancelStockEdit()"
+                [disabled]="isSavingStock() === product.id"
+                title="Cancel (Esc)">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </ng-container>
+
         </div>
         <div class="text-center text-muted py-4" *ngIf="lowStockProducts().length === 0">
           All products are well stocked.
