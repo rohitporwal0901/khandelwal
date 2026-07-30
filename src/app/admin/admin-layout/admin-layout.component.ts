@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,7 +13,7 @@ import { NetworkService } from '../../core/services/network.service';
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.css']
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit {
   authService = inject(AuthService);
   router = inject(Router);
   dataService = inject(DataService);
@@ -22,6 +22,15 @@ export class AdminLayoutComponent {
   currentDate = new Date();
   isLogoutModalOpen = false;
 
+  ngOnInit() {
+    // ✅ Bug #2 Fix: Register DataService at layout level (wraps ALL admin pages)
+    // Previously this was only done in AdminBillingComponent, meaning auto-sync
+    // would silently skip if internet returned while user was on any OTHER page.
+    // Now it's registered once globally when admin layout boots up.
+    this.networkService.registerDataService(this.dataService);
+  }
+
+  // Computed: count of app orders pending admin review (no bill number yet)
   pendingOrdersCount = computed(() =>
     this.dataService.orders().filter(o => o.status === 'pending' && !o.billNumber).length
   );

@@ -256,20 +256,20 @@ export class DataService {
   }
 
   async generateBill(
-    orderId: string, 
-    updatedItems: OrderItem[], 
+    orderId: string,
+    updatedItems: OrderItem[],
     billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number }
   ) {
     try {
       const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
       const orderDoc = await getDoc(orderRef);
       if (!orderDoc.exists()) return;
-      
+
       const orderData = orderDoc.data() as Order;
       const billNumber = await this.getNextBillNumber();
 
       // 1. Update order status, items, totals, and billNumber
-      const updatedOrderData = { 
+      const updatedOrderData = {
         status: 'completed' as const,
         items: updatedItems.map(item => ({
           productId: item.productId,
@@ -285,7 +285,7 @@ export class DataService {
         previousBalance: billingSummary.previousBalance || 0,
         netPayable: billingSummary.netPayable || 0
       };
-      
+
       await updateDoc(orderRef, updatedOrderData);
 
       // 2. Reduce stock for each product in the order
@@ -329,7 +329,7 @@ export class DataService {
       if (!orderDoc.exists()) return;
 
       const oldOrderData = orderDoc.data() as Order;
-      
+
       // 1. Calculate stock difference
       const oldItemsMap = new Map<string, number>();
       for (const item of oldOrderData.items) {
@@ -340,13 +340,13 @@ export class DataService {
       for (const item of updatedItems) {
         newItemsMap.set(item.productId, item.quantity);
       }
-      
+
       const allProductIds = new Set([...oldItemsMap.keys(), ...newItemsMap.keys()]);
-      
+
       for (const productId of allProductIds) {
         const oldQty = oldItemsMap.get(productId) || 0;
         const newQty = newItemsMap.get(productId) || 0;
-        
+
         if (oldQty !== newQty) {
           const productRef = doc(this.firestore, `products-kh/${productId}`);
           const productDoc = await getDoc(productRef);
@@ -368,7 +368,7 @@ export class DataService {
             const oldNetPayable = oldOrderData.netPayable || ((oldOrderData.totalAmount || 0) + (oldOrderData.previousBalance || 0));
             const newNetPayable = billingSummary.netPayable;
             const balanceDiff = newNetPayable - oldNetPayable;
-            
+
             await updateDoc(userRef, { balance: currentBalance + balanceDiff });
           }
         } catch (e) {
@@ -435,7 +435,7 @@ export class DataService {
       pincode: customerData.pincode || '',
       notes: notes || `POS Billing - ${billNumber}`,
       items: items,
-      status: 'pending',
+      status: 'completed',
       date: new Date().toISOString(),
       uid: customerData.uid,
       billNumber: billNumber,
