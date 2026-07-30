@@ -1,22 +1,69 @@
 .login-wrapper {
   min-height: 100vh;
   display: flex;
+  background: var(--background);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.login-split-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.login-image-side {
+  display: none;
+  /* REPLACE THIS URL WITH YOUR UPLOADED IMAGE PATH e.g., url('/assets/images/admin-login-bg.jpg') */
+  background-image: url('/assets/images/loginimage.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2));
+}
+
+@media (min-width: 768px) {
+  .login-image-side {
+    display: block;
+    flex: 1.2;
+  }
+}
+
+.login-form-side {
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--background) 0%, #e9ecef 100%);
+  padding: 3rem 2rem;
+  background: var(--background, #f8f9fa);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+  z-index: 10;
 }
 
 .login-card {
   width: 100%;
-  max-width: 400px;
-  padding: 2.5rem;
+  max-width: 450px;
+  padding: 3rem;
+  border-radius: 16px;
+  background: var(--surface, #ffffff);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(0, 0, 0, 0.03);
   border-top: 4px solid var(--primary);
 }
 
 .login-header {
   text-align: center;
   margin-bottom: 2rem;
-  
+
   h2 {
     color: var(--primary);
     font-size: 1.75rem;
@@ -26,7 +73,7 @@
 
 .input-with-icon {
   position: relative;
-  
+
   .icon {
     position: absolute;
     left: 1rem;
@@ -35,15 +82,15 @@
     color: var(--text-muted);
     font-size: 1.25rem;
   }
-  
+
   .form-control {
     padding-left: 2.75rem;
   }
-  
+
   &.right-icon .form-control {
     padding-right: 2.75rem;
   }
-  
+
   .eye-btn {
     position: absolute;
     right: 0.5rem;
@@ -57,7 +104,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     &:hover {
       color: var(--text-main);
     }
@@ -70,18 +117,18 @@
   align-items: center;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  
+
   .remember-me {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
   }
-  
+
   .forgot-link {
     text-decoration: none;
     font-weight: 500;
-    
+
     &:hover {
       text-decoration: underline;
     }
@@ -92,11 +139,11 @@
   width: 100%;
   padding: 0.875rem;
   font-size: 1.1rem;
-  
+
   .loader {
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
     border-top-color: #fff;
     animation: spin 1s ease-in-out infinite;
@@ -122,12 +169,14 @@
 
 .form-control.is-invalid {
   border-color: var(--error);
-  
+
   &:focus {
     box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
   }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
