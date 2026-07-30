@@ -35,12 +35,12 @@
 @media (min-width: 768px) {
   .login-image-side {
     display: block;
-    flex: 1.2;
+    flex: 6; /* 60% of the width */
   }
 }
 
 .login-form-side {
-  flex: 1;
+  flex: 4; /* 40% of the width */
   display: flex;
   align-items: center;
   justify-content: center;
