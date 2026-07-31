@@ -34,7 +34,7 @@
   </button>
 </div>
 
-<div class="glass-panel" style="padding: 0; position: relative;">
+<div class="glass-panel" style="padding: 0; position: relative; overflow-x: auto;">
   <div class="pagination-overlay" *ngIf="isPaginating()">
     <span class="spinner-large"></span>
     <p>Loading members...</p>
@@ -50,7 +50,8 @@
       <tr>
         <th>Member / Business</th>
         <th>Contact Number</th>
-        <th>Status</th>
+        <th class="text-center">Status</th>
+        <th>Ledger Balance</th>
         <th>Registration Date</th>
         <th class="text-right">Access Verification</th>
       </tr>
@@ -72,18 +73,23 @@
         <td>
           <span class="phone-tag">+91 {{ user.phone }}</span>
         </td>
-        <td>
-          <span class="badge" [ngClass]="{
-            'badge-warning': user.status === 'pending',
-            'badge-success': user.status === 'approved',
-            'badge-danger': user.status === 'rejected'
-          }">
-            <span class="dot"></span>
-            {{ (user.status || 'approved') | uppercase }}
-          </span>
+        <td class="text-center">
+          <div class="status-dot-only" [ngClass]="{
+            'status-warning': user.status === 'pending',
+            'status-success': user.status === 'approved',
+            'status-danger': user.status === 'rejected'
+          }" [title]="(user.status || 'approved') | uppercase">
+          </div>
         </td>
         <td>
-          <span class="date-text">{{ user.createdAt | date:'medium' }}</span>
+          <div *ngIf="user.balance">
+            <span class="amount-due" *ngIf="user.balance > 0">₹{{ user.balance | number:'1.2-2' }} Due</span>
+            <span class="amount-advance" *ngIf="user.balance < 0">₹{{ (user.balance * -1) | number:'1.2-2' }} Advance</span>
+          </div>
+          <span class="text-muted" *ngIf="!user.balance || user.balance === 0">₹0.00</span>
+        </td>
+        <td>
+          <span class="date-text">{{ user.createdAt | date:'mediumDate' }}</span>
         </td>
         <td class="text-right">
           <div class="action-buttons justify-end">

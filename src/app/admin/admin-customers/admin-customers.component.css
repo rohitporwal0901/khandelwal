@@ -64,6 +64,7 @@
     text-align: left;
     border-bottom: 1px solid rgba(0,0,0,0.06);
     vertical-align: middle;
+    white-space: nowrap;
   }
   th {
     font-weight: 700;
@@ -304,4 +305,41 @@
 .blur-content {
   filter: blur(2px);
   pointer-events: none;
+}
+
+.amount-due {
+  color: #C62828;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.amount-advance {
+  color: #2E7D32;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* ─── Status Dots (Compact) ─────────────── */
+.status-dot-only {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+
+.status-warning {
+  background: #D4AF37;
+  box-shadow: 0 0 8px rgba(212,175,55,0.6);
+}
+
+.status-success {
+  background: #2E7D32;
+  box-shadow: 0 0 8px rgba(46,125,50,0.6);
+}
+
+.status-danger {
+  background: #C62828;
+  box-shadow: 0 0 8px rgba(198,40,40,0.6);
 }

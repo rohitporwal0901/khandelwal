@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, inject, signal, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../../core/services/data.service';
@@ -18,6 +18,18 @@ export class UserLayoutComponent {
   router = inject(Router);
   networkService = inject(NetworkService);
   isScrolled = signal(false);
+
+  constructor() {
+    // Automatically redirect if admin changes status to pending/rejected while user is active
+    effect(() => {
+      const profile = this.authService.currentUserProfile();
+      if (profile && (profile.status === 'pending' || profile.status === 'rejected')) {
+        if (!this.router.url.includes('/shop/login')) {
+          this.router.navigate(['/shop/login'], { queryParams: { returnUrl: this.router.url, status: profile.status } });
+        }
+      }
+    });
+  }
 
   cartCount = () => this.dataService.cart().length;
 

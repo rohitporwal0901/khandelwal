@@ -104,13 +104,11 @@
       <form (ngSubmit)="checkoutForm.valid && submitOrder()" #checkoutForm="ngForm" class="checkout-form">
         <p class="form-hint">We'll use these details to process your order request.</p>
 
-        <div class="form-group" [class.has-error]="nameField.invalid && (nameField.touched || checkoutForm.submitted)">
-          <label class="form-label">Full Name <span class="req">*</span></label>
-          <input type="text" class="form-control" [(ngModel)]="customerDetails.customerName"
-                 name="customerName" required #nameField="ngModel" placeholder="e.g. Rahul Sharma">
-          <div class="field-error" *ngIf="nameField.invalid && (nameField.touched || checkoutForm.submitted)">
-            <span class="material-symbols-outlined">error</span> Please enter your full name
-          </div>
+        <div class="form-group">
+          <label class="form-label">Full Name <span class="locked-badge">🔒 Locked</span></label>
+          <input type="text" class="form-control readonly-input" [(ngModel)]="customerDetails.customerName"
+                 name="customerName" readonly #nameField="ngModel" placeholder="e.g. Rahul Sharma">
+          <div class="field-hint">Name cannot be changed for this account.</div>
         </div>
 
         <div class="form-group">
