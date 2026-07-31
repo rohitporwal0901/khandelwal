@@ -125,11 +125,10 @@ export class InvoiceService {
       tableData.push([
         (tableData.length + 1).toString(),
         'Packing & Forwarding',
-        '1 Pcs',
+        '-',
         badhaVal.toFixed(2),
         badhaVal.toFixed(2)
       ]);
-      totalQty += 1;
     }
     
     // Add empty rows to match the visual padding of a physical estimate book
