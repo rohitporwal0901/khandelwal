@@ -85,7 +85,13 @@
   }
 }
 
-.cart-btn {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-btn, .wishlist-btn-header {
   position: relative;
   color: var(--text-secondary);
   text-decoration: none;
@@ -127,6 +133,19 @@
     font-size: 0.65rem;
     font-weight: 700;
     border: 2px solid var(--surface);
+  }
+}
+
+.wishlist-btn-header {
+  background: var(--surface-muted);
+  
+  &.has-items {
+    background: rgba(229, 57, 53, 0.1);
+    color: #e53935;
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1;
+    }
   }
 }
 

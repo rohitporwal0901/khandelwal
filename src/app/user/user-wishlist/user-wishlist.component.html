@@ -1,0 +1,43 @@
+<div class="wishlist-container">
+  <div class="products-section">
+    <div class="section-header">
+      <h3>My Wishlist</h3>
+      <span class="product-count">{{ wishlistProducts().length }} items saved</span>
+    </div>
+
+    <!-- Products -->
+    <div class="products-grid" *ngIf="wishlistProducts().length > 0">
+      <div class="product-card"
+           *ngFor="let prod of wishlistProducts()"
+           [routerLink]="['/shop/product', prod.id]">
+        <div class="card-img-wrap" [class.out-of-stock]="prod.stock === 0">
+          <img [src]="prod.images[0]" [alt]="prod.name" loading="lazy">
+          
+          <button class="wishlist-btn" (click)="removeFromWishlist($event, prod.id)" aria-label="Remove from Wishlist">
+            <span class="material-symbols-outlined filled">
+              favorite
+            </span>
+          </button>
+
+          <div class="sku-chip">{{ prod.sku }}</div>
+          <div class="oos-badge" *ngIf="prod.stock === 0">Out of Stock</div>
+        </div>
+        <div class="card-body">
+          <span class="card-cat">{{ getCategoryName(prod.categoryId) }}</span>
+          <h4 class="card-title">{{ prod.name }}</h4>
+          <div class="card-stock" *ngIf="prod.stock > 0">
+            <span class="stock-dot"></span>
+            {{ prod.stock }} available
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="wishlistProducts().length === 0">
+      <span class="material-symbols-outlined">favorite_border</span>
+      <p>Your wishlist is empty</p>
+      <button class="btn-primary" routerLink="/shop">Browse Products</button>
+    </div>
+  </div>
+</div>

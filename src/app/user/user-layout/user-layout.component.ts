@@ -32,6 +32,7 @@ export class UserLayoutComponent {
   }
 
   cartCount = () => this.dataService.cart().length;
+  wishlistCount = () => this.dataService.wishlist().length;
 
   isFullPage(): boolean {
     return this.router.url.includes('/orders') || this.router.url.includes('/ledger');

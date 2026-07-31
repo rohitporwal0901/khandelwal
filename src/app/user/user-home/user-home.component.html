@@ -115,6 +115,13 @@
                    [class.loaded]="loadedImages()[prod.id]"
                    [class.grayscale]="prod.stock === 0"
                    (load)="onImageLoad(prod.id)" loading="lazy">
+              
+              <button class="wishlist-btn" (click)="toggleWishlist($event, prod.id)" aria-label="Toggle Wishlist">
+                <span class="material-symbols-outlined" [class.filled]="wishlist().includes(prod.id)">
+                  favorite
+                </span>
+              </button>
+
               <div class="sku-chip">{{ prod.sku }}</div>
               <div class="oos-badge" *ngIf="prod.stock === 0">Out of Stock</div>
             </div>

@@ -114,6 +114,14 @@ export class UserHomeComponent implements OnInit, OnDestroy {
     this.filterTimeout = setTimeout(() => this.isFiltering.set(false), 800);
   }
 
+  wishlist = computed(() => this.dataService.wishlist());
+
+  toggleWishlist(e: Event, productId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.dataService.toggleWishlist(productId);
+  }
+
   getCategoryName(id: string): string {
     const cat = this.categories().find(c => c.id === id);
     return cat ? cat.name : '';

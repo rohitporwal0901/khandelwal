@@ -98,6 +98,7 @@ export class DataService {
   orders = signal<Order[]>([]);
   receipts = signal<Receipt[]>([]);
   cart = signal<OrderItem[]>([]);
+  wishlist = signal<string[]>([]);
   isProductsLoaded = signal<boolean>(false);
   homeSlides = signal<HomeSlide[]>([]);
 
@@ -153,9 +154,13 @@ export class DataService {
         if (savedCart) {
           this.cart.set(JSON.parse(savedCart));
         }
+        const savedWishlist = localStorage.getItem('khandelwal_wishlist');
+        if (savedWishlist) {
+          this.wishlist.set(JSON.parse(savedWishlist));
+        }
       }
     } catch (e) {
-      console.error('Failed to parse cart from local storage', e);
+      console.error('Failed to parse cart or wishlist from local storage', e);
     }
   }
 
@@ -195,6 +200,25 @@ export class DataService {
   clearCart() {
     this.cart.set([]);
     this.saveCartToStorage();
+  }
+
+  // Wishlist Actions
+  toggleWishlist(productId: string) {
+    const current = this.wishlist();
+    let updated = [];
+    if (current.includes(productId)) {
+      updated = current.filter(id => id !== productId);
+    } else {
+      updated = [...current, productId];
+    }
+    this.wishlist.set(updated);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('khandelwal_wishlist', JSON.stringify(updated));
+      }
+    } catch (e) {
+      console.error('Failed to save wishlist to local storage', e);
+    }
   }
 
   async placeOrder(customerDetails: Omit<Order, 'id' | 'items' | 'status' | 'date'>) {

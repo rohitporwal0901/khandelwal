@@ -369,6 +369,47 @@
       &.out-of-stock img { opacity: 0.5; }
     }
 
+    .wishlist-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(6px);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      padding: 0;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .wishlist-btn:hover {
+      transform: scale(1.05);
+      background: #fff;
+    }
+
+    .wishlist-btn:active {
+      transform: scale(0.95);
+    }
+
+    .wishlist-btn .material-symbols-outlined {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: color 0.2s, font-variation-settings 0.2s;
+      /* Using font-variation-settings to handle fill for material symbols if applicable */
+    }
+
+    .wishlist-btn .material-symbols-outlined.filled {
+      color: #e53935;
+      font-variation-settings: 'FILL' 1;
+    }
+
     .img-skeleton {
       position: absolute;
       inset: 0;

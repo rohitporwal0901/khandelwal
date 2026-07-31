@@ -10,6 +10,10 @@
           </div>
         </div>
         <div class="header-actions">
+          <a routerLink="/shop/wishlist" class="wishlist-btn-header" [class.has-items]="wishlistCount() > 0">
+            <span class="material-symbols-outlined">favorite</span>
+            <span class="badge" *ngIf="wishlistCount() > 0">{{ wishlistCount() }}</span>
+          </a>
           <a routerLink="/shop/cart" class="cart-btn" [class.has-items]="cartCount() > 0">
             <span class="material-symbols-outlined">shopping_cart</span>
             <span class="badge" *ngIf="cartCount() > 0">{{ cartCount() }}</span>
