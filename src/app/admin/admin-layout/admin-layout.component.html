@@ -1,60 +1,89 @@
 <div class="admin-container">
   <aside class="sidebar">
+    <!-- Brand Logo -->
     <div class="logo">
-      <img src="favicon.ico" alt="Logo" class="sidebar-logo">
+      <div class="logo-icon">
+        <img src="assets/kc-logo.png" alt="KC Logo" class="sidebar-logo-img">
+      </div>
       <div class="logo-text">
         <h2>Khandelwal Cards</h2>
-        <span class="badge badge-warning">Admin Panel</span>
+        <span class="admin-badge">Admin Panel</span>
       </div>
     </div>
 
     <nav class="nav-menu">
+      <!-- OVERVIEW Section -->
+      <div class="nav-section-label">OVERVIEW</div>
       <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
-        <span class="material-symbols-outlined">dashboard</span> Dashboard
-      </a>
-      <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
-        <span class="material-symbols-outlined">category</span> Categories
-      </a>
-      <a routerLink="/admin/products" routerLinkActive="active" class="nav-item">
-        <span class="material-symbols-outlined">inventory_2</span> Products
+        <span class="nav-item-icon material-symbols-outlined">dashboard</span>
+        <span class="nav-item-label">Dashboard</span>
       </a>
       <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item">
-        <span class="material-symbols-outlined">shopping_cart</span> Orders
+        <span class="nav-item-icon material-symbols-outlined">shopping_cart</span>
+        <span class="nav-item-label">Orders</span>
+      </a>
+      <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
+        <span class="nav-item-icon material-symbols-outlined">group</span>
+        <span class="nav-item-label">Customers</span>
       </a>
 
-      <!-- Parent Menu: Billing & Receipts -->
+      <!-- INVENTORY Section -->
+      <div class="nav-section-label">INVENTORY</div>
+      <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+        <span class="nav-item-icon material-symbols-outlined">category</span>
+        <span class="nav-item-label">Categories</span>
+      </a>
+      <a routerLink="/admin/products" routerLinkActive="active" class="nav-item">
+        <span class="nav-item-icon material-symbols-outlined">inventory_2</span>
+        <span class="nav-item-label">Products</span>
+      </a>
+
+      <!-- BILLING Section -->
+      <div class="nav-section-label">BILLING</div>
       <div class="nav-parent-group">
         <div class="nav-item nav-parent" (click)="toggleBillingMenu()" [class.active]="isBillingRoute()">
-          <div class="flex-align gap-2">
-            <span class="material-symbols-outlined">payments</span> Billing & Receipts
+          <div class="flex-align">
+            <span class="nav-item-icon material-symbols-outlined">payments</span>
+            <span class="nav-item-label">Billing & Receipts</span>
           </div>
           <span class="material-symbols-outlined toggle-icon" [class.rotated]="!isBillingMenuOpen()">expand_more</span>
         </div>
         <div class="sub-nav-menu" *ngIf="isBillingMenuOpen()">
           <a routerLink="/admin/billing" routerLinkActive="active" class="nav-item sub-nav-item">
-            <span class="material-symbols-outlined">point_of_sale</span> Generate Bill
+            <span class="nav-item-icon material-symbols-outlined">point_of_sale</span>
+            <span class="nav-item-label">Generate Bill</span>
           </a>
           <a routerLink="/admin/receipts" routerLinkActive="active" class="nav-item sub-nav-item">
-            <span class="material-symbols-outlined">receipt_long</span> Generate Receipt
+            <span class="nav-item-icon material-symbols-outlined">receipt_long</span>
+            <span class="nav-item-label">Generate Receipt</span>
           </a>
           <a routerLink="/admin/old-bills" routerLinkActive="active" class="nav-item sub-nav-item">
-            <span class="material-symbols-outlined">history</span> Old Bills
+            <span class="nav-item-icon material-symbols-outlined">history</span>
+            <span class="nav-item-label">Old Bills</span>
           </a>
         </div>
       </div>
 
-      <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item">
-        <span class="material-symbols-outlined">group</span> Customers
-      </a>
-
+      <!-- SETTINGS Section -->
+      <div class="nav-section-label">SETTINGS</div>
       <a routerLink="/admin/settings" routerLinkActive="active" class="nav-item">
-        <span class="material-symbols-outlined">settings</span> Settings
+        <span class="nav-item-icon material-symbols-outlined">settings</span>
+        <span class="nav-item-label">Settings</span>
       </a>
     </nav>
 
+    <!-- User Footer -->
     <div class="sidebar-footer">
-      <button class="btn btn-outline" (click)="promptLogout()" style="width: 100%">
-        <span class="material-symbols-outlined">logout</span> Logout
+      <div class="sidebar-user">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=8B0000&color=fff&size=80" alt="Admin" class="sidebar-user-avatar">
+        <div class="sidebar-user-info">
+          <strong>Admin User</strong>
+          <span>Administrator</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="promptLogout()">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Logout</span>
       </button>
     </div>
   </aside>
@@ -68,7 +97,7 @@
           <span class="notification-badge" *ngIf="pendingOrdersCount() > 0">{{ pendingOrdersCount() }}</span>
         </button>
         <div class="admin-profile">
-          <img src="https://ui-avatars.com/api/?name=Admin&background=800000&color=fff" alt="Admin">
+          <img src="https://ui-avatars.com/api/?name=Admin&background=8B0000&color=fff" alt="Admin">
           <div class="profile-info">
             <strong>Admin User</strong>
             <span>Administrator</span>
