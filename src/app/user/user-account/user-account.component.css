@@ -618,36 +618,37 @@
   margin: 24px 0 0;
 }
 
-/* ─── PIN Boxes (Rapido Compact Style) ──── */
+/* ─── PIN Boxes (Clean & Premium) ──── */
 .pin-boxes {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  justify-content: flex-start;
 }
 
 .pin-box {
-  width: 38px;
-  height: 42px;
-  border: 1.5px solid #D8D8DE;
-  border-radius: 8px;
+  width: 44px;
+  height: 50px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 12px;
   text-align: center;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   font-family: inherit;
-  color: #282C3F;
+  color: #1E293B;
   background: #FFFFFF;
   outline: none;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   -webkit-text-security: disc;
 
   &:focus {
-    border-color: #D4AF37;
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
   }
 
   &.filled {
-    border-color: #D4AF37;
+    border-color: var(--primary);
     background: #FFFDF0;
-    color: #8B0000;
+    color: var(--primary);
   }
 }
 
