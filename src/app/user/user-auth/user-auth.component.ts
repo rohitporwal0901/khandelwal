@@ -52,6 +52,11 @@ export class UserAuthComponent implements OnInit {
     input.value = input.value.replace(/\D/g, '');
     this.phoneNumber = input.value;
     this.errorMsg.set('');
+
+    // ✅ Rapido-style: auto-proceed when 10 digits entered
+    if (this.phoneNumber.length === 10) {
+      setTimeout(() => this.checkPhone(), 100);
+    }
   }
 
   async checkPhone() {
@@ -203,6 +208,14 @@ export class UserAuthComponent implements OnInit {
     if (input.value && index < 5) {
       const nextId = this.getPinId(type, index + 1);
       document.getElementById(nextId)?.focus();
+    }
+
+    // ✅ Rapido-style: auto-submit login when 6th PIN digit entered
+    if (type === 'login' && index === 5 && input.value) {
+      const allFilled = this.loginPinDigits.every(d => d !== '');
+      if (allFilled) {
+        setTimeout(() => this.loginUser(), 150);
+      }
     }
   }
 

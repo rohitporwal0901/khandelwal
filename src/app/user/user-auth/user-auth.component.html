@@ -35,25 +35,49 @@
             <input
               type="tel"
               class="form-input phone-input"
-              placeholder="98765 43210"
+              placeholder="Enter 10-digit number"
               [(ngModel)]="phoneNumber"
               maxlength="10"
               inputmode="numeric"
-              (keyup.enter)="checkPhone()"
               (input)="onPhoneInput($event)"
               id="phone-input"
               autofocus>
           </div>
+          <p class="auto-hint" *ngIf="phoneNumber.length < 10 && phoneNumber.length > 0">
+            {{ 10 - phoneNumber.length }} more digit{{ 10 - phoneNumber.length !== 1 ? 's' : '' }} to go
+          </p>
           <div class="error-msg mt-2" *ngIf="errorMsg()">
             <span class="material-symbols-outlined">error</span>
             <span>{{ errorMsg() }}</span>
           </div>
         </div>
 
-        <button class="btn-primary mt-4" (click)="checkPhone()" [disabled]="isLoading() || phoneNumber.length !== 10">
-          <span *ngIf="!isLoading()">Continue</span>
-          <span class="btn-spinner" *ngIf="isLoading()"></span>
-        </button>
+        <!-- Digit Progress Dots -->
+        <div class="digit-progress mt-4">
+          <div class="digit-dots">
+            <div class="digit-dot" *ngFor="let i of [0,1,2,3,4,5,6,7,8,9]"
+              [class.filled]="phoneNumber.length > i"
+              [class.active]="phoneNumber.length === i + 1">
+            </div>
+          </div>
+          <div class="digit-fab-wrap">
+            <button class="digit-fab"
+              [class.ready]="phoneNumber.length === 10 && !isLoading()"
+              [class.loading]="isLoading()"
+              (click)="checkPhone()"
+              [disabled]="phoneNumber.length !== 10 || isLoading()">
+              <span class="material-symbols-outlined fab-icon" *ngIf="!isLoading()">arrow_forward</span>
+              <span class="fab-spinner" *ngIf="isLoading()"></span>
+            </button>
+          </div>
+        </div>
+
+        <p class="digit-hint" *ngIf="phoneNumber.length < 10 && phoneNumber.length > 0">
+          {{ 10 - phoneNumber.length }} more digit{{ 10 - phoneNumber.length !== 1 ? 's' : '' }}
+        </p>
+        <p class="digit-hint ready-hint" *ngIf="phoneNumber.length === 10 && !isLoading()">
+          ✓ Proceeding automatically...
+        </p>
 
         <p class="terms-text">
           By continuing, you agree to our <span class="link-text">Terms of Wholesale Access</span>
@@ -110,10 +134,38 @@
             <span>{{ errorMsg() }}</span>
           </div>
 
-          <button class="btn-primary mt-4" (click)="loginUser()" [disabled]="isLoading() || loginPinDigits.join('').length !== 6">
-            <span *ngIf="!isLoading()">Login to Store</span>
-            <span class="btn-spinner" *ngIf="isLoading()"></span>
-          </button>
+          <!-- Auto-login status indicator -->
+          <div class="auto-login-status mt-4">
+            <div class="auto-status-row" *ngIf="!isLoading() && !errorMsg()">
+              <div class="status-pin-dot" *ngFor="let d of loginPinDigits" [class.filled]="d !== ''"></div>
+              <span class="status-label" *ngIf="loginPinDigits.join('').length < 6">
+                {{ 6 - loginPinDigits.join('').length }} digit{{ 6 - loginPinDigits.join('').length !== 1 ? 's' : '' }} left
+              </span>
+              <span class="status-label verifying" *ngIf="loginPinDigits.join('').length === 6">
+                Verifying...
+              </span>
+            </div>
+          </div>
+
+          <!-- ✅ Premium Auth Loading Overlay -->
+          <div class="auth-overlay" *ngIf="isLoading()">
+            <div class="auth-overlay-rings">
+              <div class="ao-ring ao-ring-3"></div>
+              <div class="ao-ring ao-ring-2"></div>
+              <div class="ao-ring ao-ring-1"></div>
+              <!-- Logo centered inside rings -->
+              <div class="auth-overlay-logo">
+                <img src="assets/kc-logo.png" alt="KC" class="ao-logo-img">
+              </div>
+            </div>
+            <div class="auth-overlay-text">
+              <p class="ao-title">Authenticating</p>
+              <div class="ao-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <p class="ao-subtitle">Securing your access to the store</p>
+          </div>
 
           <button class="link-btn mt-3" (click)="screen.set('forgot-pin')">Forgot PIN?</button>
         </div>
