@@ -41,28 +41,25 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.75rem 1.25rem;
+      padding: 1rem 1.5rem;
       border-radius: 50px;
-      background: rgba(255, 255, 255, 0.95);
+      background: var(--primary);
       backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: var(--text-main);
-      min-width: 300px;
+      box-shadow: 0 10px 40px rgba(139, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--surface);
+      min-width: 320px;
       
       &.success {
-        border-left: 4px solid var(--success);
-        .icon { color: var(--success); }
+        .icon { color: var(--success); filter: brightness(1.5); }
       }
       
       &.error {
-        border-left: 4px solid var(--error);
-        .icon { color: var(--error); }
+        .icon { color: #ff6b6b; }
       }
       
       &.info {
-        border-left: 4px solid var(--primary);
-        .icon { color: var(--primary); }
+        .icon { color: var(--secondary); }
       }
     }
     
@@ -85,12 +82,12 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       justify-content: center;
       padding: 0.25rem;
       border-radius: 50%;
-      color: var(--text-muted);
-      transition: background 0.2s ease;
+      color: rgba(255, 255, 255, 0.7);
+      transition: background 0.2s ease, color 0.2s ease;
       
       &:hover {
-        background: rgba(0,0,0,0.05);
-        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--surface);
       }
       
       span { font-size: 18px; }

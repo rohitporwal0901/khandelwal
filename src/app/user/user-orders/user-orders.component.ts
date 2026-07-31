@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService, Order } from '../../core/services/data.service';
 import { InvoiceService } from '../../core/services/invoice.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-user-orders',
@@ -17,6 +18,7 @@ export class UserOrdersComponent implements OnInit {
   private authService = inject(AuthService);
   private dataService = inject(DataService);
   private invoiceService = inject(InvoiceService);
+  private snackbar = inject(SnackbarService);
 
   orders = signal<Order[]>([]);
   isLoading = signal(true);
@@ -69,6 +71,7 @@ export class UserOrdersComponent implements OnInit {
   downloadBill(order: Order, event: Event) {
     event.stopPropagation();
     const products = this.dataService.products();
+    this.snackbar.show('Downloading bill...', 'info');
     this.invoiceService.generateInvoice(order, products, true);
   }
 }

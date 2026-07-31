@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DataService, Order } from '../../core/services/data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BottomSheetComponent } from '../../shared/bottom-sheet/bottom-sheet.component';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-user-cart',
@@ -17,6 +18,7 @@ export class UserCartComponent {
   dataService = inject(DataService);
   authService = inject(AuthService);
   router = inject(Router);
+  snackbar = inject(SnackbarService);
 
   cartItems = this.dataService.cart;
   products = this.dataService.products;
@@ -101,6 +103,7 @@ export class UserCartComponent {
       this.isSubmitting.set(false);
       this.closeCheckout();
       this.orderSuccess.set(true);
+      this.snackbar.show('Order placed successfully!', 'success');
     } catch (error) {
       console.error(error);
       this.isSubmitting.set(false);

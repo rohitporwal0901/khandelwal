@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DataService, Receipt, Order } from '../../core/services/data.service';
 import { InvoiceService, LedgerReportEntry } from '../../core/services/invoice.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 interface UILedgerEntry {
   id: string;
@@ -30,6 +31,7 @@ export class UserLedgerComponent implements OnInit {
   authService = inject(AuthService);
   dataService = inject(DataService);
   invoiceService = inject(InvoiceService);
+  snackbar = inject(SnackbarService);
 
   Math = Math;
 
@@ -120,9 +122,11 @@ export class UserLedgerComponent implements OnInit {
   downloadItem(entry: UILedgerEntry, event: Event) {
     event.stopPropagation();
     if (entry.type === 'receipt') {
+      this.snackbar.show('Downloading receipt...', 'info');
       this.invoiceService.generateReceipt(entry.sourceItem as Receipt, true);
     } else if (entry.type === 'bill') {
       const products = this.dataService.products();
+      this.snackbar.show('Downloading bill...', 'info');
       this.invoiceService.generateInvoice(entry.sourceItem as Order, products, true);
     }
   }
@@ -161,6 +165,7 @@ export class UserLedgerComponent implements OnInit {
         reportEntries.forEach(e => { periodDebit += e.debit; periodCredit += e.credit; });
         const openingBal = Math.round((finalBal - (periodDebit - periodCredit)) * 100) / 100;
 
+        this.snackbar.show('Generating ledger report...', 'info');
         this.invoiceService.generateLedgerReport(
           cust,
           reportEntries,

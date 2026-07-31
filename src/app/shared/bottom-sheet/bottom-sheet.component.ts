@@ -40,6 +40,15 @@ import { CommonModule } from '@angular/common';
       bottom: 0;
     }
     
+    @media (min-width: 768px) {
+      .bottom-sheet {
+        width: 500px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+      }
+    }
+    
     .sheet-header {
       padding: 1rem 1.5rem;
       border-bottom: 1px solid rgba(0,0,0,0.05);

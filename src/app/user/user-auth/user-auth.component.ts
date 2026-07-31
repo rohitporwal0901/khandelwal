@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SnackbarService } from '../../core/services/snackbar.service';
 
 type Screen = 'phone' | 'login-pin' | 'register' | 'forgot-pin' | 'waiting-approval';
 
@@ -17,6 +18,7 @@ export class UserAuthComponent implements OnInit {
   authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private snackbar = inject(SnackbarService);
 
   screen = signal<Screen>('phone');
   isLoading = signal(false);
@@ -92,6 +94,7 @@ export class UserAuthComponent implements OnInit {
         if (this.authService.currentUserProfile()) break;
         await new Promise(r => setTimeout(r, 50));
       }
+      this.snackbar.show('Logged in successfully!', 'success');
       this.navigateAfterLogin();
     } catch (e: any) {
       if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
@@ -116,6 +119,7 @@ export class UserAuthComponent implements OnInit {
     try {
       await this.authService.registerUser(this.registerName, this.phoneNumber, pin);
       // After registration, user status is 'pending' -> show waiting approval screen
+      this.snackbar.show('Registration successful! Waiting for approval.', 'success');
       this.screen.set('waiting-approval');
     } catch (e: any) {
       if (e.code === 'auth/email-already-in-use') {
@@ -171,6 +175,7 @@ export class UserAuthComponent implements OnInit {
     this.errorMsg.set('');
     try {
       await this.authService.setNewPin(this.phoneNumber, newPin);
+      this.snackbar.show('PIN reset successfully!', 'success');
       this.navigateAfterLogin();
     } catch(e: any) {
       this.errorMsg.set(e.message || 'Unable to reset PIN. Please try again.');
