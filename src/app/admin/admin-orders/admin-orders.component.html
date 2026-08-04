@@ -155,30 +155,23 @@
             <button class="btn-close-mini" (click)="showProductDropdown.set(false)">Close</button>
           </div>
           <div class="dropdown-list">
-            <div class="dropdown-item-row" *ngFor="let prod of filteredProducts()" (click)="addProductToBill(prod)">
-              <div class="flex-align gap-3 flex-1 min-w-0">
-                <div class="prod-thumb">
-                  <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
-                </div>
-                <div class="flex-1 min-w-0">
-                  <strong class="text-slate-800 d-block text-sm truncate font-bold">{{ prod.name }}</strong>
-                  <div class="flex-align gap-2 mt-1">
-                    <span class="sku-badge">{{ prod.sku }}</span>
-                    <span class="stock-badge" [class.stock-danger]="prod.stock < 10">Stock: {{ prod.stock }}</span>
-                  </div>
+            <div class="prod-dropdown-row" *ngFor="let prod of filteredProducts()"
+              (click)="addProductToBill(prod); showProductDropdown.set(false); $event.stopPropagation()">
+              <div class="prod-mini-avatar">
+                <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
+                <span *ngIf="!prod.images || prod.images.length === 0" class="material-symbols-outlined text-slate-400">image</span>
+              </div>
+              <div class="prod-mini-info flex-1 min-w-0">
+                <span class="prod-mini-name truncate">{{ prod.name }}</span>
+                <div class="flex-align gap-2 mt-1">
+                  <span class="sku-badge">{{ prod.sku }}</span>
+                  <span class="stock-badge" [class.stock-danger]="prod.stock < 10">Stock: {{ prod.stock }}</span>
                 </div>
               </div>
-              <div class="flex-align gap-3">
-                <div class="text-right">
-                  <div class="text-xxs text-slate-400 font-bold">RATE (₹)</div>
-                  <div class="flex-align gap-1 mt-1">
-                    <span class="rate-pill-buy">Buy ₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
-                    <span class="rate-pill-sell">Sell ₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
-                  </div>
-                </div>
-                <button class="btn-add-icon">
-                  <span class="material-symbols-outlined">add_circle</span>
-                </button>
+              <div class="prod-mini-rates flex-align gap-1">
+                <span class="rate-pill-buy" title="Buy Rate">₹{{ prod.purchaseRate || 0 | number:'1.0-2' }}</span>
+                <span class="rate-pill-sell" title="Sell Rate">₹{{ prod.sellingRate || 0 | number:'1.0-2' }}</span>
+                <span class="material-symbols-outlined text-maroon" style="font-size:1.3rem">add_circle</span>
               </div>
             </div>
             <div class="empty-list-msg" *ngIf="filteredProducts().length === 0">

@@ -52,20 +52,19 @@
             <button class="btn-close-mini" (click)="showCustomerDropdown.set(false)">Close</button>
           </div>
           <div class="dropdown-list">
-            <div class="dropdown-item-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust)">
-              <div class="item-info">
-                <strong class="text-slate-800 d-block">{{ cust.name }}</strong>
-                <div class="flex-align gap-2 mt-1">
-                  <span class="phone-badge">+91 {{ cust.phone }}</span>
-                  <span class="text-xs text-slate-500" *ngIf="cust.address || cust.pincode">
-                    {{ cust.address }} {{ cust.pincode ? '(Pin: ' + cust.pincode + ')' : '' }}
-                  </span>
-                </div>
+            <div class="cust-dropdown-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust)">
+              <div class="cust-mini-avatar">
+                <img *ngIf="cust.photoUrl" [src]="cust.photoUrl" alt="" class="cust-mini-photo">
+                <span *ngIf="!cust.photoUrl" class="cust-mini-initials">{{ cust.name.charAt(0) | uppercase }}</span>
               </div>
-              <div class="item-badge">
-                <span *ngIf="(cust.balance || 0) > 0" class="badge-sharp badge-danger">Due: ₹{{ cust.balance }}</span>
-                <span *ngIf="(cust.balance || 0) < 0" class="badge-sharp badge-success">Adv: ₹{{ Math.abs(cust.balance || 0) }} CR</span>
-                <span *ngIf="!(cust.balance)" class="badge-sharp badge-neutral">No Balance</span>
+              <div class="cust-mini-info">
+                <span class="cust-mini-name">{{ cust.name }}</span>
+                <span class="cust-mini-phone">+91 {{ cust.phone }}</span>
+              </div>
+              <div class="cust-mini-badge">
+                <span *ngIf="(cust.balance || 0) > 0" class="badge-sharp badge-danger">₹{{ cust.balance }}</span>
+                <span *ngIf="(cust.balance || 0) < 0" class="badge-sharp badge-success">CR</span>
+                <span *ngIf="!(cust.balance)" class="badge-sharp badge-neutral" style="font-size: 0.65rem; padding: 2px 6px;">₹0</span>
               </div>
             </div>
             <div class="empty-list-msg" *ngIf="filteredCustomers().length === 0">

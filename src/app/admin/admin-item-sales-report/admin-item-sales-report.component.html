@@ -62,10 +62,14 @@
               <button class="btn-close-mini" (click)="showItemDropdown.set(false); $event.stopPropagation()">Close</button>
             </div>
             <div class="dropdown-list">
-              <div class="dropdown-item-row" *ngFor="let prod of filteredProducts()" (click)="selectItem(prod)">
-                <div class="item-info w-100">
-                  <strong class="text-slate-800 d-block text-sm mb-1">{{ prod.name }}</strong>
-                  <div class="flex-align gap-2">
+              <div class="prod-dropdown-row" *ngFor="let prod of filteredProducts()" (click)="selectItem(prod); showItemDropdown.set(false); $event.stopPropagation()">
+                <div class="prod-mini-avatar">
+                  <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
+                  <span *ngIf="!prod.images || prod.images.length === 0" class="material-symbols-outlined text-slate-400">image</span>
+                </div>
+                <div class="prod-mini-info flex-1 min-w-0">
+                  <span class="prod-mini-name truncate">{{ prod.name }}</span>
+                  <div class="flex-align gap-2 mt-1">
                     <span class="sku-badge">{{ prod.sku }}</span>
                     <span class="stock-badge" [class.stock-danger]="prod.stock <= 0">Stock: {{ prod.stock }}</span>
                   </div>
@@ -100,17 +104,21 @@
               <button class="btn-close-mini" (click)="showCustomerDropdown.set(false); $event.stopPropagation()">Close</button>
             </div>
             <div class="dropdown-list">
-              <div class="dropdown-item-row" (click)="selectCustomer('', '')">
-                <div class="item-info">
-                  <strong class="text-slate-800 d-block">All Customers</strong>
+              <div class="cust-dropdown-row" (click)="selectCustomer('', ''); showCustomerDropdown.set(false); $event.stopPropagation()">
+                <div class="cust-mini-avatar">
+                  <span class="material-symbols-outlined" style="color: white; font-size: 1rem;">group</span>
+                </div>
+                <div class="cust-mini-info">
+                  <span class="cust-mini-name">All Customers</span>
                 </div>
               </div>
-              <div class="dropdown-item-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust.uid || cust.name, cust.name)">
-                <div class="item-info">
-                  <strong class="text-slate-800 d-block">{{ cust.name }}</strong>
-                  <div class="flex-align gap-2 mt-1">
-                    <span class="phone-badge">{{ cust.phone }}</span>
-                  </div>
+              <div class="cust-dropdown-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust.uid || cust.name, cust.name); showCustomerDropdown.set(false); $event.stopPropagation()">
+                <div class="cust-mini-avatar">
+                  <span class="cust-mini-initials">{{ cust.name.charAt(0) | uppercase }}</span>
+                </div>
+                <div class="cust-mini-info">
+                  <span class="cust-mini-name">{{ cust.name }}</span>
+                  <span class="cust-mini-phone">+91 {{ cust.phone }}</span>
                 </div>
               </div>
               <div class="empty-list-msg" *ngIf="filteredCustomers().length === 0">
