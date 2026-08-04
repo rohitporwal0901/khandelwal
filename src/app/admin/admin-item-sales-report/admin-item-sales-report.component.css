@@ -16,7 +16,7 @@
 }
 
 .billing-page {
-  padding: 0.25rem 2.25rem 1.5rem 2.25rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
   max-width: 1650px;
   margin: 0 auto;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -89,7 +89,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 1.25rem;
-  align-items: flex-start;
+  align-items: flex-end;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
@@ -585,100 +585,104 @@
 .max-w-md { max-width: 28rem; }
 .mx-auto { margin-left: auto; margin-right: auto; }
 
-/* Stat Card */
+/* Stat Card - Matching Dashboard but smaller */
 .stat-card {
   background: white;
   border: 1px solid var(--slate-200);
-  border-radius: 12px;
-  padding: 1.25rem;
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  gap: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
 }
 .stat-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 .stat-icon .material-symbols-outlined {
-  font-size: 28px;
+  font-size: 1.6rem;
 }
 .stat-content {
   flex: 1;
-}
-.stat-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--slate-500);
-  margin-bottom: 0.25rem;
+  display: flex;
+  flex-direction: column;
 }
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--slate-900);
-  line-height: 1.2;
+  margin-bottom: 0.15rem;
+}
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-500);
+  text-transform: none;
+  letter-spacing: normal;
 }
 .stat-desc {
-  font-size: 0.75rem;
-  color: var(--slate-400);
-  margin-top: 0.35rem;
-  font-weight: 500;
+  display: none;
 }
 
-/* Premium Card */
+/* Premium Card - Refined Spacing */
 .card-premium {
   background: white;
   border: 1px solid var(--slate-200);
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 .card-premium-header {
-  padding: 1.1rem 1.25rem;
+  padding: 1rem 1.15rem 0.75rem 1.15rem;
   background: white;
-  border-bottom: 1px solid var(--slate-100);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--slate-100);
+}
+.card-premium-header h3 {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: var(--slate-800) !important;
 }
 .card-premium-body {
-  padding: 1.25rem 1.5rem;
+  padding: 0.75rem 1.15rem 1.15rem 1.15rem;
   flex: 1;
 }
 
-/* Table Enhancements */
+/* Table Enhancements - Tightened */
 .table-premium th {
-  background: white !important;
-  padding: 14px 16px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--slate-400);
-  border-bottom: 2px solid var(--slate-100) !important;
+  background: var(--slate-50) !important;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--slate-600);
+  border-bottom: 1px solid var(--slate-200) !important;
   position: sticky; top: 0; z-index: 5;
 }
 .table-premium td {
-  padding: 14px 16px;
+  padding: 10px 14px;
   vertical-align: middle;
-  border-bottom: 1px dashed var(--slate-200) !important;
+  border-bottom: 1px solid var(--slate-100) !important;
+  font-size: 0.88rem;
 }
 .table-premium tbody tr:last-child td { border-bottom: none !important; }
-.table-premium tbody tr:hover td { background: var(--slate-50); }
+.table-premium tbody tr:hover td { background: rgba(0,0,0,0.01); }
 
 /* Report Specific CSS Additions */
 .summary-cards-grid {
@@ -703,7 +707,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.65rem 0;
+  padding: 0.5rem 0;
   border-bottom: 1px dashed var(--slate-200);
 }
 .overview-row:last-child {
