@@ -204,8 +204,8 @@ export class AdminBillingComponent implements OnInit {
     }
 
     this.billItems.set(current);
-    this.productSearchTerm.set('');
-    // Keep product dropdown open so operator can add multiple items rapidly
+    this.productSearchTerm.set(prod.name);
+    this.showProductDropdown.set(false);
   }
 
   removeItem(index: number) {

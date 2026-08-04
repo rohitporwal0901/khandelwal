@@ -112,7 +112,7 @@
                   <span class="cust-mini-name">All Customers</span>
                 </div>
               </div>
-              <div class="cust-dropdown-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust.uid || cust.name, cust.name); showCustomerDropdown.set(false); $event.stopPropagation()">
+              <div class="cust-dropdown-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust.uid || cust.name, cust.name, cust.phone); showCustomerDropdown.set(false); $event.stopPropagation()">
                 <div class="cust-mini-avatar">
                   <span class="cust-mini-initials">{{ cust.name.charAt(0) | uppercase }}</span>
                 </div>

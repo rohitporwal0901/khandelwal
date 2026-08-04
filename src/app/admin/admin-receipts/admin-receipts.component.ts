@@ -94,7 +94,7 @@ export class AdminReceiptsComponent implements OnInit {
     this.selectedCustomer.set(cust);
     this.selectedCustId.set(cust.uid);
     this.showCustomerDropdown.set(false);
-    this.customerSearchTerm.set('');
+    this.customerSearchTerm.set(cust.name);
     const dueBal = cust.balance || 0;
     this.receivedAmount.set(dueBal > 0 ? dueBal : null);
   }

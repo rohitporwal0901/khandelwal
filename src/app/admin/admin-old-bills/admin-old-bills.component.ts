@@ -173,6 +173,14 @@ export class AdminOldBillsComponent implements OnInit {
   selectCustomer(custUid: string) {
     this.selectedCustomerUid.set(custUid);
     this.showCustomerDropdown.set(false);
+    if (custUid) {
+      const c = this.customers().find(x => x.uid === custUid);
+      if (c) {
+        this.customerSearchTerm.set(c.name);
+      }
+    } else {
+      this.customerSearchTerm.set('');
+    }
     this.applyFilters();
   }
 
@@ -395,7 +403,7 @@ export class AdminOldBillsComponent implements OnInit {
       });
     }
     this.editableItems.set(items);
-    this.productSearchTerm.set('');
+    this.productSearchTerm.set(product.name);
     this.showProductDropdownDrawer.set(false);
   }
 

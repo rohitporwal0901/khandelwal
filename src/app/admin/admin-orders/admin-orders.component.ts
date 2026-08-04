@@ -286,7 +286,7 @@ export class AdminOrdersComponent implements OnInit {
       });
     }
     this.editableItems.set(items);
-    this.productSearchTerm.set('');
+    this.productSearchTerm.set(product.name);
     this.showProductDropdown.set(false);
   }
 

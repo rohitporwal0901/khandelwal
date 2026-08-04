@@ -183,7 +183,7 @@ export class AdminItemSalesReportComponent implements OnInit {
     this.selectedItem.set(product);
     this.showItemDropdown.set(false);
     if (product) {
-      this.itemSearchTerm.set(product.name);
+      this.itemSearchTerm.set(`${product.name} - ${product.sku}`);
     } else {
       this.itemSearchTerm.set('');
       // Automatically clear customer filter when item is cleared
@@ -191,11 +191,13 @@ export class AdminItemSalesReportComponent implements OnInit {
     }
   }
 
-  selectCustomer(uidOrName: string, name?: string) {
+  selectCustomer(uidOrName: string, name?: string, phone?: string) {
     this.selectedCustomerUid.set(uidOrName);
     this.showCustomerDropdown.set(false);
     if (uidOrName) {
-      this.customerSearchTerm.set(name || uidOrName);
+      let displayName = name || uidOrName;
+      if (phone) displayName += ` - ${phone}`;
+      this.customerSearchTerm.set(displayName);
     } else {
       this.customerSearchTerm.set('');
     }
