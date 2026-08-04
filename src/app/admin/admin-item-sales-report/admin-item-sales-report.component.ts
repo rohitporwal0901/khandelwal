@@ -180,6 +180,12 @@ export class AdminItemSalesReportComponent implements OnInit {
     const itemMap = new Map<string, ItemPurchaseSummary>();
 
     filteredOrders.forEach(order => {
+      // Use order-level totalAmount (includes badha/P&F) to match Old Bills
+      const orderTotal = order.totalAmount !== undefined
+        ? order.totalAmount
+        : ((order.subTotal || 0) + (order.badha || 0));
+      totalAmount += orderTotal;
+
       order.items.forEach(orderItem => {
         // skip packing/misc items without productId
         if (!orderItem.productId) return;
@@ -191,7 +197,6 @@ export class AdminItemSalesReportComponent implements OnInit {
         const amt = orderItem.total || (orderItem.quantity * (orderItem.sellingRate || 0));
 
         totalQty += qty;
-        totalAmount += amt;
 
         if (!itemMap.has(orderItem.productId)) {
           itemMap.set(orderItem.productId, {
