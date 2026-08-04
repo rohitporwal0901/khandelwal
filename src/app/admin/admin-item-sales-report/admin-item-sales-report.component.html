@@ -1,0 +1,282 @@
+<div style="position: relative; min-height: 100vh;">
+  <!-- Full Page Loading State -->
+  <div class="full-page-loader" *ngIf="isLoading()">
+    <div class="loader-content">
+      <div class="premium-spinner"></div>
+      <h2 class="loader-title">Loading Report...</h2>
+      <p class="loader-subtitle">Fetching item sales data</p>
+    </div>
+  </div>
+
+  <div class="billing-page" *ngIf="!isLoading()">
+    <!-- Top Header -->
+    <div class="page-header flex-align justify-between mb-4 pb-3 border-bottom-sharp mt-2">
+      <div class="header-title flex-align">
+        <div class="icon-box mr-3" style="background: #fef2f2; color: #800000; border-color: #fecaca;">
+          <span class="material-symbols-outlined">bar_chart</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold mb-1 text-slate-900">Item Sales Report</h1>
+          <p class="text-xs text-slate-500 mb-0 font-medium">Track item-wise sales, quantities, and stock status</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sleek Filter Toolbar -->
+    <div class="filter-toolbar mb-4 flex-col">
+      <!-- Main Filter Row -->
+      <div class="flex-align flex-wrap w-100" style="gap: 1.25rem; align-items: flex-end;">
+        
+        <!-- Time Range Pills -->
+        <div class="filter-group">
+          <label class="filter-label">Time Range</label>
+          <div class="pill-group">
+            <button class="pill-btn" [class.active]="dateFilter() === 'today'" (click)="setDateFilter('today')">Today</button>
+            <button class="pill-btn" [class.active]="dateFilter() === 'yesterday'" (click)="setDateFilter('yesterday')">Yesterday</button>
+            <button class="pill-btn" [class.active]="dateFilter() === 'this_week'" (click)="setDateFilter('this_week')">This Week</button>
+            <button class="pill-btn" [class.active]="dateFilter() === 'this_month'" (click)="setDateFilter('this_month')">This Month</button>
+            <button class="pill-btn" [class.active]="dateFilter() === 'all'" (click)="setDateFilter('all')">All Time</button>
+            <button class="pill-btn" [class.active]="dateFilter() === 'custom'" (click)="setDateFilter('custom')">Custom</button>
+          </div>
+        </div>
+
+        <!-- Item Filter -->
+        <div class="filter-group flex-1" style="min-width: 250px; position: relative;">
+          <label class="filter-label">Item Filter (Mandatory) <span class="text-danger">*</span></label>
+          <div class="search-box-sharp w-100" (click)="showItemDropdown.set(true)">
+            <span class="material-symbols-outlined search-icon" style="top: 8px;">inventory_2</span>
+            <input type="text"
+              [placeholder]="selectedItem() ? '' : 'Search item by name or SKU...'"
+              [ngModel]="itemSearchTerm()" (ngModelChange)="itemSearchTerm.set($event); showItemDropdown.set(true)"
+              (focus)="showItemDropdown.set(true)" class="filter-input w-100 pl-40">
+            <button class="btn-clear" style="top: 4px;" *ngIf="itemSearchTerm()"
+              (click)="selectItem(null); $event.stopPropagation()">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+
+          <!-- Floating Dropdown -->
+          <div class="dropdown-menu-sharp" *ngIf="showItemDropdown()" style="top: calc(100% + 4px);">
+            <div class="dropdown-header flex-align justify-between">
+              <span>Select Item</span>
+              <button class="btn-close-mini" (click)="showItemDropdown.set(false); $event.stopPropagation()">Close</button>
+            </div>
+            <div class="dropdown-list">
+              <div class="dropdown-item-row" *ngFor="let prod of filteredProducts()" (click)="selectItem(prod)">
+                <div class="item-info w-100">
+                  <strong class="text-slate-800 d-block text-sm">{{ prod.name }}</strong>
+                  <div class="flex-align gap-2 mt-1">
+                    <span class="sku-badge">{{ prod.sku }}</span>
+                    <span class="stock-badge">Stock: {{ prod.stock }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="empty-list-msg" *ngIf="filteredProducts().length === 0">
+                No items found.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Filter -->
+        <div class="filter-group flex-1" style="min-width: 250px; position: relative;">
+          <label class="filter-label">Customer Filter</label>
+          <div class="search-box-sharp w-100" (click)="showCustomerDropdown.set(true)">
+            <span class="material-symbols-outlined search-icon" style="top: 8px;">person</span>
+            <input type="text"
+              placeholder="All Customers"
+              [ngModel]="customerSearchTerm()" (ngModelChange)="customerSearchTerm.set($event); showCustomerDropdown.set(true)"
+              (focus)="showCustomerDropdown.set(true)" class="filter-input w-100 pl-40">
+            <button class="btn-clear" style="top: 4px;" *ngIf="customerSearchTerm()"
+              (click)="selectCustomer('', ''); $event.stopPropagation()">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+
+          <!-- Floating Dropdown -->
+          <div class="dropdown-menu-sharp" *ngIf="showCustomerDropdown()" style="top: calc(100% + 4px);">
+            <div class="dropdown-header flex-align justify-between">
+              <span>Select Customer</span>
+              <button class="btn-close-mini" (click)="showCustomerDropdown.set(false); $event.stopPropagation()">Close</button>
+            </div>
+            <div class="dropdown-list">
+              <div class="dropdown-item-row" (click)="selectCustomer('', '')">
+                <div class="item-info">
+                  <strong class="text-slate-800 d-block">All Customers</strong>
+                </div>
+              </div>
+              <div class="dropdown-item-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust.uid || cust.name, cust.name)">
+                <div class="item-info">
+                  <strong class="text-slate-800 d-block">{{ cust.name }}</strong>
+                  <div class="flex-align gap-2 mt-1">
+                    <span class="phone-badge">{{ cust.phone }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="empty-list-msg" *ngIf="filteredCustomers().length === 0">
+                No customers found.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="filter-group justify-end">
+          <button class="btn-secondary flex-align px-4 h-36" (click)="resetFilters()" style="height: 44px !important;">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Range Inputs -->
+      <div class="w-100 mt-3 pt-3 border-top-sharp flex-align gap-4" *ngIf="dateFilter() === 'custom'">
+        <span class="filter-label mb-0 text-maroon" style="font-size: 0.75rem;">Custom Range:</span>
+        <div class="flex-align gap-2">
+          <span class="text-xs font-bold text-slate-500 uppercase">From</span>
+          <input type="date" class="filter-input w-140" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)">
+        </div>
+        <div class="flex-align gap-2">
+          <span class="text-xs font-bold text-slate-500 uppercase">To</span>
+          <input type="date" class="filter-input w-140" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- No Item Selected State -->
+    <div *ngIf="!selectedItem()" class="card-sharp text-center py-5 mt-4" style="border: 1px dashed var(--slate-300);">
+      <span class="material-symbols-outlined text-slate-300 mb-3" style="font-size: 54px;">inventory_2</span>
+      <h3 class="text-lg font-bold text-slate-700 mb-2">No Item Selected</h3>
+      <p class="text-slate-500">Please search and select an item from the filter above to view its detailed sales report.</p>
+    </div>
+
+    <!-- Report Data Content -->
+    <ng-container *ngIf="selectedItem() as item">
+      
+      <!-- Summary Cards Grid -->
+      <div class="summary-cards-grid mb-4">
+        <div class="card-sharp flex-col justify-center">
+          <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Total Sold (Qty)</div>
+          <div class="text-2xl font-extrabold text-slate-900 mb-1">{{ reportData().totalQty }} <span class="text-sm font-medium text-slate-500">Pcs</span></div>
+          <div class="text-xs text-slate-400">In selected period</div>
+        </div>
+        <div class="card-sharp flex-col justify-center">
+          <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Total Sales Amount</div>
+          <div class="text-2xl font-extrabold text-slate-900 mb-1">₹{{ reportData().totalAmount | number:'1.2-2' }}</div>
+          <div class="text-xs text-slate-400">In selected period</div>
+        </div>
+        <div class="card-sharp flex-col justify-center">
+          <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Total Customers</div>
+          <div class="text-2xl font-extrabold text-slate-900 mb-1">{{ reportData().totalCustomers }}</div>
+          <div class="text-xs text-slate-400">In selected period</div>
+        </div>
+        <div class="card-sharp flex-col justify-center">
+          <div class="text-xs font-bold text-emerald-600 mb-1 uppercase tracking-wider">Current Stock</div>
+          <div class="text-2xl font-extrabold text-slate-900 mb-1">{{ item.stock }} <span class="text-sm font-medium text-slate-500">Pcs</span></div>
+          <div class="text-xs text-slate-400">As on current date</div>
+        </div>
+      </div>
+
+      <!-- Info Banner -->
+      <div class="info-banner mb-4">
+        <div class="flex-align gap-2 text-sm text-blue-800">
+          <span class="material-symbols-outlined text-base">info</span>
+          <span>Showing sales data for <strong>Item: {{ item.sku }} - {{ item.name }}</strong></span>
+          <span class="ml-4 pl-4 border-left-blue">Time Period: <strong>{{ formatDisplayDate(dateFilter()) }}</strong></span>
+          <span class="ml-4 pl-4 border-left-blue" *ngIf="selectedCustomerUid()">Customer: <strong>{{ customerSearchTerm() }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Main Content Grid (Overview + Table) -->
+      <div class="main-grid">
+        
+        <!-- Sales Overview Card -->
+        <div class="card-sharp" style="padding: 0; overflow: hidden;">
+          <div class="p-3 border-bottom-sharp" style="background: var(--slate-50);">
+            <h3 class="font-bold text-slate-800 m-0 text-base">Sales Overview</h3>
+          </div>
+          <div class="p-4">
+            <div class="overview-row">
+              <span class="overview-label">Item Code</span>
+              <span class="overview-value">{{ item.sku }}</span>
+            </div>
+            <div class="overview-row">
+              <span class="overview-label">Item Name</span>
+              <span class="overview-value truncate" style="max-width: 60%;" title="{{ item.name }}">{{ item.name }}</span>
+            </div>
+            <div class="overview-row">
+              <span class="overview-label">Unit</span>
+              <span class="overview-value">Pcs</span>
+            </div>
+            
+            <div class="overview-row mt-3 pt-3 border-top-sharp">
+              <span class="overview-label">Opening Stock</span>
+              <span class="overview-value">{{ item.stock + reportData().totalQty }} Pcs</span>
+            </div>
+            <div class="overview-row">
+              <span class="overview-label">Total Sold (Qty)</span>
+              <span class="overview-value font-bold">{{ reportData().totalQty }} Pcs</span>
+            </div>
+            <div class="overview-row">
+              <span class="overview-label">Total Sales Amount</span>
+              <span class="overview-value font-bold">₹{{ reportData().totalAmount | number:'1.2-2' }}</span>
+            </div>
+            
+            <div class="overview-row mt-3 pt-3 border-top-sharp">
+              <span class="overview-label">Net Sold (Qty)</span>
+              <span class="overview-value font-bold text-maroon">{{ reportData().totalQty }} Pcs</span>
+            </div>
+            <div class="overview-row">
+              <span class="overview-label">Closing Stock</span>
+              <span class="overview-value font-bold text-emerald-600">{{ item.stock }} Pcs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer-wise Sales Breakdown Table -->
+        <div class="card-sharp" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+          <div class="p-3 border-bottom-sharp" style="background: var(--slate-50); flex-shrink: 0;">
+            <h3 class="font-bold text-slate-800 m-0 text-base">Customer-wise Sales Breakdown</h3>
+          </div>
+          
+          <div class="table-container-sharp" style="border: none; border-radius: 0; flex: 1; overflow-y: auto; max-height: 400px;">
+            <table class="table-sharp" style="margin: 0;">
+              <thead>
+                <tr>
+                  <th style="width: 60px; text-align: center;">S.No.</th>
+                  <th>Customer Name</th>
+                  <th style="text-align: center;">Bills</th>
+                  <th style="text-align: right;">Total Qty</th>
+                  <th style="text-align: right;">Total Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cust of reportData().customerBreakdown; let i = index">
+                  <td style="text-align: center; color: var(--slate-500); font-weight: 600;">{{ i + 1 }}</td>
+                  <td style="font-weight: 700; color: var(--slate-800);">{{ cust.customerName }}</td>
+                  <td style="text-align: center;">{{ cust.billsCount }}</td>
+                  <td style="text-align: right; font-weight: 600;">{{ cust.totalQty }} Pcs</td>
+                  <td style="text-align: right; font-weight: 700;">₹{{ cust.totalAmount | number:'1.2-2' }}</td>
+                </tr>
+                <tr *ngIf="reportData().customerBreakdown.length === 0">
+                  <td colspan="5" style="padding: 3rem; text-align: center; color: var(--slate-500);">
+                    No sales data found for the selected criteria.
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot *ngIf="reportData().customerBreakdown.length > 0" style="position: sticky; bottom: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 10;">
+                <tr>
+                  <th colspan="3" style="text-align: right; font-weight: 800; font-size: 0.85rem; border-top: 1px solid var(--slate-200); background: white;">Grand Total</th>
+                  <th style="text-align: right; font-weight: 800; font-size: 0.95rem; border-top: 1px solid var(--slate-200); background: white;">{{ reportData().totalQty }} Pcs</th>
+                  <th style="text-align: right; font-weight: 800; font-size: 1rem; border-top: 1px solid var(--slate-200); background: white; color: var(--primary);">₹{{ reportData().totalAmount | number:'1.2-2' }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </div>
+</div>
