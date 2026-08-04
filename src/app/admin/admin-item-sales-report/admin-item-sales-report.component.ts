@@ -9,6 +9,7 @@ interface CustomerSalesSummary {
   billsCount: number;
   totalQty: number;
   totalAmount: number;
+  bills: { id: string, date: string }[];
 }
 
 @Component({
@@ -141,13 +142,15 @@ export class AdminItemSalesReportComponent implements OnInit {
             customerUid: order.uid,
             billsCount: 0,
             totalQty: 0,
-            totalAmount: 0
+            totalAmount: 0,
+            bills: []
           });
         }
         const s = custSummaryMap.get(custKey)!;
         s.billsCount++;
         s.totalQty += orderItem.quantity;
         s.totalAmount += (orderItem.total || (orderItem.quantity * (orderItem.sellingRate || 0)));
+        s.bills.push({ id: order.billNumber || order.id.substring(0, 8), date: order.date });
       }
     });
 

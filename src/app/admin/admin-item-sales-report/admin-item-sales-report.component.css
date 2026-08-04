@@ -732,3 +732,119 @@
 .border-left-blue {
   border-left: 1px solid #93c5fd;
 }
+
+/* Bill Hover Tooltip UI */
+.bill-hover-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.bills-badge {
+  background: var(--slate-100);
+  color: var(--primary);
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--slate-200);
+  font-weight: 700;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+}
+.bills-badge:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  transform: translateY(-1px);
+}
+.bills-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 12px);
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%) translateX(10px);
+  background: white;
+  border: 1px solid var(--slate-200);
+  box-shadow: -4px 4px 20px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  width: 240px;
+  z-index: 100;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  text-align: left;
+}
+.bills-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent white;
+}
+.bills-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border-width: 7px;
+  border-style: solid;
+  border-color: transparent transparent transparent var(--slate-300);
+}
+.bill-hover-wrapper:hover .bills-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+.tooltip-header {
+  padding: 8px 12px;
+  background: var(--slate-50);
+  border-bottom: 1px solid var(--slate-200);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--slate-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 8px 8px 0 0;
+}
+.tooltip-list {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.tooltip-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px dashed var(--slate-100);
+}
+.tooltip-item:last-child {
+  border-bottom: none;
+}
+.tooltip-item:hover {
+  background: var(--slate-50);
+  border-radius: 4px;
+}
+.bill-id {
+  font-weight: 700;
+  color: var(--slate-800);
+  font-size: 0.8rem;
+}
+.bill-date {
+  color: var(--slate-500);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+/* Scrollbar for tooltip */
+.tooltip-list::-webkit-scrollbar { width: 4px; }
+.tooltip-list::-webkit-scrollbar-track { background: transparent; }
+.tooltip-list::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
+.tooltip-list::-webkit-scrollbar-thumb:hover { background: var(--slate-300); }
