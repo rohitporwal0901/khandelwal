@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService, Order, OrderItem, Product } from '../../core/services/data.service';
@@ -31,6 +31,9 @@ interface ItemPurchaseSummary {
 })
 export class AdminItemSalesReportComponent implements OnInit {
   dataService = inject(DataService);
+  private el = inject(ElementRef);
+
+  isCapturing = signal(false);
 
   // Filters State
   dateFilter = signal<string>('today');
@@ -313,5 +316,57 @@ export class AdminItemSalesReportComponent implements OnInit {
   formatDisplayDate(val: string): string {
     if (val === 'all') return 'All Time';
     return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  }
+
+  async captureReport() {
+    if (this.isCapturing()) return;
+    this.isCapturing.set(true);
+
+    // Step 1: Temporarily remove scroll limits on all scrollable containers
+    const scrollWraps = this.el.nativeElement.querySelectorAll('.table-scroll-wrap') as NodeListOf<HTMLElement>;
+    const origStyles: { el: HTMLElement, maxHeight: string, overflow: string }[] = [];
+    scrollWraps.forEach(el => {
+      origStyles.push({ el, maxHeight: el.style.maxHeight, overflow: el.style.overflow });
+      el.style.maxHeight = 'none';
+      el.style.overflow = 'visible';
+    });
+
+    // Wait a tick for DOM to reflow
+    await new Promise(r => setTimeout(r, 100));
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const target = this.el.nativeElement.querySelector('.report-page') as HTMLElement;
+
+      const canvas = await html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#f8fafc',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: target.scrollWidth,
+        windowHeight: target.scrollHeight
+      });
+
+      // Step 2: Download the image
+      const link = document.createElement('a');
+      const mode = this.selectedItem()
+        ? `${this.selectedItem()!.sku}`
+        : this.selectedCustomerName() || 'report';
+      link.download = `report_${mode}_${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (e) {
+      console.error('Capture failed:', e);
+    }
+
+    // Step 3: Restore original scroll styles
+    origStyles.forEach(({ el, maxHeight, overflow }) => {
+      el.style.maxHeight = maxHeight;
+      el.style.overflow = overflow;
+    });
+
+    this.isCapturing.set(false);
   }
 }

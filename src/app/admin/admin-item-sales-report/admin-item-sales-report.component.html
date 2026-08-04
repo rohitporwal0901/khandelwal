@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <div class="report-page" *ngIf="!isLoading()">
+  <div class="report-page" *ngIf="!isLoading()" [class.is-capturing]="isCapturing()">
 
     <!-- ===== TOP HEADER ===== -->
     <div class="page-header">
@@ -21,10 +21,21 @@
           <p class="header-subtitle">Track item-wise & customer-wise sales performance</p>
         </div>
       </div>
-      <button class="btn-reset" (click)="resetFilters()">
-        <span class="material-symbols-outlined">refresh</span>
-        Reset Filters
-      </button>
+      <div class="header-actions">
+        <!-- Capture Report Button — only shown when report is visible -->
+        <button class="btn-capture" (click)="captureReport()"
+          *ngIf="reportMode() !== 'none'"
+          [disabled]="isCapturing()"
+          [class.capturing]="isCapturing()">
+          <span class="material-symbols-outlined" *ngIf="!isCapturing()">photo_camera</span>
+          <span class="capture-spinner" *ngIf="isCapturing()"></span>
+          {{ isCapturing() ? 'Capturing...' : 'Capture Report' }}
+        </button>
+        <button class="btn-reset" (click)="resetFilters()">
+          <span class="material-symbols-outlined">refresh</span>
+          Reset Filters
+        </button>
+      </div>
     </div>
 
     <!-- ===== FILTER TOOLBAR ===== -->
@@ -212,47 +223,61 @@
       <!-- Main Grid: Overview + Customer Breakdown -->
       <div class="main-grid">
 
-        <!-- Sales Overview Card -->
-        <div class="card">
+        <!-- Sales Overview — Clean List Layout -->
+        <div class="card ov-list-card">
           <div class="card-header">
             <span class="material-symbols-outlined card-header-icon">analytics</span>
             <h3 class="card-header-title">Sales Overview</h3>
+            <span class="badge-sku" style="margin-left: auto;">{{ selectedItem()!.sku }}</span>
           </div>
-          <div class="card-body">
-            <div class="ov-row">
-              <span class="ov-label">Item Code</span>
-              <span class="ov-value">{{ selectedItem()!.sku }}</span>
+          <div class="ov-list">
+
+            <!-- Item Info -->
+            <div class="ov-list-row">
+              <span class="ov-list-label">Item Name</span>
+              <span class="ov-list-val truncate" [title]="selectedItem()!.name">{{ selectedItem()!.name }}</span>
             </div>
-            <div class="ov-row">
-              <span class="ov-label">Item Name</span>
-              <span class="ov-value truncate" style="max-width: 55%;" [title]="selectedItem()!.name">{{ selectedItem()!.name }}</span>
+            <div class="ov-list-row">
+              <span class="ov-list-label">Item Code</span>
+              <span class="ov-list-val"><span class="badge-sku">{{ selectedItem()!.sku }}</span></span>
             </div>
-            <div class="ov-row">
-              <span class="ov-label">Unit</span>
-              <span class="ov-value">Pcs</span>
+            <div class="ov-list-row">
+              <span class="ov-list-label">Unit</span>
+              <span class="ov-list-val">Pcs</span>
             </div>
-            <div class="ov-divider"></div>
-            <div class="ov-row">
-              <span class="ov-label">Opening Stock</span>
-              <span class="ov-value">{{ selectedItem()!.stock + itemReportData().totalQty }} Pcs</span>
+
+            <div class="ov-list-sep"></div>
+
+            <!-- Stock Info -->
+            <div class="ov-list-row">
+              <span class="ov-list-label">Opening Stock</span>
+              <span class="ov-list-val">{{ selectedItem()!.stock + itemReportData().totalQty }} Pcs</span>
             </div>
-            <div class="ov-row">
-              <span class="ov-label">Total Sold (Qty)</span>
-              <span class="ov-value font-bold">{{ itemReportData().totalQty }} Pcs</span>
+            <div class="ov-list-row">
+              <span class="ov-list-label">Total Sold (Qty)</span>
+              <span class="ov-list-val ov-val-bold">{{ itemReportData().totalQty }} Pcs</span>
             </div>
-            <div class="ov-row">
-              <span class="ov-label">Total Sales Amount</span>
-              <span class="ov-value font-bold">₹{{ itemReportData().totalAmount | number:'1.2-2' }}</span>
+            <div class="ov-list-row">
+              <span class="ov-list-label">Total Sales Amount</span>
+              <span class="ov-list-val ov-val-bold">₹{{ itemReportData().totalAmount | number:'1.2-2' }}</span>
             </div>
-            <div class="ov-divider"></div>
-            <div class="ov-row">
-              <span class="ov-label">Net Sold (Qty)</span>
-              <span class="ov-value font-bold text-primary">{{ itemReportData().totalQty }} Pcs</span>
+
+            <div class="ov-list-sep"></div>
+
+            <!-- Summary -->
+            <div class="ov-list-row">
+              <span class="ov-list-label">Net Sold (Qty)</span>
+              <span class="ov-list-val ov-val-primary">{{ itemReportData().totalQty }} Pcs</span>
             </div>
-            <div class="ov-row">
-              <span class="ov-label">Closing Stock</span>
-              <span class="ov-value font-bold text-green">{{ selectedItem()!.stock }} Pcs</span>
+            <div class="ov-list-row">
+              <span class="ov-list-label">Closing Stock</span>
+              <span class="ov-list-val ov-val-green">{{ selectedItem()!.stock }} Pcs</span>
             </div>
+            <div class="ov-list-row">
+              <span class="ov-list-label">Customers</span>
+              <span class="ov-list-val ov-val-bold">{{ itemReportData().totalCustomers }}</span>
+            </div>
+
           </div>
         </div>
 
