@@ -44,12 +44,12 @@
         <div class="filter-group flex-1" style="min-width: 250px; position: relative;">
           <label class="filter-label">Item Filter (Mandatory) <span class="text-danger">*</span></label>
           <div class="search-box-sharp w-100" (click)="showItemDropdown.set(true)">
-            <span class="material-symbols-outlined search-icon" style="top: 8px;">inventory_2</span>
+            <span class="material-symbols-outlined search-icon">inventory_2</span>
             <input type="text"
               [placeholder]="selectedItem() ? '' : 'Search item by name or SKU...'"
               [ngModel]="itemSearchTerm()" (ngModelChange)="itemSearchTerm.set($event); showItemDropdown.set(true)"
-              (focus)="showItemDropdown.set(true)" class="filter-input w-100 pl-40">
-            <button class="btn-clear" style="top: 4px;" *ngIf="itemSearchTerm()"
+              (focus)="showItemDropdown.set(true)" class="filter-input w-100">
+            <button class="btn-clear" *ngIf="itemSearchTerm()"
               (click)="selectItem(null); $event.stopPropagation()">
               <span class="material-symbols-outlined text-sm">close</span>
             </button>
@@ -64,10 +64,10 @@
             <div class="dropdown-list">
               <div class="dropdown-item-row" *ngFor="let prod of filteredProducts()" (click)="selectItem(prod)">
                 <div class="item-info w-100">
-                  <strong class="text-slate-800 d-block text-sm">{{ prod.name }}</strong>
-                  <div class="flex-align gap-2 mt-1">
+                  <strong class="text-slate-800 d-block text-sm mb-1">{{ prod.name }}</strong>
+                  <div class="flex-align gap-2">
                     <span class="sku-badge">{{ prod.sku }}</span>
-                    <span class="stock-badge">Stock: {{ prod.stock }}</span>
+                    <span class="stock-badge" [class.stock-danger]="prod.stock <= 0">Stock: {{ prod.stock }}</span>
                   </div>
                 </div>
               </div>
@@ -82,12 +82,12 @@
         <div class="filter-group flex-1" style="min-width: 250px; position: relative;">
           <label class="filter-label">Customer Filter</label>
           <div class="search-box-sharp w-100" (click)="showCustomerDropdown.set(true)">
-            <span class="material-symbols-outlined search-icon" style="top: 8px;">person</span>
+            <span class="material-symbols-outlined search-icon">person</span>
             <input type="text"
               placeholder="All Customers"
               [ngModel]="customerSearchTerm()" (ngModelChange)="customerSearchTerm.set($event); showCustomerDropdown.set(true)"
-              (focus)="showCustomerDropdown.set(true)" class="filter-input w-100 pl-40">
-            <button class="btn-clear" style="top: 4px;" *ngIf="customerSearchTerm()"
+              (focus)="showCustomerDropdown.set(true)" class="filter-input w-100">
+            <button class="btn-clear" *ngIf="customerSearchTerm()"
               (click)="selectCustomer('', ''); $event.stopPropagation()">
               <span class="material-symbols-outlined text-sm">close</span>
             </button>
@@ -122,7 +122,7 @@
 
         <!-- Action Button -->
         <div class="filter-group justify-end">
-          <button class="btn-secondary flex-align px-4 h-36" (click)="resetFilters()" style="height: 44px !important;">
+          <button class="btn-secondary flex-align px-4 h-40" (click)="resetFilters()">
             Reset Filters
           </button>
         </div>
@@ -143,10 +143,12 @@
     </div>
 
     <!-- No Item Selected State -->
-    <div *ngIf="!selectedItem()" class="card-sharp text-center py-5 mt-4" style="border: 1px dashed var(--slate-300);">
-      <span class="material-symbols-outlined text-slate-300 mb-3" style="font-size: 54px;">inventory_2</span>
-      <h3 class="text-lg font-bold text-slate-700 mb-2">No Item Selected</h3>
-      <p class="text-slate-500">Please search and select an item from the filter above to view its detailed sales report.</p>
+    <div *ngIf="!selectedItem()" class="empty-state-premium mt-4">
+      <div class="empty-icon-circle mb-3">
+        <span class="material-symbols-outlined">inventory_2</span>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-2">No Item Selected</h3>
+      <p class="text-slate-500 max-w-md mx-auto text-sm">Please search and select an item from the mandatory filter above to view its detailed sales report, quantities, and customer breakdown.</p>
     </div>
 
     <!-- Report Data Content -->
@@ -154,25 +156,45 @@
       
       <!-- Summary Cards Grid -->
       <div class="summary-cards-grid mb-4">
-        <div class="card-sharp flex-col justify-center">
-          <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Total Sold (Qty)</div>
-          <div class="text-2xl font-extrabold text-slate-900 mb-1">{{ reportData().totalQty }} <span class="text-sm font-medium text-slate-500">Pcs</span></div>
-          <div class="text-xs text-slate-400">In selected period</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">
+            <span class="material-symbols-outlined">shopping_cart</span>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Sold (Qty)</div>
+            <div class="stat-value">{{ reportData().totalQty }} <span class="text-sm font-medium text-slate-400">Pcs</span></div>
+            <div class="stat-desc">In selected period</div>
+          </div>
         </div>
-        <div class="card-sharp flex-col justify-center">
-          <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Total Sales Amount</div>
-          <div class="text-2xl font-extrabold text-slate-900 mb-1">₹{{ reportData().totalAmount | number:'1.2-2' }}</div>
-          <div class="text-xs text-slate-400">In selected period</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #fdf2f8; color: #db2777;">
+            <span class="material-symbols-outlined">payments</span>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Sales Amount</div>
+            <div class="stat-value">₹{{ reportData().totalAmount | number:'1.2-2' }}</div>
+            <div class="stat-desc">In selected period</div>
+          </div>
         </div>
-        <div class="card-sharp flex-col justify-center">
-          <div class="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Total Customers</div>
-          <div class="text-2xl font-extrabold text-slate-900 mb-1">{{ reportData().totalCustomers }}</div>
-          <div class="text-xs text-slate-400">In selected period</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #fefce8; color: #ca8a04;">
+            <span class="material-symbols-outlined">group</span>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value">{{ reportData().totalCustomers }}</div>
+            <div class="stat-desc">In selected period</div>
+          </div>
         </div>
-        <div class="card-sharp flex-col justify-center">
-          <div class="text-xs font-bold text-emerald-600 mb-1 uppercase tracking-wider">Current Stock</div>
-          <div class="text-2xl font-extrabold text-slate-900 mb-1">{{ item.stock }} <span class="text-sm font-medium text-slate-500">Pcs</span></div>
-          <div class="text-xs text-slate-400">As on current date</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #f0fdf4; color: #16a34a;">
+            <span class="material-symbols-outlined">inventory_2</span>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Current Stock</div>
+            <div class="stat-value">{{ item.stock }} <span class="text-sm font-medium text-slate-400">Pcs</span></div>
+            <div class="stat-desc">As on current date</div>
+          </div>
         </div>
       </div>
 
@@ -190,11 +212,14 @@
       <div class="main-grid">
         
         <!-- Sales Overview Card -->
-        <div class="card-sharp" style="padding: 0; overflow: hidden;">
-          <div class="p-3 border-bottom-sharp" style="background: var(--slate-50);">
-            <h3 class="font-bold text-slate-800 m-0 text-base">Sales Overview</h3>
+        <div class="card-premium">
+          <div class="card-premium-header">
+            <div class="flex-align gap-2">
+              <span class="material-symbols-outlined text-primary text-xl">analytics</span>
+              <h3 class="font-bold text-slate-800 m-0 text-base">Sales Overview</h3>
+            </div>
           </div>
-          <div class="p-4">
+          <div class="card-premium-body">
             <div class="overview-row">
               <span class="overview-label">Item Code</span>
               <span class="overview-value">{{ item.sku }}</span>
@@ -210,36 +235,39 @@
             
             <div class="overview-row mt-3 pt-3 border-top-sharp">
               <span class="overview-label">Opening Stock</span>
-              <span class="overview-value">{{ item.stock + reportData().totalQty }} Pcs</span>
+              <span class="overview-value font-medium">{{ item.stock + reportData().totalQty }} Pcs</span>
             </div>
             <div class="overview-row">
               <span class="overview-label">Total Sold (Qty)</span>
-              <span class="overview-value font-bold">{{ reportData().totalQty }} Pcs</span>
+              <span class="overview-value font-extrabold">{{ reportData().totalQty }} Pcs</span>
             </div>
             <div class="overview-row">
               <span class="overview-label">Total Sales Amount</span>
-              <span class="overview-value font-bold">₹{{ reportData().totalAmount | number:'1.2-2' }}</span>
+              <span class="overview-value font-extrabold text-slate-900">₹{{ reportData().totalAmount | number:'1.2-2' }}</span>
             </div>
             
             <div class="overview-row mt-3 pt-3 border-top-sharp">
               <span class="overview-label">Net Sold (Qty)</span>
-              <span class="overview-value font-bold text-maroon">{{ reportData().totalQty }} Pcs</span>
+              <span class="overview-value font-extrabold text-maroon">{{ reportData().totalQty }} Pcs</span>
             </div>
             <div class="overview-row">
               <span class="overview-label">Closing Stock</span>
-              <span class="overview-value font-bold text-emerald-600">{{ item.stock }} Pcs</span>
+              <span class="overview-value font-extrabold text-emerald-600">{{ item.stock }} Pcs</span>
             </div>
           </div>
         </div>
 
         <!-- Customer-wise Sales Breakdown Table -->
-        <div class="card-sharp" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-          <div class="p-3 border-bottom-sharp" style="background: var(--slate-50); flex-shrink: 0;">
-            <h3 class="font-bold text-slate-800 m-0 text-base">Customer-wise Sales Breakdown</h3>
+        <div class="card-premium" style="display: flex; flex-direction: column;">
+          <div class="card-premium-header">
+            <div class="flex-align gap-2">
+              <span class="material-symbols-outlined text-primary text-xl">group</span>
+              <h3 class="font-bold text-slate-800 m-0 text-base">Customer-wise Sales Breakdown</h3>
+            </div>
           </div>
           
           <div class="table-container-sharp" style="border: none; border-radius: 0; flex: 1; overflow-y: auto; max-height: 400px;">
-            <table class="table-sharp" style="margin: 0;">
+            <table class="table-sharp table-premium" style="margin: 0; width: 100%;">
               <thead>
                 <tr>
                   <th style="width: 60px; text-align: center;">S.No.</th>
@@ -253,9 +281,9 @@
                 <tr *ngFor="let cust of reportData().customerBreakdown; let i = index">
                   <td style="text-align: center; color: var(--slate-500); font-weight: 600;">{{ i + 1 }}</td>
                   <td style="font-weight: 700; color: var(--slate-800);">{{ cust.customerName }}</td>
-                  <td style="text-align: center;">{{ cust.billsCount }}</td>
-                  <td style="text-align: right; font-weight: 600;">{{ cust.totalQty }} Pcs</td>
-                  <td style="text-align: right; font-weight: 700;">₹{{ cust.totalAmount | number:'1.2-2' }}</td>
+                  <td style="text-align: center; font-weight: 500;">{{ cust.billsCount }}</td>
+                  <td style="text-align: right; font-weight: 700;">{{ cust.totalQty }} Pcs</td>
+                  <td style="text-align: right; font-weight: 800;">₹{{ cust.totalAmount | number:'1.2-2' }}</td>
                 </tr>
                 <tr *ngIf="reportData().customerBreakdown.length === 0">
                   <td colspan="5" style="padding: 3rem; text-align: center; color: var(--slate-500);">
