@@ -12,6 +12,16 @@ interface CustomerSalesSummary {
   bills: { id: string, date: string }[];
 }
 
+interface ItemPurchaseSummary {
+  productId: string;
+  productName: string;
+  productSku: string;
+  billsCount: number;
+  totalQty: number;
+  totalAmount: number;
+  bills: { id: string, date: string }[];
+}
+
 @Component({
   selector: 'app-admin-item-sales-report',
   standalone: true,
@@ -36,14 +46,23 @@ export class AdminItemSalesReportComponent implements OnInit {
   showCustomerDropdown = signal(false);
   customerSearchTerm = signal<string>('');
   selectedCustomerUid = signal<string>('');
+  selectedCustomerName = signal<string>('');
 
   isLoading = signal<boolean>(true);
+
+  // --- Computed: Report Mode ---
+  // 'item' = item selected (customer optional), 'customer' = only customer selected, 'none' = nothing selected
+  reportMode = computed(() => {
+    if (this.selectedItem()) return 'item';
+    if (this.selectedCustomerUid()) return 'customer';
+    return 'none';
+  });
 
   // Filtered Products for Dropdown
   filteredProducts = computed(() => {
     const products = this.dataService.products();
     const search = this.itemSearchTerm().toLowerCase();
-    if (!search) return products.slice(0, 50); // Show first 50
+    if (!search) return products.slice(0, 50);
     return products.filter(p => 
       p.name.toLowerCase().includes(search) || 
       p.sku.toLowerCase().includes(search)
@@ -53,10 +72,9 @@ export class AdminItemSalesReportComponent implements OnInit {
   // Filtered Customers for Dropdown
   filteredCustomers = computed(() => {
     const orders = this.dataService.orders();
-    // Get unique customers from orders (simplified logic)
     const custMap = new Map<string, {name: string, uid?: string, phone: string}>();
     orders.forEach(o => {
-      const key = o.uid || o.customerName; // fallback to name if no uid
+      const key = o.uid || o.customerName;
       if (!custMap.has(key)) {
         custMap.set(key, { name: o.customerName, uid: o.uid, phone: o.phone });
       }
@@ -69,8 +87,10 @@ export class AdminItemSalesReportComponent implements OnInit {
     return customers.filter(c => c.name.toLowerCase().includes(search) || c.phone.includes(search));
   });
 
-  // Main Report Computation
-  reportData = computed(() => {
+  // =========================================================
+  // ITEM-CENTRIC REPORT (when item is selected)
+  // =========================================================
+  itemReportData = computed(() => {
     const orders = this.dataService.orders();
     const item = this.selectedItem();
     const custUid = this.selectedCustomerUid();
@@ -85,51 +105,18 @@ export class AdminItemSalesReportComponent implements OnInit {
       };
     }
 
-    // 1. Filter by Date
-    let filteredOrders = orders.filter(o => o.status === 'completed');
-    const df = this.dateFilter();
-    
-    if (df !== 'all') {
-      const now = new Date();
-      if (df === 'today') {
-        const todayStr = now.toISOString().split('T')[0];
-        filteredOrders = filteredOrders.filter(o => o.date.startsWith(todayStr));
-      } else if (df === 'yesterday') {
-        const yest = new Date(now);
-        yest.setDate(yest.getDate() - 1);
-        const yestStr = yest.toISOString().split('T')[0];
-        filteredOrders = filteredOrders.filter(o => o.date.startsWith(yestStr));
-      } else if (df === 'this_week') {
-        const firstDay = new Date(now.setDate(now.getDate() - now.getDay()));
-        firstDay.setHours(0,0,0,0);
-        filteredOrders = filteredOrders.filter(o => new Date(o.date) >= firstDay);
-      } else if (df === 'this_month') {
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        filteredOrders = filteredOrders.filter(o => new Date(o.date) >= monthStart);
-      } else if (df === 'custom' && this.fromDate() && this.toDate()) {
-        const start = new Date(this.fromDate());
-        start.setHours(0,0,0,0);
-        const end = new Date(this.toDate());
-        end.setHours(23,59,59,999);
-        filteredOrders = filteredOrders.filter(o => {
-          const d = new Date(o.date);
-          return d >= start && d <= end;
-        });
-      }
-    }
+    // Match same filter as Old Bills: completed status OR has a billNumber
+    let filteredOrders = this._applyDateFilter(orders.filter(o => o.status === 'completed' || !!o.billNumber));
 
-    // 2. Filter by Customer if selected
     if (custUid) {
-      filteredOrders = filteredOrders.filter(o => o.uid === custUid || o.customerName === custUid); // fallback matching
+      filteredOrders = filteredOrders.filter(o => o.uid === custUid || o.customerName === custUid);
     }
 
-    // 3. Aggregate Item Sales
     let totalQty = 0;
     let totalAmount = 0;
     const custSummaryMap = new Map<string, CustomerSalesSummary>();
 
     filteredOrders.forEach(order => {
-      // check if order has this item
       const orderItem = order.items.find(i => i.productId === item.id);
       if (orderItem) {
         totalQty += orderItem.quantity;
@@ -158,7 +145,7 @@ export class AdminItemSalesReportComponent implements OnInit {
       .sort((a, b) => b.totalAmount - a.totalAmount);
 
     return {
-      hasData: true,
+      hasData: customerBreakdown.length > 0,
       totalQty,
       totalAmount,
       totalCustomers: customerBreakdown.length,
@@ -166,8 +153,114 @@ export class AdminItemSalesReportComponent implements OnInit {
     };
   });
 
+  // =========================================================
+  // CUSTOMER-CENTRIC REPORT (when only customer is selected)
+  // =========================================================
+  customerReportData = computed(() => {
+    const orders = this.dataService.orders();
+    const custUid = this.selectedCustomerUid();
+    const products = this.dataService.products();
+
+    if (!custUid || this.selectedItem()) {
+      return {
+        hasData: false,
+        totalQty: 0,
+        totalAmount: 0,
+        totalBills: 0,
+        itemBreakdown: [] as ItemPurchaseSummary[]
+      };
+    }
+
+    // Match same filter as Old Bills: completed status OR has a billNumber
+    let filteredOrders = this._applyDateFilter(orders.filter(o => o.status === 'completed' || !!o.billNumber));
+    filteredOrders = filteredOrders.filter(o => o.uid === custUid || o.customerName === custUid);
+
+    let totalQty = 0;
+    let totalAmount = 0;
+    const itemMap = new Map<string, ItemPurchaseSummary>();
+
+    filteredOrders.forEach(order => {
+      order.items.forEach(orderItem => {
+        // skip packing/misc items without productId
+        if (!orderItem.productId) return;
+
+        const product = products.find(p => p.id === orderItem.productId);
+        const productName = product?.name || 'Unknown Item';
+        const productSku = product?.sku || orderItem.productId.substring(0, 8);
+        const qty = orderItem.quantity;
+        const amt = orderItem.total || (orderItem.quantity * (orderItem.sellingRate || 0));
+
+        totalQty += qty;
+        totalAmount += amt;
+
+        if (!itemMap.has(orderItem.productId)) {
+          itemMap.set(orderItem.productId, {
+            productId: orderItem.productId,
+            productName,
+            productSku,
+            billsCount: 0,
+            totalQty: 0,
+            totalAmount: 0,
+            bills: []
+          });
+        }
+        const s = itemMap.get(orderItem.productId)!;
+        s.billsCount++;
+        s.totalQty += qty;
+        s.totalAmount += amt;
+        s.bills.push({ id: order.billNumber || order.id.substring(0, 8), date: order.date });
+      });
+    });
+
+    const itemBreakdown = Array.from(itemMap.values())
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+
+    return {
+      hasData: itemBreakdown.length > 0,
+      totalQty,
+      totalAmount,
+      totalBills: filteredOrders.length,
+      itemBreakdown
+    };
+  });
+
+  // Legacy alias for templates
+  reportData = this.itemReportData;
+
+  private _applyDateFilter(orders: Order[]): Order[] {
+    const df = this.dateFilter();
+    if (df === 'all') return orders;
+
+    const now = new Date();
+    if (df === 'today') {
+      const todayStr = now.toISOString().split('T')[0];
+      return orders.filter(o => o.date.startsWith(todayStr));
+    } else if (df === 'yesterday') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = yest.toISOString().split('T')[0];
+      return orders.filter(o => o.date.startsWith(yestStr));
+    } else if (df === 'this_week') {
+      const firstDay = new Date(now.setDate(now.getDate() - now.getDay()));
+      firstDay.setHours(0, 0, 0, 0);
+      return orders.filter(o => new Date(o.date) >= firstDay);
+    } else if (df === 'this_month') {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      return orders.filter(o => new Date(o.date) >= monthStart);
+    } else if (df === 'custom' && this.fromDate() && this.toDate()) {
+      const start = new Date(this.fromDate());
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(this.toDate());
+      end.setHours(23, 59, 59, 999);
+      return orders.filter(o => {
+        const d = new Date(o.date);
+        return d >= start && d <= end;
+      });
+    }
+    return orders;
+  }
+
   ngOnInit() {
-    // Initial fetch handled by DataService listeners
     setTimeout(() => {
       this.isLoading.set(false);
     }, 800);
@@ -189,13 +282,12 @@ export class AdminItemSalesReportComponent implements OnInit {
       this.itemSearchTerm.set(`${product.name} - ${product.sku}`);
     } else {
       this.itemSearchTerm.set('');
-      // Automatically clear customer filter when item is cleared
-      this.selectCustomer('', '');
     }
   }
 
   selectCustomer(uidOrName: string, name?: string, phone?: string) {
     this.selectedCustomerUid.set(uidOrName);
+    this.selectedCustomerName.set(name || uidOrName);
     this.showCustomerDropdown.set(false);
     if (uidOrName) {
       let displayName = name || uidOrName;
@@ -203,6 +295,7 @@ export class AdminItemSalesReportComponent implements OnInit {
       this.customerSearchTerm.set(displayName);
     } else {
       this.customerSearchTerm.set('');
+      this.selectedCustomerName.set('');
     }
   }
 
