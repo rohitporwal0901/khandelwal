@@ -81,6 +81,11 @@ export class AdminBillingComponent implements OnInit {
   newCustAddress = '';;
   newCustBalType: 'due' | 'advance' = 'due';
   newCustBalAmount = 0;
+  newCustDiscountPercent = 0; // default 0 = no discount
+
+  // ─── Bill-Level Discount State ────────────────────────────
+  applyDiscount  = signal<boolean>(false);     // checkbox
+  billDiscountPct = signal<number>(0);         // editable % (pre-filled from customer)
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
@@ -144,8 +149,24 @@ export class AdminBillingComponent implements OnInit {
     return this.billItems().reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.sellingRate) || 0)), 0);
   });
 
+  // Items subtotal for products WHERE noDiscount is NOT true
+  discountableSubtotal = computed(() => {
+    return this.billItems().reduce((sum, item) => {
+      const prod = this.products().find(p => p.id === item.product.id);
+      if (prod?.noDiscount) return sum; // skip exempt products
+      return sum + ((Number(item.quantity) || 0) * (Number(item.sellingRate) || 0));
+    }, 0);
+  });
+
+  // Actual ₹ discount = discountable amount × %
+  discountAmount = computed(() => {
+    if (!this.applyDiscount()) return 0;
+    const pct = Math.min(100, Math.max(0, Number(this.billDiscountPct()) || 0));
+    return Math.round((this.discountableSubtotal() * pct) / 100 * 100) / 100;
+  });
+
   currentBillTotal = computed(() => {
-    return this.subTotal() + (Number(this.badha()) || 0);
+    return this.subTotal() - this.discountAmount() + (Number(this.badha()) || 0);
   });
 
   netPayable = computed(() => {
@@ -162,7 +183,10 @@ export class AdminBillingComponent implements OnInit {
     this.selectedCustomer.set(cust);
     this.customerSearchTerm.set('');
     this.showCustomerDropdown.set(false);
-    // Ready to select products
+    // Pre-fill discount from customer profile
+    const custDisc = Number(cust.discountPercent) || 0;
+    this.billDiscountPct.set(custDisc);
+    this.applyDiscount.set(false); // always start unchecked — admin decides
     this.showProductDropdown.set(true);
   }
 
@@ -175,6 +199,8 @@ export class AdminBillingComponent implements OnInit {
     this.productSearchTerm.set('');
     this.showCustomerDropdown.set(false);
     this.showProductDropdown.set(false);
+    this.applyDiscount.set(false);
+    this.billDiscountPct.set(0);
   }
 
   addProductToBill(prod: Product) {
@@ -318,6 +344,7 @@ export class AdminBillingComponent implements OnInit {
     this.newCustAddress = '';
     this.newCustBalType = 'due';
     this.newCustBalAmount = 0;
+    this.newCustDiscountPercent = 0;
     this.isAddCustomerModalOpen.set(true);
   }
 
@@ -350,7 +377,8 @@ export class AdminBillingComponent implements OnInit {
         phone: cleanPhone,
         address: fullAddress,
         pincode: this.newCustPincode.trim(),
-        balance: initialBal
+        balance: initialBal,
+        discountPercent: Math.min(100, Math.max(0, Number(this.newCustDiscountPercent) || 0))
       });
 
       await this.loadUsers();
@@ -410,7 +438,9 @@ export class AdminBillingComponent implements OnInit {
           badha: this.badha(),
           totalAmount: this.currentBillTotal(),
           previousBalance: cust.balance || 0,
-          netPayable: this.netPayable()
+          netPayable: this.netPayable(),
+          discountPercent: this.applyDiscount() ? (Number(this.billDiscountPct()) || 0) : 0,
+          discountAmount: this.discountAmount()
         },
         this.billNotes()
       );
@@ -459,7 +489,9 @@ export class AdminBillingComponent implements OnInit {
         badha: Number(this.badha()) || 0,
         totalAmount: this.currentBillTotal(),
         previousBalance: cust.balance || 0,
-        netPayable: this.netPayable()
+        netPayable: this.netPayable(),
+        discountPercent: this.applyDiscount() ? (Number(this.billDiscountPct()) || 0) : 0,
+        discountAmount: this.discountAmount()
       };
 
       // 1. Enqueue in local offline queue

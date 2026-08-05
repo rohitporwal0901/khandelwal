@@ -38,12 +38,32 @@ export class AdminOrdersComponent implements OnInit {
   badha = signal(0);
   customerBalance = signal(0);
 
+  // Bill-Level Discount
+  applyDiscount   = signal<boolean>(false);
+  billDiscountPct = signal<number>(0);
+
   // Computed Billing Totals
   subTotal = computed(() => {
     return this.editableItems().reduce((sum, item) => sum + (item.quantity * (item.sellingRate || 0)), 0);
   });
-  totalAmount = computed(() => this.subTotal() + this.badha());
-  netPayable = computed(() => this.customerBalance() + this.totalAmount());
+
+  // Subtotal for products where noDiscount is NOT true
+  discountableSubtotal = computed(() => {
+    return this.editableItems().reduce((sum, item) => {
+      const prod = this.products().find(p => p.id === item.productId);
+      if (prod?.noDiscount) return sum;
+      return sum + (item.quantity * (item.sellingRate || 0));
+    }, 0);
+  });
+
+  discountAmount = computed(() => {
+    if (!this.applyDiscount()) return 0;
+    const pct = Math.min(100, Math.max(0, Number(this.billDiscountPct()) || 0));
+    return Math.round((this.discountableSubtotal() * pct) / 100 * 100) / 100;
+  });
+
+  totalAmount = computed(() => this.subTotal() - this.discountAmount() + this.badha());
+  netPayable  = computed(() => this.customerBalance() + this.totalAmount());
 
   // Product Search State
   productSearchTerm = signal('');
@@ -117,7 +137,6 @@ export class AdminOrdersComponent implements OnInit {
     this.isDrawerOpen.set(true);
     this.showSuccessAnim.set(false);
 
-    // Initialize Editable Items with proper default selling and purchase rates
     this.editableItems.set(order.items.map(item => {
       const p = this.products().find(prod => prod.id === item.productId);
       return {
@@ -127,13 +146,17 @@ export class AdminOrdersComponent implements OnInit {
       };
     }));
     this.badha.set(0);
+    this.applyDiscount.set(false);
+    this.billDiscountPct.set(0);
 
-    // Fetch Customer Balance
+    // Fetch Customer Balance + discount %
     if (order.uid) {
       try {
         const users = await this.authService.getAllUsers();
         const user = users.find(u => u.uid === order.uid);
         this.customerBalance.set(user?.balance || 0);
+        // Pre-fill customer's saved discount %
+        this.billDiscountPct.set(Number(user?.discountPercent) || 0);
       } catch (e) {
         console.error('Error fetching balance:', e);
         this.customerBalance.set(0);
@@ -294,7 +317,6 @@ export class AdminOrdersComponent implements OnInit {
     this.isGenerating.set(true);
 
     try {
-      // Calculate totals for items
       const updatedItems = this.editableItems().map(item => ({
         ...item,
         total: item.quantity * (item.sellingRate || 0)
@@ -305,7 +327,9 @@ export class AdminOrdersComponent implements OnInit {
         badha: this.badha(),
         totalAmount: this.totalAmount(),
         previousBalance: this.customerBalance(),
-        netPayable: this.netPayable()
+        netPayable: this.netPayable(),
+        discountPercent: this.applyDiscount() ? (Number(this.billDiscountPct()) || 0) : 0,
+        discountAmount: this.discountAmount()
       };
 
       const completedOrder = await this.dataService.generateBill(orderId, updatedItems, billingSummary);
@@ -313,16 +337,12 @@ export class AdminOrdersComponent implements OnInit {
       this.isGenerating.set(false);
       this.showSuccessAnim.set(true);
 
-      // Update selected order reference and generate PDF Invoice
       if (completedOrder) {
         this.selectedOrder.set(completedOrder);
         this.invoiceService.generateInvoice(completedOrder, this.products());
       }
 
-      // Auto close drawer after showing success animation
-      setTimeout(() => {
-        this.closeDrawer();
-      }, 1500);
+      setTimeout(() => { this.closeDrawer(); }, 1500);
     } catch (error) {
       console.error(error);
       this.isGenerating.set(false);

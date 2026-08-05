@@ -21,6 +21,7 @@ export interface Product {
   images: string[];
   purchaseRate?: number;
   sellingRate?: number;
+  noDiscount?: boolean; // If true → this product is exempt from customer discount (full price always)
   createdAt?: string;
 }
 
@@ -61,14 +62,16 @@ export interface Order {
   status: 'pending' | 'completed' | 'cancelled';
   cancellationReason?: string;
   date: string;
-  uid?: string; // Firebase Auth UID — stored at order time
-  billNumber?: string; // e.g. KH001
+  uid?: string;
+  billNumber?: string;
   billType?: 'app' | 'admin_pos';
   subTotal?: number;
   badha?: number;
   totalAmount?: number;
-  previousBalance?: number; // Balance before this bill
-  netPayable?: number; // Total due after this bill
+  previousBalance?: number;
+  netPayable?: number;
+  discountPercent?: number;  // Applied discount % for this specific bill
+  discountAmount?: number;   // Actual ₹ discount deducted
 }
 
 export interface Receipt {
@@ -282,7 +285,7 @@ export class DataService {
   async generateBill(
     orderId: string,
     updatedItems: OrderItem[],
-    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number }
+    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number; discountPercent?: number; discountAmount?: number }
   ) {
     try {
       const orderRef = doc(this.firestore, `orders-kh/${orderId}`);
@@ -307,7 +310,9 @@ export class DataService {
         badha: billingSummary.badha || 0,
         totalAmount: billingSummary.totalAmount || 0,
         previousBalance: billingSummary.previousBalance || 0,
-        netPayable: billingSummary.netPayable || 0
+        netPayable: billingSummary.netPayable || 0,
+        discountPercent: billingSummary.discountPercent || 0,
+        discountAmount: billingSummary.discountAmount || 0
       };
 
       await updateDoc(orderRef, updatedOrderData);
@@ -447,7 +452,7 @@ export class DataService {
   async createAdminBill(
     customerData: { name: string; phone: string; email?: string; address: string; pincode?: string; uid?: string },
     items: OrderItem[],
-    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number },
+    billingSummary: { subTotal: number; badha: number; totalAmount: number; previousBalance: number; netPayable: number; discountPercent?: number; discountAmount?: number },
     notes: string = ''
   ): Promise<Order> {
     const billNumber = await this.getNextBillNumber();
@@ -468,7 +473,9 @@ export class DataService {
       badha: billingSummary.badha,
       totalAmount: billingSummary.totalAmount,
       previousBalance: billingSummary.previousBalance,
-      netPayable: billingSummary.netPayable
+      netPayable: billingSummary.netPayable,
+      discountPercent: billingSummary.discountPercent || 0,
+      discountAmount: billingSummary.discountAmount || 0
     };
 
     const ordersRef = collection(this.firestore, 'orders-kh');

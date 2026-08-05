@@ -157,20 +157,69 @@
     </div>
     
     <div class="form-row">
+      <!-- ══ STOCK FIELD: Add mode = plain input. Edit mode = existing + add more UI ══ -->
       <div class="form-group flex-1">
-        <label class="form-label">Stock Quantity</label>
-        <input type="text" class="form-control" 
-               [class.is-invalid]="stockField.invalid && (stockField.dirty || stockField.touched || prodForm.submitted)" 
-               [(ngModel)]="newProduct.stock" 
-               name="stock" 
-               #stockField="ngModel" 
-               required 
-               pattern="^[1-9][0-9]*$">
-        <div class="validation-error" *ngIf="stockField.invalid && (stockField.dirty || stockField.touched || prodForm.submitted)">
-          <small *ngIf="stockField.errors?.['required']">Stock is required.</small>
-          <small *ngIf="stockField.errors?.['pattern']">Only positive numbers allowed (no zero, decimals, or leading zeros).</small>
-        </div>
+
+        <!-- ADD MODE: simple stock input -->
+        <ng-container *ngIf="!isEditing()">
+          <label class="form-label">Stock Quantity</label>
+          <input type="text" class="form-control"
+                 [class.is-invalid]="stockField.invalid && (stockField.dirty || stockField.touched || prodForm.submitted)"
+                 [(ngModel)]="newProduct.stock"
+                 name="stock"
+                 #stockField="ngModel"
+                 required
+                 pattern="^[1-9][0-9]*$">
+          <div class="validation-error" *ngIf="stockField.invalid && (stockField.dirty || stockField.touched || prodForm.submitted)">
+            <small *ngIf="stockField.errors?.['required']">Stock is required.</small>
+            <small *ngIf="stockField.errors?.['pattern']">Only positive numbers allowed.</small>
+          </div>
+        </ng-container>
+
+        <!-- EDIT MODE: show current stock + add more + live total -->
+        <ng-container *ngIf="isEditing()">
+          <label class="form-label">Stock Management</label>
+
+          <!-- Current stock chip -->
+          <div class="stock-edit-current">
+            <span class="material-symbols-outlined stock-edit-icon">inventory_2</span>
+            <div>
+              <span class="stock-edit-label">Current Stock</span>
+              <span class="stock-edit-val">{{ newProduct.stock | number }}</span>
+            </div>
+          </div>
+
+          <!-- Add more qty input -->
+          <div class="stock-add-wrap mt-2">
+            <label class="form-label mb-1" style="font-size:0.8rem; color: var(--text-secondary)">
+              Add More Qty <span class="text-muted" style="font-weight:400">(leave 0 if no new stock)</span>
+            </label>
+            <div class="stock-add-input-row">
+              <span class="stock-add-prefix">+</span>
+              <input type="number" class="form-control stock-add-input"
+                     [ngModel]="addStockQty()"
+                     (ngModelChange)="addStockQty.set($event)"
+                     name="addStockQty"
+                     min="0"
+                     placeholder="0">
+            </div>
+          </div>
+
+          <!-- Live total preview -->
+          <div class="stock-total-preview mt-2" [class.preview-changed]="(+addStockQty() || 0) > 0">
+            <span class="material-symbols-outlined" style="font-size:1rem">calculate</span>
+            <span>
+              {{ newProduct.stock | number }} + {{ +addStockQty() || 0 }}
+              = <strong>{{ totalStockPreview | number }}</strong> units
+            </span>
+            <span class="preview-new-badge" *ngIf="(+addStockQty() || 0) > 0">New Total</span>
+          </div>
+
+          <!-- Hidden input to keep ngForm valid (stock exists) -->
+          <input type="hidden" [(ngModel)]="newProduct.stock" name="stock" #stockField="ngModel">
+        </ng-container>
       </div>
+
       <div class="form-group flex-1">
         <label class="form-label">Status</label>
         <select class="form-control" [(ngModel)]="newProduct.status" name="status" required>
@@ -211,6 +260,31 @@
       </div>
     </div>
     
+    <!-- ══ noDiscount Checkbox ══ -->
+    <div class="form-group discount-apply-toggle">
+      <label class="toggle-row">
+        <div class="toggle-checkbox-wrap">
+          <input type="checkbox"
+                 id="noDiscount"
+                 class="toggle-checkbox"
+                 [(ngModel)]="newProduct.noDiscount"
+                 name="noDiscount">
+          <span class="toggle-track"></span>
+        </div>
+        <div class="toggle-text">
+          <span class="toggle-label">No Discount on this Product</span>
+          <span class="toggle-hint" *ngIf="!newProduct.noDiscount">
+            <span class="material-symbols-outlined" style="font-size:0.85rem">local_offer</span>
+            Customer's wholesale discount % will apply on billing
+          </span>
+          <span class="toggle-hint toggle-hint-active" *ngIf="newProduct.noDiscount">
+            <span class="material-symbols-outlined" style="font-size:0.85rem">block</span>
+            Discount EXEMPT — full price always, discount will not apply
+          </span>
+        </div>
+      </label>
+    </div>
+
     <div class="form-group">
       <label class="form-label">Description</label>
       <textarea class="form-control" rows="4" [(ngModel)]="newProduct.description" name="description"></textarea>

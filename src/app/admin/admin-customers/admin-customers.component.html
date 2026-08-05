@@ -1,6 +1,6 @@
 <div class="page-header">
   <div>
-    <h2>Member Applications & Customers</h2>
+    <h2>Member Applications &amp; Customers</h2>
     <p class="text-muted">Review, verify, and manage store access for all registered wholesale users</p>
   </div>
   <div class="header-actions">
@@ -24,10 +24,10 @@
     All Members <span class="tab-count">{{ users().length }}</span>
   </button>
   <button class="tab-btn tab-pending" [class.active]="filterStatus() === 'pending'" (click)="setFilter('pending')">
-    ⏳ Pending Verification <span class="tab-count count-pending">{{ getCount('pending') }}</span>
+    ⏳ Pending <span class="tab-count count-pending">{{ getCount('pending') }}</span>
   </button>
   <button class="tab-btn" [class.active]="filterStatus() === 'approved'" (click)="setFilter('approved')">
-    ✅ Approved Access <span class="tab-count">{{ getCount('approved') }}</span>
+    ✅ Approved <span class="tab-count">{{ getCount('approved') }}</span>
   </button>
   <button class="tab-btn" [class.active]="filterStatus() === 'rejected'" (click)="setFilter('rejected')">
     ❌ Declined <span class="tab-count">{{ getCount('rejected') }}</span>
@@ -52,12 +52,13 @@
         <th>Contact Number</th>
         <th class="text-center">Status</th>
         <th>Ledger Balance</th>
-        <th>Registration Date</th>
-        <th class="text-right">Access Verification</th>
+        <th class="text-center">Discount (छूट %)</th>
+        <th>Reg. Date</th>
+        <th class="text-right">Access</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let user of paginatedUsers()">
+      <tr *ngFor="let user of paginatedUsers()" [class.row-editing]="editingUid() === user.uid">
         <td>
           <div class="customer-info">
             <div class="avatar">
@@ -66,43 +67,97 @@
             </div>
             <div>
               <strong>{{ user.name }}</strong>
-              <span class="uid-tag">UID: {{ user.uid.slice(0, 8) }}...</span>
+              <span class="uid-tag">+91 {{ user.phone }}</span>
             </div>
           </div>
         </td>
         <td>
-          <span class="phone-tag">+91 {{ user.phone }}</span>
+          <span class="phone-tag">{{ user.phone }}</span>
         </td>
         <td class="text-center">
           <div class="status-dot-only" [ngClass]="{
             'status-warning': user.status === 'pending',
             'status-success': user.status === 'approved',
-            'status-danger': user.status === 'rejected'
+            'status-danger':  user.status === 'rejected'
           }" [title]="(user.status || 'approved') | uppercase">
           </div>
         </td>
         <td>
-          <div *ngIf="user.balance">
-            <span class="amount-due" *ngIf="user.balance > 0">₹{{ user.balance | number:'1.2-2' }} Due</span>
-            <span class="amount-advance" *ngIf="user.balance < 0">₹{{ (user.balance * -1) | number:'1.2-2' }} Advance</span>
-          </div>
-          <span class="text-muted" *ngIf="!user.balance || user.balance === 0">₹0.00</span>
+          <span class="amount-due"    *ngIf="(user.balance || 0) > 0">₹{{ user.balance | number:'1.2-2' }} Due</span>
+          <span class="amount-advance" *ngIf="(user.balance || 0) < 0">₹{{ (user.balance! * -1) | number:'1.2-2' }} CR</span>
+          <span class="text-muted"    *ngIf="!(user.balance)">₹0.00</span>
         </td>
+
+        <!-- ══ Discount Cell ══ -->
+        <td class="text-center discount-cell">
+
+          <!-- VIEW mode: clickable badge -->
+          <ng-container *ngIf="editingUid() !== user.uid">
+            <button class="disc-badge"
+                    [class.disc-badge-active]="(user.discountPercent || 0) > 0"
+                    [class.disc-badge-zero]="!(user.discountPercent || 0)"
+                    (click)="startEdit(user)"
+                    title="Click to update discount">
+              <span class="material-symbols-outlined disc-icon">local_offer</span>
+              <span class="disc-value">{{ user.discountPercent || 0 }}%</span>
+              <span class="disc-edit-hint">
+                <span class="material-symbols-outlined" style="font-size:0.85rem">edit</span>
+              </span>
+            </button>
+          </ng-container>
+
+          <!-- EDIT mode: inline input + save/cancel -->
+          <ng-container *ngIf="editingUid() === user.uid">
+            <div class="disc-edit-row">
+              <div class="disc-edit-input-wrap">
+                <input type="number"
+                       class="disc-edit-input"
+                       [(ngModel)]="editDiscountValue"
+                       (ngModelChange)="clampDiscount()"
+                       min="0" max="100" step="0.5"
+                       placeholder="0"
+                       autofocus>
+                <span class="disc-edit-pct">%</span>
+              </div>
+              <div class="disc-edit-actions">
+                <button class="disc-save-btn"
+                        (click)="saveDiscount(user)"
+                        [disabled]="isSavingDiscount()"
+                        title="Save discount">
+                  <span *ngIf="!isSavingDiscount()" class="material-symbols-outlined">check</span>
+                  <span *ngIf="isSavingDiscount()" class="disc-mini-spinner"></span>
+                </button>
+                <button class="disc-cancel-btn"
+                        (click)="cancelEdit()"
+                        [disabled]="isSavingDiscount()"
+                        title="Cancel">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            </div>
+            <div class="disc-validation" *ngIf="discountError()">
+              {{ discountError() }}
+            </div>
+          </ng-container>
+
+        </td>
+        <!-- ══ end Discount Cell ══ -->
+
         <td>
           <span class="date-text">{{ user.createdAt | date:'mediumDate' }}</span>
         </td>
+
         <td class="text-right">
           <div class="action-buttons justify-end">
-            <button *ngIf="user.status !== 'approved'" 
+            <button *ngIf="user.status !== 'approved'"
                     class="btn-action btn-approve"
                     (click)="changeStatus(user, 'approved')"
                     [disabled]="updatingUid() === user.uid"
-                    title="Approve access to wholesale store">
+                    title="Approve access">
               <span class="material-symbols-outlined icon">check_circle</span>
-              <span>Approve Access</span>
+              <span>Approve</span>
             </button>
-
-            <button *ngIf="user.status !== 'rejected'" 
+            <button *ngIf="user.status !== 'rejected'"
                     class="btn-action btn-reject"
                     (click)="changeStatus(user, 'rejected')"
                     [disabled]="updatingUid() === user.uid"
@@ -115,7 +170,7 @@
       </tr>
 
       <tr *ngIf="filteredUsers().length === 0">
-        <td colspan="5" class="text-center empty-state">
+        <td colspan="7" class="text-center empty-state">
           <span class="material-symbols-outlined empty-icon">group_off</span>
           <p>No members found matching the selected filters.</p>
         </td>
@@ -128,10 +183,14 @@
   <button class="btn btn-outline" [disabled]="currentPage() === 1" (click)="prevPage()">
     <span class="material-symbols-outlined">chevron_left</span> Previous
   </button>
-  <div class="page-info">
-    Page {{ currentPage() }} of {{ totalPages() || 1 }}
-  </div>
+  <div class="page-info">Page {{ currentPage() }} of {{ totalPages() || 1 }}</div>
   <button class="btn btn-outline" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">
     Next <span class="material-symbols-outlined">chevron_right</span>
   </button>
+</div>
+
+<!-- Floating Success Toast -->
+<div class="save-toast" [class.toast-visible]="saveSuccess()">
+  <span class="material-symbols-outlined" style="color:#2E7D32;font-size:1.1rem">check_circle</span>
+  Discount updated successfully!
 </div>

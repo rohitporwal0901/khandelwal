@@ -34,6 +34,7 @@ export interface UserProfile {
   photoUrl?: string;
   status?: 'pending' | 'approved' | 'rejected';
   balance?: number; // Positive = Due/Unpaid, Negative = Advance
+  discountPercent?: number; // Wholesale discount % (0-100). Default 0 means no discount.
   createdAt: string;
 }
 
@@ -265,7 +266,7 @@ export class AuthService {
   }
 
   // ─── Admin POS Customer Methods ─────────────────────────
-  async createCustomerFromAdmin(data: { name: string; phone: string; address?: string; pincode?: string; balance?: number }): Promise<UserProfile> {
+  async createCustomerFromAdmin(data: { name: string; phone: string; address?: string; pincode?: string; balance?: number; discountPercent?: number }): Promise<UserProfile> {
     const cleanPhone = data.phone.trim();
     const email = this.phoneToEmail(cleanPhone);
     const defaultPin = '000000';
@@ -286,7 +287,8 @@ export class AuthService {
         pincode: data.pincode?.trim() || existingData.pincode || '',
         status: 'approved',
         pin: existingData.pin || defaultPin,
-        balance: (existingData.balance || 0) + (data.balance || 0)
+        balance: (existingData.balance || 0) + (data.balance || 0),
+        discountPercent: data.discountPercent ?? existingData.discountPercent ?? 0
       };
       await setDoc(doc(this.firestore, `users-kh/${uid}`), updatedProfile);
       return updatedProfile;
@@ -315,10 +317,22 @@ export class AuthService {
       pin: defaultPin,
       status: 'approved',
       balance: data.balance || 0,
+      discountPercent: data.discountPercent ?? 0,
       createdAt: new Date().toISOString()
     };
     await setDoc(doc(this.firestore, `users-kh/${uid}`), newProfile);
     return newProfile;
+  }
+
+  // ─── Update customer discount & profile (Admin) ────────────────────────────
+  async updateCustomerProfileAdmin(uid: string, data: { discountPercent?: number; name?: string; address?: string; pincode?: string }): Promise<void> {
+    const userRef = doc(this.firestore, `users-kh/${uid}`);
+    const cleanData: any = {};
+    if (data.name !== undefined) cleanData['name'] = data.name.trim();
+    if (data.address !== undefined) cleanData['address'] = data.address.trim();
+    if (data.pincode !== undefined) cleanData['pincode'] = data.pincode.trim();
+    if (data.discountPercent !== undefined) cleanData['discountPercent'] = data.discountPercent;
+    await updateDoc(userRef, cleanData);
   }
 
   async updateCustomerBalance(uid: string, newBalance: number): Promise<void> {

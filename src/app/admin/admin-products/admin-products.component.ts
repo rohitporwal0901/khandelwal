@@ -80,6 +80,16 @@ export class AdminProductsComponent implements OnInit {
   isSaving = signal(false);
   duplicateSkuError = signal<string>('');
 
+  // Stock-add mode for edit: track extra qty being added on top of existing
+  addStockQty = signal<number | ''>(0);  // '' = empty input
+
+  get totalStockPreview(): number {
+    if (!this.isEditing()) return 0;
+    const existing = Number((this.newProduct as Product).stock) || 0;
+    const adding   = Number(this.addStockQty()) || 0;
+    return existing + adding;
+  }
+
   newProduct: Product | Omit<Product, 'id'> = {
     name: '',
     sku: '',
@@ -89,7 +99,8 @@ export class AdminProductsComponent implements OnInit {
     status: 'active',
     images: [],
     purchaseRate: 0,
-    sellingRate: 0
+    sellingRate: 0,
+    noDiscount: false
   };
 
   getCategoryName(id: string): string {
@@ -130,22 +141,24 @@ export class AdminProductsComponent implements OnInit {
     this.isEditing.set(false);
     this.isAddDrawerOpen.set(true);
     this.duplicateSkuError.set('');
+    this.addStockQty.set(0);
     this.newProduct = {
       name: '', sku: '', categoryId: '', description: '',
       stock: 0, status: 'active', images: [],
-      purchaseRate: 0, sellingRate: 0
+      purchaseRate: 0, sellingRate: 0, noDiscount: false
     };
   }
 
   openEditDrawer(prod: Product) {
     this.isEditing.set(true);
     this.duplicateSkuError.set('');
-    // clone the product so we don't mutate the UI immediately before save
+    this.addStockQty.set(0);  // reset add-qty each time
     const cloned = JSON.parse(JSON.stringify(prod));
     this.newProduct = {
       ...cloned,
       purchaseRate: cloned.purchaseRate || 0,
-      sellingRate: cloned.sellingRate || 0
+      sellingRate:  cloned.sellingRate  || 0,
+      noDiscount: cloned.noDiscount ?? false
     };
     this.isAddDrawerOpen.set(true);
   }
@@ -241,24 +254,29 @@ export class AdminProductsComponent implements OnInit {
   async saveProduct(form: any) {
     this.checkDuplicateSku();
     if (form.invalid || this.newProduct.images.length === 0 || !!this.duplicateSkuError()) {
-      // Mark all controls as touched to trigger validation UI
       Object.keys(form.controls).forEach(key => {
         form.controls[key].markAsTouched();
       });
       if (this.duplicateSkuError()) {
         this.snackbar.show(this.duplicateSkuError(), 'error');
       }
-      return; // Stop saving if invalid
+      return;
     }
 
     this.isSaving.set(true);
     try {
-      // Ensure stock is saved as a number since input type is text now
+      const addQty = Number(this.addStockQty()) || 0;
+      const baseStock = Number(this.newProduct.stock) || 0;
+
+      // In edit mode: final stock = existing stock + additional qty entered
+      const finalStock = this.isEditing() ? baseStock + addQty : baseStock;
+
       const productToSave = {
         ...this.newProduct,
-        stock: Number(this.newProduct.stock),
+        stock: finalStock,
         purchaseRate: Number(this.newProduct.purchaseRate || 0),
-        sellingRate: Number(this.newProduct.sellingRate || 0)
+        sellingRate:  Number(this.newProduct.sellingRate  || 0),
+        noDiscount: (this.newProduct as any).noDiscount ?? false
       };
 
       if (this.isEditing() && 'id' in productToSave) {
@@ -267,11 +285,11 @@ export class AdminProductsComponent implements OnInit {
       } else {
         await this.dataService.addProduct(productToSave as Omit<Product, 'id'>);
         this.snackbar.show('Product added successfully', 'success');
-        this.currentPage.set(1); // Jump to page 1 to see newly added product at top
+        this.currentPage.set(1);
       }
       this.closeAddDrawer();
     } catch (err) {
-      console.error("Error saving product:", err);
+      console.error('Error saving product:', err);
       this.snackbar.show('Failed to save product', 'error');
     } finally {
       this.isSaving.set(false);

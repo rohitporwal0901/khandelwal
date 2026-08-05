@@ -343,3 +343,221 @@
   background: #C62828;
   box-shadow: 0 0 8px rgba(198,40,40,0.6);
 }
+
+/* ─── Discount Cell ──────────────────────── */
+.discount-cell {
+  min-width: 140px;
+}
+
+/* Row highlight when being edited */
+.row-editing td {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+/* ── Discount Badge (view mode) ── */
+.disc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: none;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+/* Active (discount > 0) */
+.disc-badge-active {
+  background: rgba(184,134,11,0.1);
+  border-color: rgba(184,134,11,0.35);
+  color: #92711A;
+}
+.disc-badge-active:hover {
+  background: rgba(184,134,11,0.18);
+  border-color: rgba(184,134,11,0.55);
+  transform: scale(1.04);
+  box-shadow: 0 2px 8px rgba(184,134,11,0.18);
+}
+
+/* Zero (no discount) */
+.disc-badge-zero {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.12);
+  color: var(--text-muted);
+}
+.disc-badge-zero:hover {
+  background: rgba(0,0,0,0.07);
+  border-color: rgba(0,0,0,0.2);
+  color: var(--text-main);
+  transform: scale(1.04);
+}
+
+.disc-icon {
+  font-size: 0.95rem;
+}
+
+.disc-value {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.disc-edit-hint {
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.15s ease;
+  color: var(--primary);
+}
+.disc-badge:hover .disc-edit-hint {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Inline Edit Row (edit mode) ── */
+.disc-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  animation: discEditFadeIn 0.18s ease;
+}
+
+@keyframes discEditFadeIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.disc-edit-input-wrap {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 2px solid rgba(184,134,11,0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+  height: 34px;
+}
+
+.disc-edit-input {
+  width: 52px;
+  height: 100%;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: inherit;
+  background: transparent;
+  padding: 0 4px;
+}
+/* Hide browser spinners */
+.disc-edit-input::-webkit-outer-spin-button,
+.disc-edit-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.disc-edit-input[type=number] { -moz-appearance: textfield; }
+
+.disc-edit-pct {
+  padding: 0 8px 0 2px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #B8860B;
+  line-height: 1;
+}
+
+.disc-edit-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.disc-save-btn,
+.disc-cancel-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.disc-save-btn {
+  background: #2E7D32;
+  color: white;
+  box-shadow: 0 2px 6px rgba(46,125,50,0.3);
+}
+.disc-save-btn:hover:not(:disabled) {
+  background: #1B5E20;
+  transform: scale(1.08);
+}
+.disc-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.disc-save-btn .material-symbols-outlined { font-size: 1.1rem; }
+
+.disc-cancel-btn {
+  background: rgba(0,0,0,0.05);
+  color: var(--text-muted);
+}
+.disc-cancel-btn:hover:not(:disabled) {
+  background: #FFEBEE;
+  color: #C62828;
+  transform: scale(1.08);
+}
+.disc-cancel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.disc-cancel-btn .material-symbols-outlined { font-size: 1.1rem; }
+
+/* Mini spinner inside save button */
+.disc-mini-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* Validation msg */
+.disc-validation {
+  font-size: 0.7rem;
+  color: #C62828;
+  font-weight: 600;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* ─── Success Toast ──────────────────────── */
+.save-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: white;
+  border: 1px solid rgba(46,125,50,0.25);
+  border-left: 4px solid #2E7D32;
+  border-radius: 10px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1B5E20;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  pointer-events: none;
+}
+.save-toast.toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
