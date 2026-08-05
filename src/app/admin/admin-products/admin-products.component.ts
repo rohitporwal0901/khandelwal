@@ -138,16 +138,21 @@ export class AdminProductsComponent implements OnInit {
   }
 
   preventInvalidInput(event: KeyboardEvent) {
-    if (['-', '+', 'e', 'E'].includes(event.key)) {
+    if (['-', '+', 'e', 'E', '.'].includes(event.key)) {
       event.preventDefault();
     }
   }
 
   enforcePositive(event: any) {
     const el = event.target as HTMLInputElement;
-    if (Number(el.value) < 0) {
+    let val = Number(el.value);
+    if (val < 0) {
       el.value = '0';
       this.addStockQty.set(0);
+    } else if (!Number.isInteger(val)) {
+      val = Math.floor(val);
+      el.value = val.toString();
+      this.addStockQty.set(val);
     }
   }
 
