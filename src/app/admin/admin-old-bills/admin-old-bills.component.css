@@ -13,6 +13,8 @@
   --slate-700: #334155;
   --slate-800: #1e293b;
   --slate-900: #0f172a;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
 }
 
 .billing-page {
@@ -542,3 +544,180 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ══ Inline Bill Discount Section ════════════════════════ */
+.discount-bill-section {
+  background: rgba(184,134,11,0.04);
+  border: 1.5px solid rgba(184,134,11,0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.discount-bill-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.disc-toggle-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.disc-toggle-cb {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.disc-toggle-track {
+  display: block;
+  width: 38px;
+  height: 22px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.disc-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.disc-toggle-cb:checked + .disc-toggle-track {
+  background: #B8860B;
+}
+
+.disc-toggle-cb:checked + .disc-toggle-track::after {
+  transform: translateX(16px);
+}
+
+.disc-check-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Input area */
+.disc-bill-input-wrap {
+  padding-top: 10px;
+  border-top: 1px solid rgba(184,134,11,0.15);
+  margin-top: 8px;
+}
+
+.disc-bill-fields {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.disc-bill-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.disc-bill-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.disc-bill-input-row {
+  display: flex;
+  align-items: center;
+  border: 2px solid rgba(184,134,11,0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+  height: 34px;
+}
+
+.disc-bill-input {
+  width: 60px;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: inherit;
+  background: transparent;
+  padding: 0 4px;
+}
+
+.disc-bill-input::-webkit-outer-spin-button,
+.disc-bill-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.disc-bill-input[type=number] { -moz-appearance: textfield; }
+
+.disc-bill-suffix {
+  padding: 0 8px;
+  font-weight: 800;
+  color: #B8860B;
+  font-size: 0.9rem;
+  border-left: 1px solid rgba(184,134,11,0.2);
+  line-height: 34px;
+}
+
+.disc-bill-base-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+/* Preview bars */
+.disc-bill-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  background: rgba(46,125,50,0.06);
+  border: 1px solid rgba(46,125,50,0.18);
+  color: #1B5E20;
+}
+
+.disc-bill-preview-zero {
+  background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.08);
+  color: var(--text-muted);
+}
+
+.disc-bill-preview-text strong {
+  font-size: 0.88rem;
+  color: #1B5E20;
+}
+
+.disc-bill-exempt-note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: #B8860B;
+  font-weight: 600;
+  opacity: 0.85;
+}

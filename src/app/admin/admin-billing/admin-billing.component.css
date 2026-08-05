@@ -1943,6 +1943,9 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-main);
+  height: 34px;
+  display: flex;
+  align-items: center;
 }
 
 /* Preview bars */

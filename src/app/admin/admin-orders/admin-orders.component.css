@@ -808,7 +808,7 @@
 .disc-bill-suffix {
   padding: 0 8px; font-weight: 800; color: #B8860B; font-size: 0.9rem; border-left: 1px solid rgba(184,134,11,0.2); line-height: 34px;
 }
-.disc-bill-base-val { font-size: 0.95rem; font-weight: 700; color: var(--slate-900); }
+.disc-bill-base-val { font-size: 0.95rem; font-weight: 700; color: var(--slate-900); height: 34px; display: flex; align-items: center; }
 .disc-bill-preview {
   display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; background: rgba(46,125,50,0.06); border: 1px solid rgba(46,125,50,0.18); color: #1B5E20;
 }
