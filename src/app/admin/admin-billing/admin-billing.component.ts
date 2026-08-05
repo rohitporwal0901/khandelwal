@@ -355,6 +355,14 @@ export class AdminBillingComponent implements OnInit {
     if (n > 100)   { this.newCustDiscountPercent = 100; }
   }
 
+  enforceMax100(event: any) {
+    const el = event.target as HTMLInputElement;
+    if (Number(el.value) > 100) {
+      el.value = '100';
+      this.newCustDiscountPercent = 100;
+    }
+  }
+
   closeAddCustomerModal() {
     this.isAddCustomerModalOpen.set(false);
   }

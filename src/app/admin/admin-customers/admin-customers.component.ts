@@ -132,6 +132,14 @@ export class AdminCustomersComponent implements OnInit {
     }
   }
 
+  enforceMax100(event: any) {
+    const el = event.target as HTMLInputElement;
+    if (Number(el.value) > 100) {
+      el.value = '100';
+      this.editDiscountValue = 100;
+    }
+  }
+
   /** Clamp value to 0-100 while user types */
   clampDiscount() {
     let n = Number(this.editDiscountValue);

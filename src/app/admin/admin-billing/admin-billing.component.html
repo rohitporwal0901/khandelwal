@@ -586,6 +586,7 @@
               [(ngModel)]="newCustDiscountPercent"
               (ngModelChange)="clampNewCustDiscount()"
               (keydown)="preventNegativeInput($event)"
+              (input)="enforceMax100($event)"
               min="0" max="100" step="0.5" placeholder="0">
             <span class="discount-suffix">%</span>
           </div>

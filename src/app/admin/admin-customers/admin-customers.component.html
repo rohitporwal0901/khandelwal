@@ -115,6 +115,7 @@
                        [(ngModel)]="editDiscountValue"
                        (ngModelChange)="clampDiscount()"
                        (keydown)="preventInvalidInput($event)"
+                       (input)="enforceMax100($event)"
                        min="0" max="100" step="0.5"
                        placeholder="0"
                        autofocus>
