@@ -18,6 +18,8 @@ export class AdminOldBillsComponent implements OnInit {
   invoiceService = inject(InvoiceService);
   authService = inject(AuthService);
 
+  Math = Math;
+
   // Filters
   dateFilter = signal<'today' | 'yesterday' | 'this_week' | 'this_month' | 'last_month' | 'custom'>('today');
   fromDate = signal<string>('');
@@ -40,6 +42,10 @@ export class AdminOldBillsComponent implements OnInit {
   badha = signal(0);
   originalPreviousBalance = signal(0);
 
+  // Discount signals
+  applyDiscount   = signal<boolean>(false);
+  billDiscountPct = signal<number>(0);
+
   currentCustomerBalance = computed(() => {
     const order = this.selectedOrder();
     if (!order || !order.uid) return 0;
@@ -50,7 +56,22 @@ export class AdminOldBillsComponent implements OnInit {
   subTotal = computed(() => {
     return this.editableItems().reduce((sum, item) => sum + (item.quantity * (item.sellingRate || 0)), 0);
   });
-  totalBillAmount = computed(() => this.subTotal() + this.badha());
+
+  discountableSubtotal = computed(() => {
+    return this.editableItems().reduce((sum, item) => {
+      const prod = this.dataService.products().find(p => p.id === item.productId);
+      if (prod?.noDiscount) return sum;
+      return sum + (item.quantity * (item.sellingRate || 0));
+    }, 0);
+  });
+
+  discountAmount = computed(() => {
+    if (!this.applyDiscount()) return 0;
+    const pct = Math.min(100, Math.max(0, Number(this.billDiscountPct()) || 0));
+    return Math.round((this.discountableSubtotal() * pct) / 100 * 100) / 100;
+  });
+
+  totalBillAmount = computed(() => this.subTotal() - this.discountAmount() + this.badha());
   netPayable = computed(() => this.originalPreviousBalance() + this.totalBillAmount());
 
   productSearchTerm = signal('');
@@ -323,6 +344,15 @@ export class AdminOldBillsComponent implements OnInit {
     this.editableItems.set(order.items.map(i => ({...i})));
     this.badha.set(order.badha || 0);
     this.originalPreviousBalance.set(order.previousBalance || 0);
+
+    // Apply old discount values if they exist on the bill
+    if (order.discountPercent && order.discountPercent > 0) {
+      this.applyDiscount.set(true);
+      this.billDiscountPct.set(order.discountPercent);
+    } else {
+      this.applyDiscount.set(false);
+      this.billDiscountPct.set(0);
+    }
   }
 
   closeDrawer() {
@@ -424,7 +454,9 @@ export class AdminOldBillsComponent implements OnInit {
         badha: this.badha(),
         totalAmount: this.totalBillAmount(),
         previousBalance: this.originalPreviousBalance(),
-        netPayable: this.netPayable()
+        netPayable: this.netPayable(),
+        discountPercent: this.applyDiscount() ? (Number(this.billDiscountPct()) || 0) : 0,
+        discountAmount: this.discountAmount()
       };
 
       const updatedOrder = await this.dataService.updateGeneratedBill(order.id, updatedItems, billingSummary);

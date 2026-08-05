@@ -527,39 +527,49 @@
 
 /* ══ Stock Edit Mode ══════════════════════════════════════ */
 
+.stock-management-container {
+  background: rgba(0, 0, 0, 0.015);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+}
+
 /* Current stock info chip */
 .stock-edit-current {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(0,0,0,0.025);
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 10px;
-  padding: 10px 14px;
+  gap: 12px;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 8px;
+  padding: 12px 14px;
 }
 
 .stock-edit-icon {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   color: var(--text-muted);
   flex-shrink: 0;
+  background: rgba(0,0,0,0.04);
+  padding: 6px;
+  border-radius: 6px;
 }
 
 .stock-edit-label {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .stock-edit-val {
   display: block;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--text-main);
   line-height: 1;
-  margin-top: 1px;
+  margin-top: 3px;
 }
 
 /* Add-more input row */
@@ -581,16 +591,15 @@
 }
 
 .stock-add-prefix {
-  padding: 0 12px;
-  font-size: 1.1rem;
+  padding: 0 14px;
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--primary);
   background: rgba(139,0,0,0.04);
   border-right: 1px solid rgba(139,0,0,0.12);
-  height: 100%;
+  height: 44px;
   display: flex;
   align-items: center;
-  self-align: stretch;
 }
 
 .stock-add-input {
@@ -600,7 +609,8 @@
   box-shadow: none !important;
   height: 44px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  padding-left: 12px;
 }
 
 .stock-add-input:focus {
@@ -613,14 +623,22 @@
 .stock-total-preview {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 10px 12px;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
   background: rgba(0,0,0,0.03);
   border: 1px solid rgba(0,0,0,0.08);
   transition: all 0.25s ease;
+  flex-wrap: nowrap;
+}
+
+.stock-total-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stock-total-preview.preview-changed {
@@ -634,20 +652,21 @@
 }
 
 .stock-total-preview strong {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 800;
 }
 
 .preview-new-badge {
-  margin-left: auto;
+  flex-shrink: 0;
   background: #2E7D32;
   color: white;
   font-size: 0.65rem;
   font-weight: 800;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
   animation: badgePop 0.2s ease;
 }
 

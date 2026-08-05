@@ -180,39 +180,41 @@
         <ng-container *ngIf="isEditing()">
           <label class="form-label">Stock Management</label>
 
-          <!-- Current stock chip -->
-          <div class="stock-edit-current">
-            <span class="material-symbols-outlined stock-edit-icon">inventory_2</span>
-            <div>
-              <span class="stock-edit-label">Current Stock</span>
-              <span class="stock-edit-val">{{ newProduct.stock | number }}</span>
+          <div class="stock-management-container">
+            <!-- Current stock chip -->
+            <div class="stock-edit-current">
+              <span class="material-symbols-outlined stock-edit-icon">inventory_2</span>
+              <div>
+                <span class="stock-edit-label">Current Stock</span>
+                <span class="stock-edit-val">{{ newProduct.stock | number }}</span>
+              </div>
             </div>
-          </div>
 
-          <!-- Add more qty input -->
-          <div class="stock-add-wrap mt-2">
-            <label class="form-label mb-1" style="font-size:0.8rem; color: var(--text-secondary)">
-              Add More Qty <span class="text-muted" style="font-weight:400">(leave 0 if no new stock)</span>
-            </label>
-            <div class="stock-add-input-row">
-              <span class="stock-add-prefix">+</span>
-              <input type="number" class="form-control stock-add-input"
-                     [ngModel]="addStockQty()"
-                     (ngModelChange)="addStockQty.set($event)"
-                     name="addStockQty"
-                     min="0"
-                     placeholder="0">
+            <!-- Add more qty input -->
+            <div class="stock-add-wrap mt-2">
+              <label class="form-label mb-1" style="font-size:0.75rem; color: var(--text-secondary)">
+                Add More Qty <span class="text-muted" style="font-weight:400">(leave 0 if no new stock)</span>
+              </label>
+              <div class="stock-add-input-row">
+                <span class="stock-add-prefix">+</span>
+                <input type="number" class="form-control stock-add-input"
+                       [ngModel]="addStockQty()"
+                       (ngModelChange)="addStockQty.set($event)"
+                       name="addStockQty"
+                       min="0"
+                       placeholder="0">
+              </div>
             </div>
-          </div>
 
-          <!-- Live total preview -->
-          <div class="stock-total-preview mt-2" [class.preview-changed]="(+addStockQty() || 0) > 0">
-            <span class="material-symbols-outlined" style="font-size:1rem">calculate</span>
-            <span>
-              {{ newProduct.stock | number }} + {{ +addStockQty() || 0 }}
-              = <strong>{{ totalStockPreview | number }}</strong> units
-            </span>
-            <span class="preview-new-badge" *ngIf="(+addStockQty() || 0) > 0">New Total</span>
+            <!-- Live total preview -->
+            <div class="stock-total-preview mt-2" [class.preview-changed]="(+addStockQty() || 0) > 0">
+              <span class="material-symbols-outlined" style="font-size:1.1rem">calculate</span>
+              <div class="stock-total-text">
+                <span>{{ newProduct.stock | number }} + {{ +addStockQty() || 0 }} = </span>
+                <strong>{{ totalStockPreview | number }}</strong> <span class="text-xs">units</span>
+              </div>
+              <span class="preview-new-badge" *ngIf="(+addStockQty() || 0) > 0">New Total</span>
+            </div>
           </div>
 
           <!-- Hidden input to keep ngForm valid (stock exists) -->

@@ -348,6 +348,13 @@ export class AdminBillingComponent implements OnInit {
     this.isAddCustomerModalOpen.set(true);
   }
 
+  clampNewCustDiscount() {
+    let n = Number(this.newCustDiscountPercent);
+    if (isNaN(n))  { this.newCustDiscountPercent = 0; return; }
+    if (n < 0)     { this.newCustDiscountPercent = Math.abs(n); n = this.newCustDiscountPercent; } // Force positive
+    if (n > 100)   { this.newCustDiscountPercent = 100; }
+  }
+
   closeAddCustomerModal() {
     this.isAddCustomerModalOpen.set(false);
   }

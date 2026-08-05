@@ -126,11 +126,17 @@ export class AdminCustomersComponent implements OnInit {
     this.discountError.set('');
   }
 
+  preventInvalidInput(event: KeyboardEvent) {
+    if (['-', '+', 'e', 'E'].includes(event.key)) {
+      event.preventDefault();
+    }
+  }
+
   /** Clamp value to 0-100 while user types */
   clampDiscount() {
-    const n = Number(this.editDiscountValue);
+    let n = Number(this.editDiscountValue);
     if (isNaN(n))  { this.editDiscountValue = 0; return; }
-    if (n < 0)     { this.editDiscountValue = 0; }
+    if (n < 0)     { this.editDiscountValue = Math.abs(n); n = this.editDiscountValue; } // Force positive
     if (n > 100)   { this.editDiscountValue = 100; }
     this.discountError.set('');
   }

@@ -114,6 +114,7 @@
                        class="disc-edit-input"
                        [(ngModel)]="editDiscountValue"
                        (ngModelChange)="clampDiscount()"
+                       (keydown)="preventInvalidInput($event)"
                        min="0" max="100" step="0.5"
                        placeholder="0"
                        autofocus>
@@ -122,7 +123,7 @@
               <div class="disc-edit-actions">
                 <button class="disc-save-btn"
                         (click)="saveDiscount(user)"
-                        [disabled]="isSavingDiscount()"
+                        [disabled]="isSavingDiscount() || editDiscountValue === null || editDiscountValue === undefined || editDiscountValue < 0 || editDiscountValue > 100"
                         title="Save discount">
                   <span *ngIf="!isSavingDiscount()" class="material-symbols-outlined">check</span>
                   <span *ngIf="isSavingDiscount()" class="disc-mini-spinner"></span>
