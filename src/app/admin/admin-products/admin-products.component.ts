@@ -137,6 +137,20 @@ export class AdminProductsComponent implements OnInit {
     }
   }
 
+  preventInvalidInput(event: KeyboardEvent) {
+    if (['-', '+', 'e', 'E'].includes(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  enforcePositive(event: any) {
+    const el = event.target as HTMLInputElement;
+    if (Number(el.value) < 0) {
+      el.value = '0';
+      this.addStockQty.set(0);
+    }
+  }
+
   openAddDrawer() {
     this.isEditing.set(false);
     this.isAddDrawerOpen.set(true);

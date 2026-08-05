@@ -200,6 +200,8 @@
                 <input type="number" class="form-control stock-add-input"
                        [ngModel]="addStockQty()"
                        (ngModelChange)="addStockQty.set($event)"
+                       (keydown)="preventInvalidInput($event)"
+                       (input)="enforcePositive($event)"
                        name="addStockQty"
                        min="0"
                        placeholder="0">
