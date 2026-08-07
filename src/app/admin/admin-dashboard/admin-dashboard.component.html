@@ -185,6 +185,9 @@
         <div>
           <h3 class="ic-title">Total Revenue</h3>
           <span class="ic-sub">From billed orders</span>
+          <span class="ic-date-sub" *ngIf="revenueUnlocked() && revenueDateFilter() !== 'all'">
+            {{ currentRevenueDateRange() }}
+          </span>
         </div>
       </div>
       

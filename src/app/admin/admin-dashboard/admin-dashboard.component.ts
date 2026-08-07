@@ -201,7 +201,10 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  lockRevenue() { this.revenueUnlocked.set(false); }
+  lockRevenue() { 
+    this.revenueUnlocked.set(false); 
+    this.setRevenueFilter('all');
+  }
 
   // ── Revenue Filter Handlers ───────────────────────────────────
   setRevenueFilter(filter: string) {
@@ -211,6 +214,42 @@ export class AdminDashboardComponent implements OnInit {
       this.revenueToDate.set('');
     }
   }
+
+  // Current formatted date range for the UI
+  currentRevenueDateRange = computed(() => {
+    const filter = this.revenueDateFilter();
+    if (filter === 'all') return 'All Time';
+    
+    const today = new Date();
+    
+    if (filter === 'today') {
+      return today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    if (filter === 'yesterday') {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    if (filter === 'this_week') {
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      return `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    }
+    if (filter === 'this_month') {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      return `${startOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    }
+    if (filter === 'custom') {
+      const from = this.revenueFromDate();
+      const to = this.revenueToDate();
+      if (!from && !to) return 'Custom Range';
+      
+      const fromStr = from ? new Date(from).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Start';
+      const toStr = to ? new Date(to).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'End';
+      return `${fromStr} - ${toStr}`;
+    }
+    return '';
+  });
 
   // ── Stock Edit Methods ────────────────────────────────────────
   openStockEdit(productId: string, currentStock: number) {
