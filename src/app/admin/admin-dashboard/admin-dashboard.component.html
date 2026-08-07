@@ -1,3 +1,4 @@
+<!-- ── Header ──────────────────────────────────────────── -->
 <div class="dashboard-header">
   <h2>Dashboard Overview</h2>
   <button class="btn btn-primary">
@@ -5,19 +6,18 @@
   </button>
 </div>
 
+<!-- ── Stat Cards ─────────────────────────────────────── -->
 <div class="stats-grid">
-  <!-- Skeleton Loaders -->
   <ng-container *ngIf="isLoading()">
     <div class="stat-card" *ngFor="let i of [1,2,3,4]">
       <div class="stat-icon skeleton-icon"></div>
-      <div class="stat-info" style="flex: 1">
+      <div class="stat-info" style="flex:1">
         <div class="skeleton-text skeleton-title"></div>
         <div class="skeleton-text skeleton-subtitle"></div>
       </div>
     </div>
   </ng-container>
 
-  <!-- Actual Stats -->
   <ng-container *ngIf="!isLoading()">
     <div class="stat-card">
       <div class="stat-icon bg-primary-light">
@@ -28,7 +28,7 @@
         <p>Total Products</p>
       </div>
     </div>
-    
+
     <div class="stat-card">
       <div class="stat-icon bg-secondary-light">
         <span class="material-symbols-outlined text-secondary">category</span>
@@ -38,17 +38,17 @@
         <p>Categories</p>
       </div>
     </div>
-    
+
     <div class="stat-card">
       <div class="stat-icon bg-warning-light">
-        <span class="material-symbols-outlined text-warning" style="color: #b38600">pending_actions</span>
+        <span class="material-symbols-outlined" style="color:#b38600">pending_actions</span>
       </div>
       <div class="stat-info">
         <h3>{{ pendingOrders() }}</h3>
         <p>Pending Orders</p>
       </div>
     </div>
-    
+
     <div class="stat-card">
       <div class="stat-icon bg-success-light">
         <span class="material-symbols-outlined text-success">check_circle</span>
@@ -61,148 +61,374 @@
   </ng-container>
 </div>
 
-<div class="dashboard-widgets">
-  <div class="widget card">
-    <div class="widget-header">
-      <h3>Pending Orders</h3>
-      <a href="/admin/orders" class="text-primary">View All</a>
+<!-- ══════════════════════════════════════════════════════
+     INSIGHTS ROW — Top Selling | Top Customers | Revenue
+══════════════════════════════════════════════════════ -->
+<div class="insights-row">
+
+  <!-- ── Top Selling Items ─────────────────────────────── -->
+  <div class="card insight-card">
+    <div class="ic-header">
+      <div class="ic-title-group">
+        <div class="ic-icon-wrap ic-icon--fire">
+          <span class="material-symbols-outlined">local_fire_department</span>
+        </div>
+        <div>
+          <h3 class="ic-title">Top Selling Items</h3>
+          <span class="ic-sub">By quantity sold</span>
+        </div>
+      </div>
+      <span class="ic-badge">Top 5</span>
     </div>
-    <div class="table-responsive custom-scrollbar">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody *ngIf="isLoading()">
-          <tr *ngFor="let i of [1,2,3,4,5]">
-            <td><div class="skeleton-text skeleton-subtitle" style="width: 80%"></div></td>
-            <td><div class="skeleton-text skeleton-subtitle" style="width: 60%"></div></td>
-            <td><div class="skeleton-text skeleton-subtitle" style="width: 40%"></div></td>
-            <td><div class="skeleton-text skeleton-subtitle" style="width: 60px; height: 24px; border-radius: 12px; margin: 0;"></div></td>
-          </tr>
-        </tbody>
-        <tbody *ngIf="!isLoading()">
-          <tr *ngFor="let order of recentOrders()">
-            <td><strong>{{ order.id }}</strong></td>
-            <td>{{ order.customerName }}</td>
-            <td>{{ order.date | date:'shortDate' }}</td>
-            <td>
-              <span class="badge badge-warning">
-                {{ order.status | titlecase }}
-              </span>
-            </td>
-          </tr>
-          <tr *ngIf="recentOrders().length === 0">
-            <td colspan="4">
-              <div class="empty-state-message text-center text-muted py-5">
-                <span class="material-symbols-outlined mb-2" style="font-size: 2.5rem; opacity: 0.5;">inventory_2</span>
-                <p style="margin: 0; font-weight: 500;">No pending orders</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  
-  <div class="widget card">
-    <div class="widget-header" style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
-      <h3>Low Stock Alert</h3>
-      <div class="search-box" style="flex: 1; max-width: 150px;">
-        <input type="text" placeholder="Search SKU..." 
-               [(ngModel)]="skuSearchTerm"
-               style="width: 100%; padding: 6px 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-size: 0.85rem; outline: none; transition: border-color 0.2s;"
-               onfocus="this.style.borderColor='var(--primary)'" 
-               onblur="this.style.borderColor='rgba(0,0,0,0.1)'">
+
+    <!-- Skeleton -->
+    <div class="ic-list" *ngIf="isLoading()">
+      <div class="ic-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-icon" style="width:26px;height:26px;border-radius:50%;flex-shrink:0;"></div>
+        <div class="skeleton-icon" style="width:38px;height:38px;border-radius:8px;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skeleton-text" style="height:12px;width:65%;margin-bottom:5px;"></div>
+          <div class="skeleton-text" style="height:10px;width:40%;"></div>
+        </div>
+        <div class="skeleton-text" style="width:50px;height:18px;border-radius:10px;"></div>
       </div>
     </div>
-    <div class="low-stock-list">
-      <ng-container *ngIf="isLoading()">
-        <div class="stock-item" *ngFor="let i of [1,2,3,4]">
-          <div class="skeleton-icon" style="width: 48px; height: 48px; border-radius: 4px;"></div>
-          <div class="stock-details" style="flex: 1">
-            <div class="skeleton-text" style="height: 16px; width: 70%; margin-bottom: 6px;"></div>
-            <div class="skeleton-text" style="height: 12px; width: 40%;"></div>
-          </div>
-          <div class="skeleton-text" style="width: 60px; height: 24px; border-radius: 4px;"></div>
+
+    <!-- Data -->
+    <div class="ic-list" *ngIf="!isLoading()">
+      <div class="ic-row" *ngFor="let item of topSellingItems(); let i = index">
+        <span class="rank-badge"
+          [class.rank-gold]="i===0" [class.rank-silver]="i===1" [class.rank-bronze]="i===2">
+          {{ i + 1 }}
+        </span>
+        <img class="item-thumb"
+          [src]="item.images[0]" [alt]="item.name"
+          *ngIf="item.images?.length">
+        <div class="item-thumb item-no-img" *ngIf="!item.images?.length">
+          <span class="material-symbols-outlined">image</span>
         </div>
-      </ng-container>
-      
-      <ng-container *ngIf="!isLoading()">
-        <div class="stock-item" *ngFor="let product of lowStockProducts()"
-          [class.stock-item--editing]="editingProductId() === product.id">
-
-          <!-- Product Image -->
-          <img [src]="product.images[0]" alt="{{ product.name }}">
-
-          <!-- Product Info -->
-          <div class="stock-details">
-            <strong>{{ product.name }}</strong>
-            <span class="text-muted text-sm">SKU: {{ product.sku }}</span>
-          </div>
-
-          <!-- VIEW MODE: Click badge to enter edit mode -->
-          <ng-container *ngIf="editingProductId() !== product.id">
-            <div class="stock-badge badge-error stock-badge-clickable"
-              (click)="openStockEdit(product.id, product.stock)"
-              title="Click to update stock">
-              {{ product.stock }} left
-              <span class="edit-hint material-symbols-outlined">edit</span>
-            </div>
-          </ng-container>
-
-          <!-- EDIT MODE: Inline input + save/cancel -->
-          <ng-container *ngIf="editingProductId() === product.id">
-            <div class="inline-stock-editor">
-              <div class="stock-input-wrap">
-                <input
-                  type="number"
-                  class="stock-input"
-                  [class.stock-input--error]="stockInputError()"
-                  [ngModel]="editingStockValue()"
-                  (ngModelChange)="onStockValueChange($event)"
-                  (keydown)="preventInvalidStockKey($event)"
-                  (keydown.enter)="saveStock(product.id)"
-                  (keydown.escape)="cancelStockEdit()"
-                  min="0"
-                  step="1"
-                  autofocus
-                  placeholder="Qty">
-                <!-- Error tooltip -->
-                <div class="stock-error-tip" *ngIf="stockInputError()">
-                  <span class="material-symbols-outlined">error</span>
-                  {{ stockInputError() }}
-                </div>
-              </div>
-
-              <!-- Save Button / Spinner -->
-              <button class="btn-stock-save"
-                (click)="saveStock(product.id)"
-                [disabled]="isSavingStock() === product.id || !isStockInputValid"
-                title="Save (Enter)">
-                <span class="material-symbols-outlined" *ngIf="isSavingStock() !== product.id">check</span>
-                <span class="stock-save-spinner" *ngIf="isSavingStock() === product.id"></span>
-              </button>
-
-              <!-- Cancel Button -->
-              <button class="btn-stock-cancel"
-                (click)="cancelStockEdit()"
-                [disabled]="isSavingStock() === product.id"
-                title="Cancel (Esc)">
-                <span class="material-symbols-outlined">close</span>
-              </button>
-            </div>
-          </ng-container>
-
+        <div class="ic-meta">
+          <strong>{{ item.name | slice:0:22 }}{{ item.name.length > 22 ? '…' : '' }}</strong>
+          <span>SKU: {{ item.sku }}</span>
         </div>
-        <div class="text-center text-muted py-4" *ngIf="lowStockProducts().length === 0">
-          All products are well stocked.
+        <div class="qty-pill">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          {{ item.totalSold }} Pcs
         </div>
-      </ng-container>
+      </div>
+      <div class="ic-empty" *ngIf="topSellingItems().length === 0">
+        <span class="material-symbols-outlined">bar_chart</span>
+        <p>No sales data yet</p>
+      </div>
     </div>
+  </div>
+
+  <!-- ── Top Customers ─────────────────────────────────── -->
+  <div class="card insight-card">
+    <div class="ic-header">
+      <div class="ic-title-group">
+        <div class="ic-icon-wrap ic-icon--gold">
+          <span class="material-symbols-outlined">military_tech</span>
+        </div>
+        <div>
+          <h3 class="ic-title">Top Customers</h3>
+          <span class="ic-sub">By purchase volume</span>
+        </div>
+      </div>
+      <span class="ic-badge">Top 5</span>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="ic-list" *ngIf="isLoading()">
+      <div class="ic-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-icon" style="width:26px;height:26px;border-radius:50%;flex-shrink:0;"></div>
+        <div class="skeleton-icon" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skeleton-text" style="height:12px;width:55%;margin-bottom:5px;"></div>
+          <div class="skeleton-text" style="height:10px;width:35%;"></div>
+        </div>
+        <div class="skeleton-text" style="width:55px;height:22px;border-radius:10px;"></div>
+      </div>
+    </div>
+
+    <!-- Data -->
+    <div class="ic-list" *ngIf="!isLoading()">
+      <div class="ic-row" *ngFor="let buyer of topBuyers(); let i = index">
+        <span class="rank-badge"
+          [class.rank-gold]="i===0" [class.rank-silver]="i===1" [class.rank-bronze]="i===2">
+          {{ i + 1 }}
+        </span>
+        <div class="buyer-avatar">{{ buyer.name.charAt(0) | uppercase }}</div>
+        <div class="ic-meta">
+          <strong>{{ buyer.name }}</strong>
+          <span>{{ buyer.phone }}</span>
+        </div>
+        <div class="bills-pill">
+          <span class="material-symbols-outlined">receipt_long</span>
+          {{ buyer.totalBills }} {{ buyer.totalBills === 1 ? 'bill' : 'bills' }}
+        </div>
+      </div>
+      <div class="ic-empty" *ngIf="topBuyers().length === 0">
+        <span class="material-symbols-outlined">group</span>
+        <p>No customer data yet</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Revenue Card (Locked) ─────────────────────────── -->
+  <div class="card insight-card revenue-insight-card">
+    <div class="ic-header">
+      <div class="ic-title-group">
+        <div class="ic-icon-wrap ic-icon--maroon">
+          <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div>
+          <h3 class="ic-title">Total Revenue</h3>
+          <span class="ic-sub">From billed orders</span>
+        </div>
+      </div>
+      
+      <!-- Controls: Date Filter + Lock -->
+      <div style="display:flex; align-items:center; gap: 8px;">
+        <select class="rev-date-select" [ngModel]="revenueDateFilter()" (ngModelChange)="setRevenueFilter($event)">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="this_week">This Week</option>
+          <option value="this_month">This Month</option>
+          <option value="all">All Time</option>
+          <option value="custom">Custom</option>
+        </select>
+        <button class="rev-lock-toggle"
+          (click)="revenueUnlocked() ? lockRevenue() : openPinModal()"
+          [title]="revenueUnlocked() ? 'Lock' : 'Click to unlock'">
+          <span class="material-symbols-outlined">{{ revenueUnlocked() ? 'lock_open' : 'lock' }}</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Custom Date Range Inputs (Only shown if custom selected) -->
+    <div class="rev-custom-date" *ngIf="revenueDateFilter() === 'custom'">
+      <input type="date" [ngModel]="revenueFromDate()" (ngModelChange)="revenueFromDate.set($event)">
+      <span>to</span>
+      <input type="date" [ngModel]="revenueToDate()" (ngModelChange)="revenueToDate.set($event)">
+    </div>
+
+    <!-- Revenue Value -->
+    <div class="rev-value-wrap" (click)="!revenueUnlocked() && openPinModal()" [class.is-locked]="!revenueUnlocked()">
+      <div class="rev-amount">
+        <span class="rev-currency">₹</span>
+        <span class="rev-number" [class.rev-blur]="!revenueUnlocked()">
+          {{ totalRevenue() | number:'1.0-0' }}
+        </span>
+      </div>
+      <!-- Lock overlay shown when locked -->
+      <div class="rev-lock-overlay" *ngIf="!revenueUnlocked()">
+        <div class="rev-lock-icon-wrap">
+          <span class="material-symbols-outlined">lock</span>
+        </div>
+        <p class="rev-lock-hint">Tap to reveal revenue</p>
+      </div>
+    </div>
+
+    <!-- Stats below revenue -->
+    <div class="rev-stats" *ngIf="!isLoading()">
+      <div class="rev-stat">
+        <span class="material-symbols-outlined rev-stat-icon">shopping_cart</span>
+        <div>
+          <strong>{{ billedOrders().length }}</strong>
+          <span>Total Bills</span>
+        </div>
+      </div>
+      <div class="rev-stat-sep"></div>
+      <div class="rev-stat">
+        <span class="material-symbols-outlined rev-stat-icon">groups</span>
+        <div>
+          <strong>{{ topBuyers().length }}</strong>
+          <span>Customers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decorative background element -->
+    <div class="rev-bg-deco"></div>
+  </div>
+
+</div>
+
+<!-- ── Bottom Widgets Grid ────────────────────────────────── -->
+<div class="bottom-widgets-grid">
+
+  <!-- ── Low Stock Widget ────────────────────────────────── -->
+  <div class="card bottom-widget">
+  <div class="widget-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="material-symbols-outlined" style="color:#dc2626;font-size:1.3rem;">warning</span>
+      <h3>Low Stock Alert</h3>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="search-box">
+        <input type="text" placeholder="Search SKU..."
+          [(ngModel)]="skuSearchTerm"
+          style="padding:6px 10px;border:1px solid rgba(0,0,0,0.1);border-radius:6px;font-size:0.85rem;outline:none;transition:border-color 0.2s;"
+          onfocus="this.style.borderColor='var(--primary)'"
+          onblur="this.style.borderColor='rgba(0,0,0,0.1)'">
+      </div>
+    </div>
+  </div>
+  <div class="low-stock-list">
+    <ng-container *ngIf="isLoading()">
+      <div class="stock-item" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton-icon" style="width:48px;height:48px;border-radius:4px;"></div>
+        <div class="stock-details" style="flex:1">
+          <div class="skeleton-text" style="height:16px;width:70%;margin-bottom:6px;"></div>
+          <div class="skeleton-text" style="height:12px;width:40%;"></div>
+        </div>
+        <div class="skeleton-text" style="width:60px;height:24px;border-radius:4px;"></div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isLoading()">
+      <div class="stock-item" *ngFor="let product of lowStockProducts()"
+        [class.stock-item--editing]="editingProductId() === product.id">
+
+        <img [src]="product.images[0]" alt="{{ product.name }}">
+
+        <div class="stock-details">
+          <strong>{{ product.name }}</strong>
+          <span class="text-muted text-sm">SKU: {{ product.sku }}</span>
+        </div>
+
+        <!-- View mode -->
+        <ng-container *ngIf="editingProductId() !== product.id">
+          <div class="stock-badge badge-error stock-badge-clickable"
+            (click)="openStockEdit(product.id, product.stock)"
+            title="Click to update stock">
+            {{ product.stock }} left
+            <span class="edit-hint material-symbols-outlined">edit</span>
+          </div>
+        </ng-container>
+
+        <!-- Edit mode -->
+        <ng-container *ngIf="editingProductId() === product.id">
+          <div class="inline-stock-editor">
+            <div class="stock-input-wrap">
+              <input type="number" class="stock-input"
+                [class.stock-input--error]="stockInputError()"
+                [ngModel]="editingStockValue()"
+                (ngModelChange)="onStockValueChange($event)"
+                (keydown)="preventInvalidStockKey($event)"
+                (keydown.enter)="saveStock(product.id)"
+                (keydown.escape)="cancelStockEdit()"
+                min="0" step="1" autofocus placeholder="Qty">
+              <div class="stock-error-tip" *ngIf="stockInputError()">
+                <span class="material-symbols-outlined">error</span>
+                {{ stockInputError() }}
+              </div>
+            </div>
+            <button class="btn-stock-save" (click)="saveStock(product.id)"
+              [disabled]="isSavingStock() === product.id || !isStockInputValid">
+              <span class="material-symbols-outlined" *ngIf="isSavingStock() !== product.id">check</span>
+              <span class="stock-save-spinner" *ngIf="isSavingStock() === product.id"></span>
+            </button>
+            <button class="btn-stock-cancel" (click)="cancelStockEdit()"
+              [disabled]="isSavingStock() === product.id">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </ng-container>
+
+      </div>
+      <div class="text-center text-muted py-4" *ngIf="lowStockProducts().length === 0">
+        All products are well stocked.
+      </div>
+    </ng-container>
+  </div>
+  </div>
+
+  <!-- ── Pending Orders ────────────────────────────── -->
+  <div class="card bottom-widget">
+    <div class="widget-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-outlined" style="color:#b38600;font-size:1.3rem;">pending_actions</span>
+        <h3>Pending Orders</h3>
+      </div>
+      <a href="/admin/orders" class="text-primary" style="font-size:0.85rem;font-weight:600;text-decoration:none;">View All</a>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="ic-list" *ngIf="isLoading()">
+      <div class="ic-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-icon" style="width:36px;height:36px;border-radius:8px;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skeleton-text" style="height:12px;width:55%;margin-bottom:5px;"></div>
+          <div class="skeleton-text" style="height:10px;width:35%;"></div>
+        </div>
+        <div class="skeleton-text" style="width:55px;height:22px;border-radius:10px;"></div>
+      </div>
+    </div>
+
+    <!-- Data -->
+    <div class="ic-list" *ngIf="!isLoading()">
+      <div class="ic-row" *ngFor="let order of recentPendingOrders()">
+        <div class="recent-icon-wrap" style="background: rgba(255, 193, 7, 0.1);">
+          <span class="material-symbols-outlined" style="color: #b38600;">schedule</span>
+        </div>
+        <div class="ic-meta">
+          <strong>Order #{{ order.id.substring(0,6) }}</strong>
+          <span>{{ order.customerName }}</span>
+        </div>
+        
+        <div class="bills-pill" style="background: #fffbeb; border-color: #fde68a; color: #b45309;">
+          {{ order.date | date:'MMM d' }}
+        </div>
+      </div>
+      
+      <div class="ic-empty" *ngIf="recentPendingOrders().length === 0">
+        <span class="material-symbols-outlined">check_circle</span>
+        <p>No pending orders</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     PIN MODAL
+════════════════════════════════════════════════════ -->
+<div class="pin-overlay" *ngIf="showPinModal()" (click)="closePinModal()">
+  <div class="pin-modal"
+    [class.pin-modal--error]="pinError()"
+    [class.pin-modal--ok]="pinSuccess()"
+    (click)="$event.stopPropagation()">
+
+    <div class="pin-lock-ring" [class.pin-lock-ring--open]="pinSuccess()">
+      <span class="material-symbols-outlined">{{ pinSuccess() ? 'lock_open' : 'lock' }}</span>
+    </div>
+
+    <h3 class="pin-title">Revenue Protected</h3>
+    <p class="pin-sub">Enter your 4-digit PIN to view revenue</p>
+
+    <div class="pin-dots">
+      <div class="pin-dot" [class.pin-dot--filled]="pinDigits().length > 0" [class.pin-dot--active]="pinDigits().length === 0"></div>
+      <div class="pin-dot" [class.pin-dot--filled]="pinDigits().length > 1" [class.pin-dot--active]="pinDigits().length === 1"></div>
+      <div class="pin-dot" [class.pin-dot--filled]="pinDigits().length > 2" [class.pin-dot--active]="pinDigits().length === 2"></div>
+      <div class="pin-dot" [class.pin-dot--filled]="pinDigits().length > 3" [class.pin-dot--active]="pinDigits().length === 3"></div>
+    </div>
+
+    <div class="pin-feedback pin-feedback--error" *ngIf="pinError()">
+      <span class="material-symbols-outlined">error</span> Incorrect PIN. Try again.
+    </div>
+    <div class="pin-feedback pin-feedback--ok" *ngIf="pinSuccess()">
+      <span class="material-symbols-outlined">check_circle</span> Unlocked!
+    </div>
+
+    <div class="pin-keypad">
+      <button class="pk" *ngFor="let d of ['1','2','3','4','5','6','7','8','9']" (click)="pressPin(d)">{{ d }}</button>
+      <button class="pk pk--cancel" (click)="closePinModal()"><span class="material-symbols-outlined">close</span></button>
+      <button class="pk" (click)="pressPin('0')">0</button>
+      <button class="pk pk--del" (click)="backspacePin()"><span class="material-symbols-outlined">backspace</span></button>
+    </div>
+
   </div>
 </div>

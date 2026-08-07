@@ -23,9 +23,7 @@
       </div>
       <div class="header-actions">
         <!-- Capture Report Button — only shown when report is visible -->
-        <button class="btn-capture" (click)="captureReport()"
-          *ngIf="reportMode() !== 'none'"
-          [disabled]="isCapturing()"
+        <button class="btn-capture" (click)="captureReport()" *ngIf="reportMode() !== 'none'" [disabled]="isCapturing()"
           [class.capturing]="isCapturing()">
           <span class="material-symbols-outlined" *ngIf="!isCapturing()">photo_camera</span>
           <span class="capture-spinner" *ngIf="isCapturing()"></span>
@@ -44,12 +42,18 @@
       <div class="filter-group">
         <label class="filter-label">Time Range</label>
         <div class="pill-group">
-          <button class="pill-btn" [class.active]="dateFilter() === 'today'" (click)="setDateFilter('today')">Today</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'yesterday'" (click)="setDateFilter('yesterday')">Yesterday</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'this_week'" (click)="setDateFilter('this_week')">This Week</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'this_month'" (click)="setDateFilter('this_month')">This Month</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'all'" (click)="setDateFilter('all')">All Time</button>
-          <button class="pill-btn" [class.active]="dateFilter() === 'custom'" (click)="setDateFilter('custom')">Custom</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'today'"
+            (click)="setDateFilter('today')">Today</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'yesterday'"
+            (click)="setDateFilter('yesterday')">Yesterday</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'this_week'"
+            (click)="setDateFilter('this_week')">This Week</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'this_month'"
+            (click)="setDateFilter('this_month')">This Month</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'all'" (click)="setDateFilter('all')">All
+            Time</button>
+          <button class="pill-btn" [class.active]="dateFilter() === 'custom'"
+            (click)="setDateFilter('custom')">Custom</button>
         </div>
       </div>
 
@@ -58,8 +62,7 @@
         <label class="filter-label">Item Filter <span class="optional-hint">(optional)</span></label>
         <div class="search-box" (click)="showItemDropdown.set(true)">
           <span class="material-symbols-outlined search-icon">inventory_2</span>
-          <input type="text"
-            [placeholder]="selectedItem() ? '' : 'Search item by name or SKU...'"
+          <input type="text" [placeholder]="selectedItem() ? '' : 'Search item by name or SKU...'"
             [ngModel]="itemSearchTerm()" (ngModelChange)="itemSearchTerm.set($event); showItemDropdown.set(true)"
             (focus)="showItemDropdown.set(true)" class="filter-input">
           <button class="btn-clear" *ngIf="itemSearchTerm()" (click)="selectItem(null); $event.stopPropagation()">
@@ -73,7 +76,8 @@
             <button class="btn-close-mini" (click)="showItemDropdown.set(false); $event.stopPropagation()">✕</button>
           </div>
           <div class="dropdown-list">
-            <div class="prod-row" *ngFor="let prod of filteredProducts()" (click)="selectItem(prod); showItemDropdown.set(false); $event.stopPropagation()">
+            <div class="prod-row" *ngFor="let prod of filteredProducts()"
+              (click)="selectItem(prod); showItemDropdown.set(false); $event.stopPropagation()">
               <div class="prod-thumb">
                 <img *ngIf="prod.images && prod.images.length > 0" [src]="prod.images[0]" alt="Img">
                 <span *ngIf="!prod.images || prod.images.length === 0" class="material-symbols-outlined">image</span>
@@ -96,11 +100,11 @@
         <label class="filter-label">Customer Filter <span class="optional-hint">(optional)</span></label>
         <div class="search-box" (click)="showCustomerDropdown.set(true)">
           <span class="material-symbols-outlined search-icon">person</span>
-          <input type="text"
-            placeholder="All Customers"
-            [ngModel]="customerSearchTerm()" (ngModelChange)="customerSearchTerm.set($event); showCustomerDropdown.set(true)"
+          <input type="text" placeholder="All Customers" [ngModel]="customerSearchTerm()"
+            (ngModelChange)="customerSearchTerm.set($event); showCustomerDropdown.set(true)"
             (focus)="showCustomerDropdown.set(true)" class="filter-input">
-          <button class="btn-clear" *ngIf="customerSearchTerm()" (click)="selectCustomer('', ''); $event.stopPropagation()">
+          <button class="btn-clear" *ngIf="customerSearchTerm()"
+            (click)="selectCustomer('', ''); $event.stopPropagation()">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -108,10 +112,12 @@
         <div class="dropdown-panel" *ngIf="showCustomerDropdown()" style="top: calc(100% + 4px);">
           <div class="dropdown-hdr">
             <span>Select Customer</span>
-            <button class="btn-close-mini" (click)="showCustomerDropdown.set(false); $event.stopPropagation()">✕</button>
+            <button class="btn-close-mini"
+              (click)="showCustomerDropdown.set(false); $event.stopPropagation()">✕</button>
           </div>
           <div class="dropdown-list">
-            <div class="cust-row" (click)="selectCustomer('', ''); showCustomerDropdown.set(false); $event.stopPropagation()">
+            <div class="cust-row"
+              (click)="selectCustomer('', ''); showCustomerDropdown.set(false); $event.stopPropagation()">
               <div class="cust-avatar all-cust">
                 <span class="material-symbols-outlined" style="font-size: 1rem;">group</span>
               </div>
@@ -119,7 +125,8 @@
                 <span class="cust-name">All Customers</span>
               </div>
             </div>
-            <div class="cust-row" *ngFor="let cust of filteredCustomers()" (click)="selectCustomer(cust.uid || cust.name, cust.name, cust.phone); showCustomerDropdown.set(false); $event.stopPropagation()">
+            <div class="cust-row" *ngFor="let cust of filteredCustomers()"
+              (click)="selectCustomer(cust.uid || cust.name, cust.name, cust.phone); showCustomerDropdown.set(false); $event.stopPropagation()">
               <div class="cust-avatar">
                 <span>{{ cust.name.charAt(0) | uppercase }}</span>
               </div>
@@ -139,7 +146,8 @@
       <span class="filter-label" style="margin-bottom: 0; color: var(--primary);">Custom Range:</span>
       <div class="range-fields">
         <span class="range-label">From</span>
-        <input type="date" class="filter-input date-input" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)">
+        <input type="date" class="filter-input date-input" [ngModel]="fromDate()"
+          (ngModelChange)="fromDate.set($event)">
         <span class="range-label">To</span>
         <input type="date" class="filter-input date-input" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)">
       </div>
@@ -155,10 +163,13 @@
         </div>
       </div>
       <h3 class="empty-title">Select a Filter to Generate Report</h3>
-      <p class="empty-desc">Select an <strong>item</strong> to view its customer-wise sales breakdown, or select a <strong>customer</strong> to view their purchase history across all items.</p>
+      <p class="empty-desc">Select an <strong>item</strong> to view its customer-wise sales breakdown, or select a
+        <strong>customer</strong> to view their purchase history across all items.</p>
       <div class="empty-hints">
-        <div class="hint-chip"><span class="material-symbols-outlined">inventory_2</span> Item → Shows customer breakdown</div>
-        <div class="hint-chip"><span class="material-symbols-outlined">person</span> Customer → Shows item-wise purchases</div>
+        <div class="hint-chip"><span class="material-symbols-outlined">inventory_2</span> Item → Shows customer
+          breakdown</div>
+        <div class="hint-chip"><span class="material-symbols-outlined">person</span> Customer → Shows item-wise
+          purchases</div>
       </div>
     </div>
 
@@ -167,7 +178,7 @@
          (when an item is selected, customer optional)
     ==================================================== -->
     <ng-container *ngIf="reportMode() === 'item'">
-      
+
       <!-- Summary Stats Row -->
       <div class="stats-row">
         <div class="stat-card">
@@ -224,7 +235,7 @@
       <div class="main-grid">
 
         <!-- Sales Overview — Clean List Layout -->
-        <div class="card ov-list-card">
+        <div style="padding: 5px !important;" class="card ov-list-card">
           <div class="card-header">
             <span class="material-symbols-outlined card-header-icon">analytics</span>
             <h3 class="card-header-title">Sales Overview</h3>

@@ -39,7 +39,7 @@ export class AdminItemSalesReportComponent implements OnInit {
   dateFilter = signal<string>('today');
   fromDate = signal<string>('');
   toDate = signal<string>('');
-  
+
   // Item Selection
   showItemDropdown = signal(false);
   itemSearchTerm = signal<string>('');
@@ -66,8 +66,8 @@ export class AdminItemSalesReportComponent implements OnInit {
     const products = this.dataService.products();
     const search = this.itemSearchTerm().toLowerCase();
     if (!search) return products.slice(0, 50);
-    return products.filter(p => 
-      p.name.toLowerCase().includes(search) || 
+    return products.filter(p =>
+      p.name.toLowerCase().includes(search) ||
       p.sku.toLowerCase().includes(search)
     ).slice(0, 50);
   });
@@ -75,17 +75,17 @@ export class AdminItemSalesReportComponent implements OnInit {
   // Filtered Customers for Dropdown
   filteredCustomers = computed(() => {
     const orders = this.dataService.orders();
-    const custMap = new Map<string, {name: string, uid?: string, phone: string}>();
+    const custMap = new Map<string, { name: string, uid?: string, phone: string }>();
     orders.forEach(o => {
       const key = o.uid || o.customerName;
       if (!custMap.has(key)) {
         custMap.set(key, { name: o.customerName, uid: o.uid, phone: o.phone });
       }
     });
-    
+
     const customers = Array.from(custMap.values());
     const search = this.customerSearchTerm().toLowerCase();
-    
+
     if (!search) return customers;
     return customers.filter(c => c.name.toLowerCase().includes(search) || c.phone.includes(search));
   });
@@ -97,7 +97,7 @@ export class AdminItemSalesReportComponent implements OnInit {
     const orders = this.dataService.orders();
     const item = this.selectedItem();
     const custUid = this.selectedCustomerUid();
-    
+
     if (!item) {
       return {
         hasData: false,
