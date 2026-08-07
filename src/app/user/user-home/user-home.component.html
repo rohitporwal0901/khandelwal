@@ -1,146 +1,134 @@
 <div class="home-container">
 
-      <!-- ─── Initial Loading / Placeholder Banner ─── -->
-      <div class="hero-start-banner" *ngIf="slides().length === 0">
-        <div class="banner-content">
-          <div class="brand-badge">Premium Collection</div>
-          <h2 class="brand-title">Khandelwal Cards</h2>
-          <p class="brand-subtitle">Crafting Memories with Elegance</p>
-          <div class="shimmer-line"></div>
-        </div>
-      </div>
+  <!-- ─── Initial Loading / Placeholder Banner ─── -->
+  <div class="hero-start-banner" *ngIf="slides().length === 0">
+    <div class="banner-content">
+      <div class="brand-badge">Premium Collection</div>
+      <h2 class="brand-title">Khandelwal Cards</h2>
+      <p class="brand-subtitle">Crafting Memories with Elegance</p>
+      <div class="shimmer-line"></div>
+    </div>
+  </div>
 
-      <!-- ─── Hero Slider (Crossfade) ──────────── -->
-      <div class="hero-slider"
-           *ngIf="slides().length > 0"
-           (touchstart)="onTouchStart($event)"
-           (touchend)="onTouchEnd($event)">
+  <!-- ─── Hero Slider (Crossfade) ──────────── -->
+  <div class="hero-slider" *ngIf="slides().length > 0" (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)">
 
-        <div class="slide"
-             *ngFor="let slide of slides(); let i = index"
-             [style.background]="slide.bg || '#000'"
-             [class.active]="activeDotIndex() === i">
-          
-          <div class="skeleton-loader" *ngIf="!loadedImages()[slide.id]"></div>
-          
-          <img class="slide-img" 
-               [src]="slide.img" 
-               [alt]="slide.title" 
-               loading="lazy"
-               (load)="onImageLoad(slide.id)"
-               [class.img-loaded]="loadedImages()[slide.id]">
-               
-          <div class="slide-overlay"></div>
-          <div class="slide-content">
+    <div class="slide" *ngFor="let slide of slides(); let i = index" [style.background]="slide.bg || '#000'"
+      [class.active]="activeDotIndex() === i">
+
+      <div class="skeleton-loader" *ngIf="!loadedImages()[slide.id]"></div>
+
+      <img class="slide-img" [src]="slide.img" [alt]="slide.title" loading="lazy" (load)="onImageLoad(slide.id)"
+        [class.img-loaded]="loadedImages()[slide.id]">
+
+      <div class="slide-overlay"></div>
+      <!-- <div class="slide-content">
             <span class="slide-tag">{{ slide.tag }}</span>
             <h2>{{ slide.title }}</h2>
             <p>{{ slide.subtitle }}</p>
+          </div> -->
+    </div>
+
+    <!-- Dots -->
+    <div class="slider-dots">
+      <button class="dot" *ngFor="let slide of slides(); let i = index" [class.active]="activeDotIndex() === i"
+        (click)="goToSlide(i)" [attr.aria-label]="'Slide ' + (i+1)">
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Search Bar ─────────────────────── -->
+  <div class="search-section">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" placeholder="Search by SKU or name..." [ngModel]="searchQuery()"
+        (ngModelChange)="onSearch($event)">
+      <button class="search-clear" *ngIf="searchQuery()" (click)="onSearch('')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Categories ─────────────────────── -->
+  <div class="categories-section">
+    <div class="category-scroll">
+      <button class="category-pill" [class.active]="selectedCategory() === null" (click)="selectCategory(null)">
+        <span class="material-symbols-outlined pill-icon">apps</span>
+        All
+      </button>
+      <button class="category-pill" *ngFor="let cat of categories()" [class.active]="selectedCategory() === cat.id"
+        (click)="selectCategory(cat.id)">
+        {{ cat.name }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Products ───────────────────────── -->
+  <div class="products-section">
+    <div class="section-header">
+      <h3 *ngIf="!selectedCategory()">All Products</h3>
+      <h3 *ngIf="selectedCategory()">{{ getCategoryName(selectedCategory()!) }}</h3>
+      <span class="product-count" *ngIf="dataService.isProductsLoaded() && !isFiltering()">
+        {{ filteredProducts().length }} items
+      </span>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="products-grid" *ngIf="!dataService.isProductsLoaded() || isFiltering()">
+      <div class="product-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+        <div class="card-img-wrap">
+          <div class="skeleton-pulse" style="position:absolute;inset:0;"></div>
+        </div>
+        <div class="card-body">
+          <div class="skeleton-pulse skeleton-line" style="width:45%;height:8px;border-radius:4px;margin-bottom:6px;">
           </div>
-        </div>
-
-        <!-- Dots -->
-        <div class="slider-dots">
-          <button class="dot" *ngFor="let slide of slides(); let i = index"
-                  [class.active]="activeDotIndex() === i"
-                  (click)="goToSlide(i)" [attr.aria-label]="'Slide ' + (i+1)">
-          </button>
-        </div>
-      </div>
-
-      <!-- ─── Search Bar ─────────────────────── -->
-      <div class="search-section">
-        <div class="search-box">
-          <span class="material-symbols-outlined search-icon">search</span>
-          <input type="text" placeholder="Search by SKU or name..."
-                 [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
-          <button class="search-clear" *ngIf="searchQuery()" (click)="onSearch('')">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- ─── Categories ─────────────────────── -->
-      <div class="categories-section">
-        <div class="category-scroll">
-          <button class="category-pill" [class.active]="selectedCategory() === null"
-                  (click)="selectCategory(null)">
-            <span class="material-symbols-outlined pill-icon">apps</span>
-            All
-          </button>
-          <button class="category-pill"
-                  *ngFor="let cat of categories()"
-                  [class.active]="selectedCategory() === cat.id"
-                  (click)="selectCategory(cat.id)">
-            {{ cat.name }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ─── Products ───────────────────────── -->
-      <div class="products-section">
-        <div class="section-header">
-          <h3 *ngIf="!selectedCategory()">All Products</h3>
-          <h3 *ngIf="selectedCategory()">{{ getCategoryName(selectedCategory()!) }}</h3>
-          <span class="product-count" *ngIf="dataService.isProductsLoaded() && !isFiltering()">
-            {{ filteredProducts().length }} items
-          </span>
-        </div>
-
-        <!-- Skeleton -->
-        <div class="products-grid" *ngIf="!dataService.isProductsLoaded() || isFiltering()">
-          <div class="product-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
-            <div class="card-img-wrap">
-              <div class="skeleton-pulse" style="position:absolute;inset:0;"></div>
-            </div>
-            <div class="card-body">
-              <div class="skeleton-pulse skeleton-line" style="width:45%;height:8px;border-radius:4px;margin-bottom:6px;"></div>
-              <div class="skeleton-pulse skeleton-line" style="width:90%;height:11px;border-radius:4px;margin-bottom:4px;"></div>
-              <div class="skeleton-pulse skeleton-line" style="width:70%;height:11px;border-radius:4px;margin-bottom:8px;"></div>
-              <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-                <div class="skeleton-pulse" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
-                <div class="skeleton-pulse skeleton-line" style="width:55%;height:8px;border-radius:4px;"></div>
-              </div>
-            </div>
+          <div class="skeleton-pulse skeleton-line" style="width:90%;height:11px;border-radius:4px;margin-bottom:4px;">
           </div>
-        </div>
-
-        <!-- Products -->
-        <div class="products-grid" *ngIf="dataService.isProductsLoaded() && !isFiltering()">
-          <div class="product-card"
-               *ngFor="let prod of filteredProducts()"
-               [routerLink]="['/shop/product', prod.id]">
-            <div class="card-img-wrap" [class.out-of-stock]="prod.stock === 0">
-              <div class="img-skeleton skeleton-pulse" *ngIf="!loadedImages()[prod.id]"></div>
-              <img [src]="prod.images[0]" [alt]="prod.name"
-                   [class.loaded]="loadedImages()[prod.id]"
-                   [class.grayscale]="prod.stock === 0"
-                   (load)="onImageLoad(prod.id)" loading="lazy">
-              
-              <button class="wishlist-btn" (click)="toggleWishlist($event, prod.id)" aria-label="Toggle Wishlist">
-                <span class="material-symbols-outlined" [class.filled]="wishlist().includes(prod.id)">
-                  favorite
-                </span>
-              </button>
-
-              <div class="sku-chip">{{ prod.sku }}</div>
-              <div class="oos-badge" *ngIf="prod.stock === 0">Out of Stock</div>
-            </div>
-            <div class="card-body">
-              <span class="card-cat">{{ getCategoryName(prod.categoryId) }}</span>
-              <h4 class="card-title">{{ prod.name }}</h4>
-              <div class="card-stock" *ngIf="prod.stock > 0">
-                <span class="stock-dot"></span>
-                {{ prod.stock }} available
-              </div>
-            </div>
+          <div class="skeleton-pulse skeleton-line" style="width:70%;height:11px;border-radius:4px;margin-bottom:8px;">
           </div>
-        </div>
-
-        <!-- Empty -->
-        <div class="empty-state" *ngIf="dataService.isProductsLoaded() && !isFiltering() && filteredProducts().length === 0">
-          <span class="material-symbols-outlined">search_off</span>
-          <p>No products found</p>
-          <button class="btn-reset" (click)="selectCategory(null); onSearch('')">Clear filters</button>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+            <div class="skeleton-pulse" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
+            <div class="skeleton-pulse skeleton-line" style="width:55%;height:8px;border-radius:4px;"></div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Products -->
+    <div class="products-grid" *ngIf="dataService.isProductsLoaded() && !isFiltering()">
+      <div class="product-card" *ngFor="let prod of filteredProducts()" [routerLink]="['/shop/product', prod.id]">
+        <div class="card-img-wrap" [class.out-of-stock]="prod.stock === 0">
+          <div class="img-skeleton skeleton-pulse" *ngIf="!loadedImages()[prod.id]"></div>
+          <img [src]="prod.images[0]" [alt]="prod.name" [class.loaded]="loadedImages()[prod.id]"
+            [class.grayscale]="prod.stock === 0" (load)="onImageLoad(prod.id)" loading="lazy">
+
+          <button class="wishlist-btn" (click)="toggleWishlist($event, prod.id)" aria-label="Toggle Wishlist">
+            <span class="material-symbols-outlined" [class.filled]="wishlist().includes(prod.id)">
+              favorite
+            </span>
+          </button>
+
+          <div class="sku-chip">{{ prod.sku }}</div>
+          <div class="oos-badge" *ngIf="prod.stock === 0">Out of Stock</div>
+        </div>
+        <div class="card-body">
+          <span class="card-cat">{{ getCategoryName(prod.categoryId) }}</span>
+          <h4 class="card-title">{{ prod.name }}</h4>
+          <div class="card-stock" *ngIf="prod.stock > 0">
+            <span class="stock-dot"></span>
+            {{ prod.stock }} available
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state"
+      *ngIf="dataService.isProductsLoaded() && !isFiltering() && filteredProducts().length === 0">
+      <span class="material-symbols-outlined">search_off</span>
+      <p>No products found</p>
+      <button class="btn-reset" (click)="selectCategory(null); onSearch('')">Clear filters</button>
+    </div>
+  </div>
+</div>
