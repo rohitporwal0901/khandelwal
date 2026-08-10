@@ -63,7 +63,7 @@
           </a>
         </div>
       </div>
-      
+
       <!-- REPORTS Section -->
       <div class="nav-section-label">REPORTS</div>
       <a routerLink="/admin/reports/item-sales" routerLinkActive="active" class="nav-item">
@@ -82,7 +82,8 @@
     <!-- User Footer -->
     <div class="sidebar-footer">
       <div class="sidebar-user">
-        <img src="https://ui-avatars.com/api/?name=Admin&background=8B0000&color=fff&size=80" alt="Admin" class="sidebar-user-avatar">
+        <img src="https://ui-avatars.com/api/?name=Admin&background=8B0000&color=fff&size=80" alt="Admin"
+          class="sidebar-user-avatar">
         <div class="sidebar-user-info">
           <strong>Admin User</strong>
           <span>Administrator</span>
@@ -97,6 +98,17 @@
 
   <main class="main-content">
     <header class="topbar">
+      <!-- Premium Animated Brand -->
+      <div class="topbar-brand">
+        <!-- <div class="topbar-logo-ring">
+          <img src="assets/kc-logo.png" alt="KC" class="topbar-brand-logo">
+        </div> -->
+        <div class="topbar-brand-text-container">
+          <span class="brand-text">Khandelwal Cards</span>
+          <!-- <span class="brand-subtext">Premium Wholesale Portal</span> -->
+        </div>
+      </div>
+
       <div class="topbar-actions">
         <span class="date">{{ currentDate | date:'mediumDate' }}</span>
         <button class="btn-icon" routerLink="/admin/orders">
