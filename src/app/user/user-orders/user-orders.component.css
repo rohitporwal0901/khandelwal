@@ -64,7 +64,7 @@
     }
     .empty-icon {
       width: 72px; height: 72px;
-      background: rgba(139,0,0,0.07);
+      background: rgba(107, 30, 60,0.07);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 1rem;
@@ -147,11 +147,11 @@
     }
     .btn-download-bill {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(139, 0, 0, 0.08); color: var(--primary);
-      border: 1px solid rgba(139, 0, 0, 0.2); border-radius: 8px;
+      background: rgba(107, 30, 60, 0.08); color: var(--primary);
+      border: 1px solid rgba(107, 30, 60, 0.2); border-radius: 8px;
       padding: 6px 12px; font-size: 0.75rem; font-weight: 700;
       cursor: pointer; transition: all 0.2s;
-      &:active { transform: scale(0.96); background: rgba(139, 0, 0, 0.12); }
+      &:active { transform: scale(0.96); background: rgba(107, 30, 60, 0.12); }
       .material-symbols-outlined { font-size: 1rem; }
     }
     
@@ -188,7 +188,7 @@
     .item-sku { font-size: 0.68rem; color: var(--text-muted); }
     .item-qty {
       font-size: 0.75rem; font-weight: 600; color: var(--primary);
-      background: rgba(139,0,0,0.07); padding: 3px 8px; border-radius: 6px;
+      background: rgba(107, 30, 60,0.07); padding: 3px 8px; border-radius: 6px;
       flex-shrink: 0;
     }
 

@@ -45,7 +45,7 @@ import { SnackbarService } from '../../core/services/snackbar.service';
       border-radius: 50px;
       background: var(--primary);
       backdrop-filter: blur(10px);
-      box-shadow: 0 10px 40px rgba(139, 0, 0, 0.3);
+      box-shadow: 0 10px 40px rgba(107, 30, 60, 0.30);
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: var(--surface);
       min-width: 320px;

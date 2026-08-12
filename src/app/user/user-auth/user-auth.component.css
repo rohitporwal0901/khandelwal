@@ -129,7 +129,7 @@
       justify-content: center;
       flex-shrink: 0;
       .material-symbols-outlined { font-size: 1.25rem; }
-      &.maroon { background: #FFF5F5; .material-symbols-outlined { color: #8B0000; } }
+      &.maroon { background: #FFF5F5; .material-symbols-outlined { color: #6B1E3C; } }
       &.gold   { background: #FFFDF0; .material-symbols-outlined { color: #B8860B; } }
       &.green  { background: #F0FDF4; .material-symbols-outlined { color: #16A34A; } }
     }
@@ -248,7 +248,7 @@
       cursor: pointer;
       padding: 0;
       margin-left: 4px;
-      &:hover { color: #600000; }
+      &:hover { color: #4A1229; }
     }
 
     /* ─── Phone Input ───────────────────────── */
@@ -264,7 +264,7 @@
       height: 54px;
       &:focus-within {
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.08);
+        box-shadow: 0 0 0 3px rgba(107, 30, 60, 0.08);
       }
     }
     .country-code {
@@ -311,7 +311,7 @@
       box-sizing: border-box;
       &:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(139,0,0,0.08);
+        box-shadow: 0 0 0 3px rgba(107, 30, 60,0.08);
       }
       &::placeholder { color: #94A3B8; }
     }
@@ -354,7 +354,7 @@
       -webkit-text-security: disc;
       &:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        box-shadow: 0 0 0 3px rgba(107, 30, 60, 0.1);
       }
       &.filled {
         border-color: var(--primary);
@@ -571,7 +571,7 @@
     .btn-primary {
       width: 100%;
       height: 54px;
-      background: linear-gradient(135deg, #8B0000 0%, #600000 100%);
+      background: linear-gradient(135deg, #6B1E3C 0%, #4A1229 100%);
       color: white;
       border: none;
       border-radius: 16px;
@@ -584,10 +584,10 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
-      box-shadow: 0 6px 20px rgba(139, 0, 0, 0.22);
+      box-shadow: 0 6px 20px rgba(107, 30, 60, 0.22);
       &:hover:not(:disabled) {
         transform: translateY(-1px);
-        box-shadow: 0 8px 24px rgba(139, 0, 0, 0.3);
+        box-shadow: 0 8px 24px rgba(107, 30, 60, 0.3);
       }
       &:active:not(:disabled) { transform: scale(0.98); }
       &:disabled {
@@ -713,13 +713,13 @@
     }
 
     .digit-dot.filled {
-      background: #8B0000;
+      background: #6B1E3C;
     }
 
     .digit-dot.active {
-      background: #8B0000;
+      background: #6B1E3C;
       transform: scaleY(1.8);
-      box-shadow: 0 0 6px rgba(139,0,0,0.4);
+      box-shadow: 0 0 6px rgba(107, 30, 60,0.4);
     }
 
     /* Circular FAB Arrow */
@@ -749,17 +749,17 @@
     }
 
     .digit-fab.ready {
-      background: linear-gradient(135deg, #8B0000, #c0392b);
+      background: linear-gradient(135deg, #6B1E3C, #c0392b);
       border-color: transparent;
       color: white;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(139,0,0,0.35);
+      box-shadow: 0 6px 20px rgba(107, 30, 60,0.35);
       transform: scale(1.08);
     }
 
     .digit-fab.ready:hover {
       transform: scale(1.14);
-      box-shadow: 0 8px 24px rgba(139,0,0,0.45);
+      box-shadow: 0 8px 24px rgba(107, 30, 60,0.45);
     }
 
     .digit-fab.ready:hover .fab-icon {
@@ -767,7 +767,7 @@
     }
 
     .digit-fab.loading {
-      background: linear-gradient(135deg, #8B0000, #c0392b);
+      background: linear-gradient(135deg, #6B1E3C, #c0392b);
       border-color: transparent;
       cursor: not-allowed;
       transform: scale(1.08);
@@ -822,8 +822,8 @@
     }
 
     .status-pin-dot.filled {
-      background: #8B0000;
-      box-shadow: 0 0 6px rgba(139,0,0,0.3);
+      background: #6B1E3C;
+      box-shadow: 0 0 6px rgba(107, 30, 60,0.3);
     }
 
     .status-label {
@@ -834,7 +834,7 @@
     }
 
     .status-label.verifying {
-      color: #8B0000;
+      color: #6B1E3C;
       animation: pulse 1s ease-in-out infinite;
     }
 
@@ -880,12 +880,12 @@
     .ao-ring {
       position: absolute;
       border-radius: 50%;
-      border: 2px solid rgba(139,0,0,0.2);
+      border: 2px solid rgba(107, 30, 60,0.2);
       animation: aoRingPulse 2s ease-out infinite;
     }
-    .ao-ring-1 { width: 60px;  height: 60px;  animation-delay: 0s;    border-color: rgba(139,0,0,0.35); }
-    .ao-ring-2 { width: 80px;  height: 80px;  animation-delay: 0.4s;  border-color: rgba(139,0,0,0.2); }
-    .ao-ring-3 { width: 100px; height: 100px; animation-delay: 0.8s;  border-color: rgba(139,0,0,0.1); }
+    .ao-ring-1 { width: 60px;  height: 60px;  animation-delay: 0s;    border-color: rgba(107, 30, 60,0.35); }
+    .ao-ring-2 { width: 80px;  height: 80px;  animation-delay: 0.4s;  border-color: rgba(107, 30, 60,0.2); }
+    .ao-ring-3 { width: 100px; height: 100px; animation-delay: 0.8s;  border-color: rgba(107, 30, 60,0.1); }
 
     @keyframes aoRingPulse {
       0%   { transform: scale(0.85); opacity: 0.9; }
@@ -900,7 +900,7 @@
       border-radius: 14px;
       overflow: hidden;
       border: 2px solid rgba(212,175,55,0.5);
-      box-shadow: 0 4px 16px rgba(139,0,0,0.25);
+      box-shadow: 0 4px 16px rgba(107, 30, 60,0.25);
       animation: aoPulse 1.5s ease-in-out infinite;
       z-index: 2;
     }
@@ -912,8 +912,8 @@
     }
 
     @keyframes aoPulse {
-      0%, 100% { transform: scale(1);    box-shadow: 0 4px 16px rgba(139,0,0,0.25); }
-      50%       { transform: scale(1.06); box-shadow: 0 6px 24px rgba(139,0,0,0.4); }
+      0%, 100% { transform: scale(1);    box-shadow: 0 4px 16px rgba(107, 30, 60,0.25); }
+      50%       { transform: scale(1.06); box-shadow: 0 6px 24px rgba(107, 30, 60,0.4); }
     }
 
     /* Title + bouncing dots */
@@ -927,7 +927,7 @@
     .ao-title {
       font-size: 1.05rem;
       font-weight: 700;
-      color: #8B0000;
+      color: #6B1E3C;
       letter-spacing: 0.3px;
       margin: 0;
     }
@@ -943,7 +943,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #8B0000;
+      background: #6B1E3C;
       animation: aoBounce 1.2s ease-in-out infinite;
     }
     .ao-dots span:nth-child(2) { animation-delay: 0.2s; }

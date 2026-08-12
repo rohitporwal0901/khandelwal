@@ -400,9 +400,9 @@
 }
 
 .step-pill {
-  background: rgba(139, 0, 0, 0.05);
+  background: rgba(107, 30, 60, 0.05);
   color: var(--primary);
-  border: 1px solid rgba(139, 0, 0, 0.1);
+  border: 1px solid rgba(107, 30, 60, 0.10);
   font-size: 0.7rem;
   font-weight: 800;
   padding: 2px 8px;

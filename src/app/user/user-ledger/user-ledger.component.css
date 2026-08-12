@@ -50,7 +50,7 @@
   width: 100%;
   background: #FFFFFF;
   color: var(--primary);
-  border: 1px solid rgba(139, 0, 0, 0.2);
+  border: 1px solid rgba(107, 30, 60, 0.2);
   border-radius: 12px;
   padding: 14px 16px;
   font-size: 0.9rem;
@@ -61,7 +61,7 @@
 
   &:active {
     transform: scale(0.98);
-    background: rgba(139, 0, 0, 0.02);
+    background: rgba(107, 30, 60, 0.02);
   }
 
   &:disabled {
@@ -101,7 +101,7 @@
 .empty-icon {
   width: 64px;
   height: 64px;
-  background: rgba(139, 0, 0, 0.07);
+  background: rgba(107, 30, 60, 0.07);
   border-radius: 50%;
   display: flex;
   align-items: center;
