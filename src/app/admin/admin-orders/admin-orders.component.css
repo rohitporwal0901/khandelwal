@@ -422,8 +422,8 @@
 * { box-sizing: border-box; }
 
 :host {
-  --primary: #800000;
-  --primary-hover: #660000;
+  --primary: #6B1E3C;
+  --primary-hover: #8E2850;
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
   --slate-200: #e2e8f0;
@@ -502,13 +502,13 @@
 
 /* Header Icons & Buttons */
 .icon-box {
-  width: 44px; height: 44px; border-radius: 10px; background: #fef2f2; color: var(--primary); display: flex; align-items: center; justify-content: center; border: 1px solid #fecaca;
+  width: 44px; height: 44px; border-radius: 10px; background: rgba(107,30,60,0.08); color: var(--primary); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(107,30,60,0.18);
   .material-symbols-outlined { font-size: 1.6rem; }
 }
 
 .btn-primary {
-  background: var(--primary); color: white; border: none; padding: 0 16px; height: 40px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 4px rgba(128,0,0,0.15);
-  &:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(128,0,0,0.25); }
+  background: var(--primary); color: white; border: none; padding: 0 16px; height: 40px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 4px rgba(107,30,60,0.15);
+  &:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(107,30,60,0.25); }
   &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 }
 
@@ -537,12 +537,12 @@
 }
 
 .step-pill {
-  background: #fef2f2; color: var(--primary); border: 1px solid #fecaca; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; letter-spacing: 0.05em;
+  background: rgba(107,30,60,0.08); color: var(--primary); border: 1px solid rgba(107,30,60,0.20); font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; letter-spacing: 0.05em;
 }
 
 .badge-sharp {
   display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
-  &.badge-primary { background: #fef2f2; color: var(--primary); border: 1px solid #fecaca; }
+  &.badge-primary { background: rgba(107,30,60,0.08); color: var(--primary); border: 1px solid rgba(107,30,60,0.20); }
   &.badge-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
   &.badge-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
   &.badge-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
@@ -659,8 +659,8 @@
 }
 
 .btn-generate-sharp {
-  background: var(--primary); color: white; border: none; height: 50px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 4px 10px rgba(128, 0, 0, 0.2); letter-spacing: 0.02em;
-  &:hover:not([disabled]) { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 14px rgba(128, 0, 0, 0.3); }
+  background: var(--primary); color: white; border: none; height: 50px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 4px 10px rgba(107,30,60,0.22); letter-spacing: 0.02em;
+  &:hover:not([disabled]) { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 14px rgba(107,30,60,0.32); }
   &:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 }
 

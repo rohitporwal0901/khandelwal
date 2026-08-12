@@ -1,8 +1,8 @@
 * { box-sizing: border-box; }
 
 :host {
-  --primary: #800000;
-  --primary-hover: #660000;
+  --primary: #6B1E3C;
+  --primary-hover: #8E2850;
   --primary-light: #fef2f2;
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
@@ -105,7 +105,7 @@
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(128,0,0,0.25);
+  box-shadow: 0 2px 8px rgba(107,30,60,0.25);
 }
 .btn-capture:hover:not([disabled]) {
   background: var(--primary-hover);
@@ -116,7 +116,7 @@
 .btn-capture .material-symbols-outlined { font-size: 1rem; }
 .btn-capture.capturing { animation: capture-flash 0.6s ease-in-out infinite alternate; }
 @keyframes capture-flash {
-  from { box-shadow: 0 2px 8px rgba(128,0,0,0.25); }
+  from { box-shadow: 0 2px 8px rgba(107,30,60,0.25); }
   to   { box-shadow: 0 4px 20px rgba(128,0,0,0.6); }
 }
 .capture-spinner {
@@ -754,7 +754,7 @@
   align-items: center;
   gap: 1rem;
   color: white;
-  box-shadow: 0 4px 16px rgba(128,0,0,0.25);
+  box-shadow: 0 4px 16px rgba(107,30,60,0.25);
 }
 .cust-hero-avatar {
   width: 52px;
