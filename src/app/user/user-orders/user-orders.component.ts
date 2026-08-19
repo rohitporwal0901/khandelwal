@@ -44,7 +44,7 @@ export class UserOrdersComponent implements OnInit {
   getStatusClass(status: string): string { return status; }
 
   getStatusLabel(status: string): string {
-    switch(status) {
+    switch (status) {
       case 'pending': return 'Pending';
       case 'completed': return 'Completed';
       case 'cancelled': return 'Cancelled';

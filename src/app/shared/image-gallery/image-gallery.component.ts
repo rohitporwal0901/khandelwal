@@ -41,12 +41,14 @@ import { CommonModule } from '@angular/common';
       gap: 0;
     }
     .main-image {
-      width: 100%;
-      height: 260px;
+      // width: 100%;
+      height: 210px;
       border-radius: 0;
       overflow: hidden;
       position: relative;
       background: var(--background);
+      margin: 10px;
+      border-radius: 16px;
       
       img {
         width: 100%;
