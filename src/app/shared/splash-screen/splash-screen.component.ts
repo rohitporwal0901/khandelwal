@@ -43,7 +43,7 @@ import { CommonModule } from '@angular/common';
       top: 0;
       bottom: 0;
       width: 50%;
-      background: linear-gradient(160deg, #4A1229 0%, #6B1E3C 60%, #3A0D20 100%);
+      background: linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-dark) 100%);
       transition: transform 0.85s cubic-bezier(0.76, 0, 0.24, 1);
       will-change: transform;
     }
@@ -51,7 +51,7 @@ import { CommonModule } from '@angular/common';
     .door-left  { left: 0; }
     .door-right { right: 0; }
 
-    /* Gold seam line on door edges */
+    /* Secondary color seam line on door edges */
     .door-inner {
       position: absolute;
       inset: 0;
@@ -64,7 +64,7 @@ import { CommonModule } from '@angular/common';
       top: 0;
       bottom: 0;
       width: 3px;
-      background: linear-gradient(to bottom, transparent, #C9A84C 30%, #DFC270 50%, #C9A84C 70%, transparent);
+      background: linear-gradient(to bottom, transparent, var(--secondary) 30%, var(--secondary-light) 50%, var(--secondary) 70%, transparent);
     }
 
     .door-right .door-edge {
@@ -73,15 +73,15 @@ import { CommonModule } from '@angular/common';
       top: 0;
       bottom: 0;
       width: 3px;
-      background: linear-gradient(to bottom, transparent, #C9A84C 30%, #DFC270 50%, #C9A84C 70%, transparent);
+      background: linear-gradient(to bottom, transparent, var(--secondary) 30%, var(--secondary-light) 50%, var(--secondary) 70%, transparent);
     }
 
-    /* Subtle grain/texture overlay on doors */
+    /* Subtle glow overlay on doors */
     .door::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at center, rgba(201,168,76,0.08) 0%, transparent 70%);
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.06) 0%, transparent 70%);
     }
 
     /* Open state — slide out */
@@ -110,9 +110,9 @@ import { CommonModule } from '@angular/common';
       border: 3px solid transparent;
       background:
         linear-gradient(white, white) padding-box,
-        linear-gradient(135deg, #C9A84C, #DFC270, #A8882D, #C9A84C) border-box;
+        linear-gradient(135deg, var(--secondary), var(--secondary-light), var(--secondary-dark), var(--secondary)) border-box;
       box-shadow:
-        0 0 40px rgba(201,168,76,0.45),
+        0 0 40px rgba(255,255,255,0.25),
         0 8px 32px rgba(0,0,0,0.5);
       display: flex;
       align-items: center;
@@ -122,8 +122,8 @@ import { CommonModule } from '@angular/common';
     }
 
     @keyframes logoPulse {
-      from { box-shadow: 0 0 24px rgba(201,168,76,0.35), 0 8px 32px rgba(0,0,0,0.5); }
-      to   { box-shadow: 0 0 52px rgba(201,168,76,0.65), 0 8px 32px rgba(0,0,0,0.5); }
+      from { box-shadow: 0 0 24px rgba(255,255,255,0.18), 0 8px 32px rgba(0,0,0,0.5); }
+      to   { box-shadow: 0 0 52px rgba(255,255,255,0.38), 0 8px 32px rgba(0,0,0,0.5); }
     }
 
     .splash-logo {

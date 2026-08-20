@@ -4,6 +4,7 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { SnackbarComponent } from './shared/snackbar/snackbar.component';
 import { SplashScreenComponent } from './shared/splash-screen/splash-screen.component';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private themeService: ThemeService  // initializes & applies saved theme on startup
   ) {}
 
   ngOnInit() {

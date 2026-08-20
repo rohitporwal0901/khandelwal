@@ -3,8 +3,8 @@
 }
 
 :host {
-  --primary: #6B1E3C;
-  --primary-hover: #8E2850;
+  --primary: var(--primary);
+  --primary-hover: var(--primary-light);
   --primary-light: #fef2f2;
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
@@ -126,7 +126,7 @@
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(107, 30, 60, 0.25);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.25);
 }
 
 .btn-capture:hover:not([disabled]) {
@@ -151,7 +151,7 @@
 
 @keyframes capture-flash {
   from {
-    box-shadow: 0 2px 8px rgba(107, 30, 60, 0.25);
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.25);
   }
 
   to {
@@ -1237,14 +1237,14 @@
    CUSTOMER HERO BANNER
 ========================================================= */
 .customer-hero-banner {
-  background: linear-gradient(180deg, #5A1832 0%, #4A1229 40%, #36091B 100%);
+  background: linear-gradient(180deg, var(--primary-light) 0%, var(--primary-dark) 40%, #36091B 100%);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   color: white;
-  box-shadow: 0 4px 16px rgba(107, 30, 60, 0.25);
+  box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.25);
 }
 
 .cust-hero-avatar {

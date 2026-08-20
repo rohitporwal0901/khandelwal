@@ -1,6 +1,6 @@
 :host {
-  --primary: #6B1E3C;
-  --primary-hover: #8E2850;
+  --primary: var(--primary);
+  --primary-hover: var(--primary-light);
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
   --slate-200: #e2e8f0;

@@ -1,0 +1,384 @@
+<div class="themes-page">
+
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <span class="material-symbols-outlined">palette</span>
+      </div>
+      <div>
+        <h1 class="page-title">Theme Studio</h1>
+        <p class="page-subtitle">Choose a palette — changes apply site-wide instantly</p>
+      </div>
+    </div>
+    <button class="btn-create-custom" (click)="openCustomBuilder()">
+      <span class="material-symbols-outlined">add</span>
+      Create Custom Theme
+    </button>
+  </div>
+
+  <!-- ── Active Theme Banner ── -->
+  <div class="active-banner">
+    <div class="active-banner-left">
+      <span class="active-dot"></span>
+      <span class="active-label">Currently Active:</span>
+      <span class="active-name">
+        <ng-container *ngIf="activeThemeId() === 'custom'">
+          {{ themeService.customTheme()?.emoji || '🎨' }} {{ themeService.customTheme()?.name || 'Custom Theme' }}
+        </ng-container>
+        <ng-container *ngFor="let t of presetThemes">
+          <ng-container *ngIf="t.id === activeThemeId()">{{ t.emoji }} {{ t.name }}</ng-container>
+        </ng-container>
+      </span>
+    </div>
+    <div class="active-swatches">
+      <div class="swatch-dot" style="background:var(--background);border:2px solid rgba(255,255,255,0.5)"></div>
+      <div class="swatch-dot" style="background:var(--primary);border:2px solid rgba(255,255,255,0.5)"></div>
+      <div class="swatch-dot" style="background:var(--secondary);border:2px solid rgba(255,255,255,0.5)"></div>
+    </div>
+  </div>
+
+  <!-- ── Section Title ── -->
+  <div class="section-header">
+    <h2 class="section-title">
+      <span class="material-symbols-outlined">auto_awesome</span>
+      Premium Presets
+    </h2>
+    <span class="section-count">{{ presetThemes.length + (themeService.customTheme() ? 1 : 0) }} palettes</span>
+  </div>
+
+  <!-- ── Themes Grid ── -->
+  <div class="themes-grid">
+
+    <!-- Preset Theme Cards -->
+    <div class="theme-card"
+      *ngFor="let theme of presetThemes; let i = index"
+      [class.is-active]="activeThemeId() === theme.id"
+      (click)="applyPreset(theme.id)">
+
+      <!-- Number badge -->
+      <div class="card-number" [style.background]="theme.colors.primary">
+        {{ indexLabel(i) }}
+      </div>
+
+      <!-- Active checkmark -->
+      <div class="active-check" *ngIf="activeThemeId() === theme.id">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+
+      <!-- Theme Name -->
+      <div class="card-header-row">
+        <span class="theme-emoji">{{ theme.emoji }}</span>
+        <span class="card-name">{{ theme.name }}</span>
+      </div>
+
+      <!-- Preview Box -->
+      <div class="preview-box" [style.background]="theme.colors.background">
+        <!-- Top stripe -->
+        <div class="preview-stripe" [style.background]="theme.colors.primary">
+          <div class="preview-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <!-- Content sim -->
+        <div class="preview-content">
+          <div class="preview-text-block">
+            <div class="preview-line long" [style.background]="theme.colors.textMain + '20'"></div>
+            <div class="preview-line short" [style.background]="theme.colors.textMain + '14'"></div>
+            <div class="preview-line medium" [style.background]="theme.colors.textMain + '14'"></div>
+          </div>
+          <div class="preview-button" [style.background]="theme.colors.primary" [style.color]="'white'">
+            Apply
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Swatches with hex -->
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-circle" [style.background]="theme.colors.background" style="border:1.5px solid #e0e0e0"></div>
+          <div class="swatch-label">
+            <span class="swatch-hex">{{ theme.colors.background }}</span>
+            <span class="swatch-role">Background</span>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" [style.background]="theme.colors.primary"></div>
+          <div class="swatch-label">
+            <span class="swatch-hex">{{ theme.colors.primary }}</span>
+            <span class="swatch-role">Primary</span>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" [style.background]="theme.colors.secondary"></div>
+          <div class="swatch-label">
+            <span class="swatch-hex">{{ theme.colors.secondary }}</span>
+            <span class="swatch-role">Secondary</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apply button -->
+      <button class="card-btn"
+        [class.card-btn-active]="activeThemeId() === theme.id"
+        [disabled]="isSaving()"
+        (click)="applyPreset(theme.id); $event.stopPropagation()">
+        <span class="material-symbols-outlined" style="font-size:1rem">
+          {{ activeThemeId() === theme.id ? 'check' : 'brush' }}
+        </span>
+        {{ activeThemeId() === theme.id ? 'Active Theme' : 'Apply Theme' }}
+      </button>
+    </div>
+
+    <!-- Custom Theme Card -->
+    <div class="theme-card custom-theme-card"
+      *ngIf="themeService.customTheme() as ct"
+      [class.is-active]="activeThemeId() === 'custom'"
+      (click)="applyPreset('custom')">
+
+      <div class="card-number custom-num">
+        <span class="material-symbols-outlined" style="font-size:0.8rem">palette</span>
+      </div>
+      <div class="active-check" *ngIf="activeThemeId() === 'custom'">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+
+      <div class="card-header-row">
+        <span class="theme-emoji">{{ ct.emoji }}</span>
+        <span class="card-name">{{ ct.name }}</span>
+        <span class="custom-pill">Custom</span>
+      </div>
+
+      <div class="preview-box" [style.background]="ct.colors.background">
+        <div class="preview-stripe" [style.background]="ct.colors.primary">
+          <div class="preview-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="preview-content">
+          <div class="preview-text-block">
+            <div class="preview-line long" [style.background]="ct.colors.textMain + '20'"></div>
+            <div class="preview-line short" [style.background]="ct.colors.textMain + '14'"></div>
+            <div class="preview-line medium" [style.background]="ct.colors.textMain + '14'"></div>
+          </div>
+          <div class="preview-button" [style.background]="ct.colors.primary" style="color:white">Apply</div>
+        </div>
+      </div>
+
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-circle" [style.background]="ct.colors.background" style="border:1.5px solid #e0e0e0"></div>
+          <div class="swatch-label">
+            <span class="swatch-hex">{{ ct.colors.background }}</span>
+            <span class="swatch-role">Background</span>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" [style.background]="ct.colors.primary"></div>
+          <div class="swatch-label">
+            <span class="swatch-hex">{{ ct.colors.primary }}</span>
+            <span class="swatch-role">Primary</span>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-circle" [style.background]="ct.colors.secondary"></div>
+          <div class="swatch-label">
+            <span class="swatch-hex">{{ ct.colors.secondary }}</span>
+            <span class="swatch-role">Secondary</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions-split">
+        <button class="card-btn-edit" (click)="openCustomBuilder(); $event.stopPropagation()">
+          <span class="material-symbols-outlined" style="font-size:1rem">edit</span> Edit
+        </button>
+        <button class="card-btn"
+          [class.card-btn-active]="activeThemeId() === 'custom'"
+          [disabled]="isSaving()"
+          (click)="applyPreset('custom'); $event.stopPropagation()">
+          <span class="material-symbols-outlined" style="font-size:1rem">{{ activeThemeId() === 'custom' ? 'check' : 'brush' }}</span>
+          {{ activeThemeId() === 'custom' ? 'Active' : 'Apply' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     CUSTOM THEME BUILDER MODAL
+═══════════════════════════════ -->
+<div class="builder-overlay" *ngIf="showCustomBuilder()" (click)="closeCustomBuilder()">
+  <div class="builder-modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-icon"><span class="material-symbols-outlined">palette</span></div>
+        <div>
+          <h2 class="modal-title">Custom Theme Builder</h2>
+          <p class="modal-subtitle">Pick colors — see changes live across the site</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeCustomBuilder()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="builder-left">
+        <div class="builder-name-row">
+          <input type="text" class="emoji-input" [(ngModel)]="customEmoji" maxlength="2">
+          <input type="text" class="name-input" [(ngModel)]="customName" placeholder="Theme name...">
+        </div>
+
+        <div class="color-pickers-list">
+          <div class="picker-row">
+            <div class="picker-info">
+              <div class="picker-label">Primary Color</div>
+              <div class="picker-hint">Sidebar, buttons, headers</div>
+            </div>
+            <div class="picker-input-wrap">
+              <div class="picker-swatch" [style.background]="customColors().primary"></div>
+              <input type="color" class="color-input" [value]="customColors().primary"
+                (input)="onPrimaryColorChange($any($event.target).value)"
+                (change)="onPrimaryColorChange($any($event.target).value)">
+              <input type="text" class="hex-input" [value]="customColors().primary"
+                (change)="onPrimaryColorChange($any($event.target).value)" maxlength="7">
+            </div>
+          </div>
+
+          <div class="picker-row">
+            <div class="picker-info">
+              <div class="picker-label">Secondary / Accent</div>
+              <div class="picker-hint">Highlights, badges, icons</div>
+            </div>
+            <div class="picker-input-wrap">
+              <div class="picker-swatch" [style.background]="customColors().secondary"></div>
+              <input type="color" class="color-input" [value]="customColors().secondary"
+                (input)="onSecondaryColorChange($any($event.target).value)"
+                (change)="onSecondaryColorChange($any($event.target).value)">
+              <input type="text" class="hex-input" [value]="customColors().secondary"
+                (change)="onSecondaryColorChange($any($event.target).value)" maxlength="7">
+            </div>
+          </div>
+
+          <div class="picker-row">
+            <div class="picker-info">
+              <div class="picker-label">Accent Tint</div>
+              <div class="picker-hint">Card backgrounds, hover states</div>
+            </div>
+            <div class="picker-input-wrap">
+              <div class="picker-swatch" [style.background]="customColors().accent" style="border:1px solid #e0e0e0"></div>
+              <input type="color" class="color-input" [value]="customColors().accent"
+                (input)="onAccentColorChange($any($event.target).value)"
+                (change)="onAccentColorChange($any($event.target).value)">
+              <input type="text" class="hex-input" [value]="customColors().accent"
+                (change)="onAccentColorChange($any($event.target).value)" maxlength="7">
+            </div>
+          </div>
+
+          <div class="picker-row">
+            <div class="picker-info">
+              <div class="picker-label">Surface Color</div>
+              <div class="picker-hint">Card & panel backgrounds</div>
+            </div>
+            <div class="picker-input-wrap">
+              <div class="picker-swatch" [style.background]="customColors().surface" style="border:1px solid #e0e0e0"></div>
+              <input type="color" class="color-input" [value]="customColors().surface"
+                (input)="onSurfaceColorChange($any($event.target).value)"
+                (change)="onSurfaceColorChange($any($event.target).value)">
+              <input type="text" class="hex-input" [value]="customColors().surface"
+                (change)="onSurfaceColorChange($any($event.target).value)" maxlength="7">
+            </div>
+          </div>
+        </div>
+
+        <div class="derived-section">
+          <div class="derived-label">Auto-derived shades</div>
+          <div class="derived-swatches">
+            <div class="derived-item">
+              <div class="derived-dot" [style.background]="customColors().primaryDark"></div>
+              <span>Dark</span>
+            </div>
+            <div class="derived-item">
+              <div class="derived-dot" [style.background]="customColors().primary"></div>
+              <span>Base</span>
+            </div>
+            <div class="derived-item">
+              <div class="derived-dot" [style.background]="customColors().primaryLight"></div>
+              <span>Light</span>
+            </div>
+            <div class="derived-item">
+              <div class="derived-dot" [style.background]="customColors().background" style="border:1px solid #e0e0e0"></div>
+              <span>BG</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Live Preview (reference card style) -->
+      <div class="builder-right">
+        <div class="preview-label">
+          <span class="material-symbols-outlined" style="font-size:1rem;color:var(--secondary)">preview</span>
+          Live Preview
+        </div>
+
+        <div class="live-preview-card" [style.background]="customColors().background">
+          <!-- Mini numbered card preview -->
+          <div class="lp-number" [style.background]="customColors().primary">01</div>
+          <div class="lp-name-row">
+            <span style="font-size:1rem">🎨</span>
+            <span class="lp-name" [style.color]="customColors().textMain">{{ customName || 'My Theme' }}</span>
+          </div>
+          <!-- Preview box -->
+          <div class="lp-preview" [style.background]="customColors().background">
+            <div class="lp-stripe" [style.background]="customColors().primary">
+              <div class="lp-dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="lp-content">
+              <div>
+                <div [style.background]="customColors().textMain + '25'" style="height:7px;border-radius:4px;width:80%;margin-bottom:5px"></div>
+                <div [style.background]="customColors().textMain + '18'" style="height:5px;border-radius:4px;width:55%;margin-bottom:4px"></div>
+                <div [style.background]="customColors().textMain + '18'" style="height:5px;border-radius:4px;width:65%"></div>
+              </div>
+              <div [style.background]="customColors().primary" style="padding:5px 12px;border-radius:5px;color:white;font-size:0.65rem;font-weight:700;flex-shrink:0">Apply</div>
+            </div>
+          </div>
+          <!-- Swatches -->
+          <div class="lp-swatches">
+            <div class="lp-swatch-item">
+              <div class="lp-swatch-circle" [style.background]="customColors().background" style="border:1.5px solid #ddd"></div>
+              <div class="lp-swatch-hex" [style.color]="customColors().textMuted">{{ customColors().background }}</div>
+              <div class="lp-swatch-role">Background</div>
+            </div>
+            <div class="lp-swatch-item">
+              <div class="lp-swatch-circle" [style.background]="customColors().primary"></div>
+              <div class="lp-swatch-hex" [style.color]="customColors().textMuted">{{ customColors().primary }}</div>
+              <div class="lp-swatch-role">Primary</div>
+            </div>
+            <div class="lp-swatch-item">
+              <div class="lp-swatch-circle" [style.background]="customColors().secondary"></div>
+              <div class="lp-swatch-hex" [style.color]="customColors().textMuted">{{ customColors().secondary }}</div>
+              <div class="lp-swatch-role">Secondary</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-live-preview"
+          [class.previewing]="isPreviewingCustom()"
+          (click)="livePreviewCustom()">
+          <span class="material-symbols-outlined">{{ isPreviewingCustom() ? 'visibility' : 'visibility_off' }}</span>
+          {{ isPreviewingCustom() ? 'Previewing on Site' : 'Preview on Site' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeCustomBuilder()">Cancel</button>
+      <button class="btn-save" (click)="saveCustomTheme()" [disabled]="isSaving()">
+        <span class="material-symbols-outlined" *ngIf="!isSaving()">save</span>
+        <span class="spinner" *ngIf="isSaving()"></span>
+        {{ isSaving() ? 'Saving...' : 'Save & Apply Theme' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -6,7 +6,7 @@
     }
     .spinner-large {
       width: 36px; height: 36px;
-      border: 3px solid rgba(107, 30, 60,0.12);
+      border: 3px solid rgba(var(--primary-rgb),0.12);
       border-radius: 50%;
       border-top-color: var(--primary);
       animation: spin 0.9s linear infinite;
@@ -73,7 +73,7 @@
       text-transform: uppercase;
       letter-spacing: 0.7px;
       color: var(--primary);
-      background: rgba(107, 30, 60,0.07);
+      background: rgba(var(--primary-rgb),0.07);
       padding: 3px 10px;
       border-radius: 999px;
       margin-bottom: 8px;

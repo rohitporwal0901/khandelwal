@@ -53,13 +53,13 @@
   height: 72px;
   border-radius: 50%;
   background: #1A0B0C;
-  border: 2px solid #D4AF37;
+  border: 2px solid var(--secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.2rem;
   font-weight: 800;
-  color: #D4AF37;
+  color: var(--secondary);
   overflow: hidden;
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -106,7 +106,7 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #D4AF37;
+  background: var(--secondary);
   color: #1A0B0C;
   display: flex;
   align-items: center;
@@ -128,8 +128,8 @@
   height: 28px;
   border-radius: 50%;
   background: #1A0B0C;
-  color: #D4AF37;
-  border: 1.5px solid #D4AF37;
+  color: var(--secondary);
+  border: 1.5px solid var(--secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,7 +171,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #D4AF37;
+  color: var(--secondary);
   font-size: 0.72rem;
   font-weight: 700;
   background: rgba(212, 175, 55, 0.1);
@@ -321,7 +321,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #F3E5AB, #D4AF37, #AA7C11);
+  background: radial-gradient(circle at 30% 30%, #F3E5AB, var(--secondary), #AA7C11);
   border: 1px solid #5C4000;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.6),
@@ -532,23 +532,23 @@
 }
 
 .icon-orders {
-  color: #6B1E3C;
-  background: rgba(107, 30, 60, 0.05);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.05);
 }
 
 .icon-shop {
-  color: #2E7D32;
-  background: rgba(46, 125, 50, 0.05);
+  color: var(--success);
+  background: var(--success-light);
 }
 
 .icon-pin {
-  color: #B8860B;
-  background: rgba(184, 134, 11, 0.05);
+  color: var(--secondary-dark);
+  background: rgba(var(--primary-rgb), 0.06);
 }
 
 .icon-support {
-  color: #1976D2;
-  background: rgba(25, 118, 210, 0.05);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.05);
 }
 
 .row-info {
@@ -584,7 +584,7 @@
   width: 100%;
   height: 48px;
   background: #FFFFFF;
-  color: #6B1E3C;
+  color: var(--primary);
   border: 1px solid #EAEAEA;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -599,7 +599,7 @@
 
   &:hover {
     background: #FFF5F5;
-    border-color: #6B1E3C;
+    border-color: var(--primary);
   }
 
   &:active {
@@ -642,7 +642,7 @@
 
   &:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(107, 30, 60, 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
   }
 
   &.filled {
@@ -796,7 +796,7 @@
     height: 52px;
     border-radius: 50%;
     background: #FFF5F5;
-    color: #6B1E3C;
+    color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -846,7 +846,7 @@
 .btn-logout-confirm {
   flex: 1;
   height: 48px;
-  background: linear-gradient(135deg, #6B1E3C, #C0392B);
+  background: linear-gradient(135deg, var(--primary), #C0392B);
   border: none;
   border-radius: 8px;
   color: white;
@@ -866,7 +866,7 @@
 .btn-primary {
   width: 100%;
   height: 48px;
-  background: #6B1E3C;
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -876,7 +876,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(107, 30, 60, 0.2);
+  box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.2);
 
   &:disabled {
     opacity: 0.55;
@@ -907,7 +907,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #6B1E3C;
+  color: var(--primary);
   font-size: 0.8rem;
   font-weight: 500;
   margin-top: 10px;
